@@ -42,7 +42,7 @@ mod storage {
         use super::*;
 
         #[contractstorage]
-        enum DataKey {
+        enum OperatorDataKey {
             #[instance]
             #[value(Address)]
             Interfaces_Operator,
@@ -56,7 +56,7 @@ mod storage {
         use super::*;
 
         #[contractstorage]
-        enum DataKey {
+        enum OwnerDataKey {
             #[instance]
             #[value(Address)]
             Interfaces_Owner,
@@ -68,7 +68,7 @@ mod storage {
         use super::*;
 
         #[contractstorage]
-        enum DataKey {
+        enum PausableDataKey {
             #[instance]
             #[status]
             Interfaces_Paused,
@@ -80,7 +80,7 @@ mod storage {
         use super::*;
 
         #[contractstorage]
-        enum DataKey {
+        enum MigratingDataKey {
             #[instance]
             #[status]
             Interfaces_Migrating,
