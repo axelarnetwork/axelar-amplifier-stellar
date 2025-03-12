@@ -1,0 +1,19 @@
+[package]
+name = "stellar-multicall"
+version = "1.0.0"
+edition = { workspace = true }
+description = "Multicall contract, responsible for executing multiple contract calls in a single transaction."
+license = { workspace = true }
+publish = true
+
+[dependencies]
+cfg-if = { workspace = true }
+soroban-sdk = { workspace = true }
+stellar-axelar-std = { workspace = true }
+
+[dev-dependencies]
+goldie = { workspace = true }
+soroban-sdk = { workspace = true, features = ["testutils"] }
+
+[lints]
+workspace = true

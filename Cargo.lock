@@ -2079,6 +2079,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "stellar-multicall"
+version = "1.0.0"
+dependencies = [
+ "cfg-if",
+ "goldie",
+ "soroban-sdk",
+ "stellar-axelar-std",
+]
+
+[[package]]
 name = "stellar-strkey"
 version = "0.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
