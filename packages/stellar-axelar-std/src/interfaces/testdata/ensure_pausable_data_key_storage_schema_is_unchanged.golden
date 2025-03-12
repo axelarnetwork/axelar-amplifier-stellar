@@ -1,0 +1,6 @@
+enum PausableDataKey {
+
+    #[instance]
+    #[status]
+    Interfaces_Paused,
+}

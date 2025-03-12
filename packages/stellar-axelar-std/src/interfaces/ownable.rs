@@ -18,10 +18,7 @@ pub trait OwnableInterface {
 
 /// Default implementation of the [`OwnableInterface`] trait.
 pub fn owner(env: &Env) -> Address {
-    env.storage()
-        .instance()
-        .get(&storage::owner::DataKey::Interfaces_Owner)
-        .expect("owner must be set during contract construction")
+    storage::owner::interfaces_owner(env)
 }
 
 /// Default implementation of the [`OwnableInterface`] trait. Ensures the current owner is authorized and emits an event after the transfer.
@@ -41,9 +38,7 @@ pub fn transfer_ownership<T: OwnableInterface>(env: &Env, new_owner: Address) {
 /// Default implementation accompanying the [`OwnableInterface`] trait. This should never be part of a contract interface,
 /// but allows contracts internally to set the owner.
 pub fn set_owner(env: &Env, owner: &Address) {
-    env.storage()
-        .instance()
-        .set(&storage::owner::DataKey::Interfaces_Owner, owner);
+    storage::owner::set_interfaces_owner(env, owner);
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, IntoEvent)]

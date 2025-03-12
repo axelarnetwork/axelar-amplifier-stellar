@@ -18,10 +18,7 @@ pub trait OperatableInterface {
 
 /// Default implementation of the [OperatableInterface] trait.
 pub fn operator(env: &Env) -> Address {
-    env.storage()
-        .instance()
-        .get(&storage::operator::DataKey::Interfaces_Operator)
-        .expect("operator must be set during contract construction")
+    storage::operator::interfaces_operator(env)
 }
 
 /// Default implementation of the [OperatableInterface] trait. Ensures the current operator is authorized and emits an event after the transfer.
@@ -41,9 +38,7 @@ pub fn transfer_operatorship<T: OperatableInterface>(env: &Env, new_operator: Ad
 /// Default implementation accompanying the [OperatableInterface] trait. This should never be part of a contract interface,
 /// but allows contracts internally to set the operator.
 pub fn set_operator(env: &Env, operator: &Address) {
-    env.storage()
-        .instance()
-        .set(&storage::operator::DataKey::Interfaces_Operator, operator);
+    storage::operator::set_interfaces_operator(env, operator);
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, IntoEvent)]

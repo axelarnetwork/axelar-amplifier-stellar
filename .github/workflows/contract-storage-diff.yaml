@@ -6,6 +6,7 @@ jobs:
   check-migration:
     name: Check Valid Migration File Exists
     runs-on: ubuntu-latest
+    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v4

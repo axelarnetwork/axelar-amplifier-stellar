@@ -76,18 +76,14 @@ pub fn migrate<T: CustomMigratableInterface>(
 }
 
 fn start_migration(env: &Env) {
-    env.storage()
-        .instance()
-        .set(&storage::migrating::DataKey::Interfaces_Migrating, &());
+    storage::migrating::set_interfaces_migrating_status(env);
 }
 
 fn ensure_is_migrating<T: CustomMigratableInterface>(
     env: &Env,
 ) -> Result<(), MigrationError<T::Error>> {
     ensure!(
-        env.storage()
-            .instance()
-            .has(&storage::migrating::DataKey::Interfaces_Migrating),
+        storage::migrating::is_interfaces_migrating(env),
         MigrationError::NotAllowed
     );
 
@@ -102,9 +98,7 @@ fn custom_migrate<T: CustomMigratableInterface>(
 }
 
 fn complete_migration(env: &Env) {
-    env.storage()
-        .instance()
-        .remove(&storage::migrating::DataKey::Interfaces_Migrating);
+    storage::migrating::remove_interfaces_migrating_status(env);
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, IntoEvent)]

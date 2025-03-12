@@ -21,18 +21,14 @@ pub trait PausableInterface: OwnableInterface {
 
 /// Default implementation of the [`PausableInterface`] trait.
 pub fn paused(env: &Env) -> bool {
-    env.storage()
-        .instance()
-        .has(&storage::pausable::DataKey::Interfaces_Paused)
+    storage::pausable::is_interfaces_paused(env)
 }
 
 /// Default implementation of the [`PausableInterface`] trait.
 pub fn pause<T: PausableInterface>(env: &Env) {
     T::owner(env).require_auth();
 
-    env.storage()
-        .instance()
-        .set(&storage::pausable::DataKey::Interfaces_Paused, &());
+    storage::pausable::set_interfaces_paused_status(env);
 
     PausedEvent {}.emit(env);
 }
@@ -41,9 +37,7 @@ pub fn pause<T: PausableInterface>(env: &Env) {
 pub fn unpause<T: PausableInterface>(env: &Env) {
     T::owner(env).require_auth();
 
-    env.storage()
-        .instance()
-        .remove(&storage::pausable::DataKey::Interfaces_Paused);
+    storage::pausable::remove_interfaces_paused_status(env);
 
     UnpausedEvent {}.emit(env);
 }
