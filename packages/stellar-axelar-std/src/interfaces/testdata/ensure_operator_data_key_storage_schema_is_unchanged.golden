@@ -1,0 +1,6 @@
+enum OperatorDataKey {
+
+    #[instance]
+    #[value(Address)]
+    Interfaces_Operator,
+}
