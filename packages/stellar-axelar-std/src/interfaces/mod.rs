@@ -37,9 +37,9 @@ mod storage {
 
     pub mod operator {
 
-        use super::*;
-
         use soroban_sdk::Address;
+
+        use super::*;
 
         #[contractstorage]
         enum DataKey {
@@ -51,9 +51,9 @@ mod storage {
 
     pub mod owner {
 
-        use super::*;
-
         use soroban_sdk::Address;
+
+        use super::*;
 
         #[contractstorage]
         enum DataKey {
