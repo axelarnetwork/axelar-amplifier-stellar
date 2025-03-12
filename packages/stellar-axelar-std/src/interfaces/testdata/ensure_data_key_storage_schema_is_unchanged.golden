@@ -1,6 +1,0 @@
-enum DataKey {
-
-    #[instance]
-    #[status]
-    Interfaces_Paused,
-}
