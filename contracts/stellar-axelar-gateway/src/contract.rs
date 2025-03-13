@@ -1,8 +1,8 @@
 use soroban_sdk::xdr::ToXdr;
-use soroban_sdk::{contract, contractimpl, Address, Bytes, BytesN, Env, String, Vec};
+use soroban_sdk::{contract, Address, Bytes, BytesN, Env, String, Vec};
 use stellar_axelar_std::events::Event;
 use stellar_axelar_std::{
-    ensure, interfaces, when_not_paused, Operatable, Ownable, Pausable, Upgradable,
+    contractimpl, ensure, interfaces, when_not_paused, Operatable, Ownable, Pausable, Upgradable,
 };
 
 use crate::error::ContractError;

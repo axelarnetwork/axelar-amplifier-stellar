@@ -3,12 +3,13 @@ use quote::quote;
 use syn::ItemFn;
 
 use crate::modifier::modifier_impl;
+use crate::utils::parse_env_ident;
 
 pub fn ownable(name: &Ident) -> TokenStream2 {
     quote! {
         use stellar_axelar_std::interfaces::OwnableInterface as _;
 
-        #[soroban_sdk::contractimpl]
+        #[stellar_axelar_std::contractimpl]
         impl stellar_axelar_std::interfaces::OwnableInterface for #name {
             fn owner(env: &Env) -> soroban_sdk::Address {
                 stellar_axelar_std::interfaces::owner(env)
@@ -22,10 +23,13 @@ pub fn ownable(name: &Ident) -> TokenStream2 {
 }
 
 pub fn only_owner_impl(input_fn: ItemFn) -> TokenStream2 {
+    let env_ident = parse_env_ident(&input_fn.sig.inputs)
+        .expect("non-empty contract endpoints must have an Env argument");
+
     modifier_impl(
-        input_fn,
+        &input_fn,
         quote! {
-            Self::owner(&env).require_auth();
+            Self::owner(&#env_ident).require_auth();
         },
     )
 }

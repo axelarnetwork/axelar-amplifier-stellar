@@ -8,7 +8,7 @@ pub fn pausable(name: &Ident) -> TokenStream2 {
     quote! {
         use stellar_axelar_std::interfaces::PausableInterface as _;
 
-        #[soroban_sdk::contractimpl]
+        #[stellar_axelar_std::contractimpl]
         impl stellar_axelar_std::interfaces::PausableInterface for #name {
             fn paused(env: &Env) -> bool {
                 stellar_axelar_std::interfaces::paused(env)
@@ -27,7 +27,7 @@ pub fn pausable(name: &Ident) -> TokenStream2 {
 
 pub fn when_not_paused_impl(input_fn: ItemFn) -> TokenStream2 {
     modifier_impl(
-        input_fn,
+        &input_fn,
         quote! {
             stellar_axelar_std::ensure!(!Self::paused(env), ContractError::ContractPaused);
         },

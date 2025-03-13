@@ -1,10 +1,10 @@
 use core::convert::Infallible;
 
 use soroban_sdk::testutils::arbitrary::std;
-use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, Address, BytesN, Env, String,
-};
+use soroban_sdk::{contract, contracterror, contracttype, Address, BytesN, Env, String};
+use stellar_axelar_std_derive::contractimpl;
 
+use crate as stellar_axelar_std;
 use crate::interfaces::{
     operatable, ownable, upgradable, CustomMigratableInterface, MigratableInterface,
     OperatableInterface, OwnableInterface, UpgradableInterface,
@@ -15,13 +15,13 @@ pub struct Contract;
 
 #[contractimpl]
 impl Contract {
-    pub fn __constructor(_env: Env, owner: Option<Address>, operator: Option<Address>) {
+    pub fn __constructor(env: Env, owner: Option<Address>, operator: Option<Address>) {
         if let Some(owner) = owner {
-            ownable::set_owner(&_env, &owner);
+            ownable::set_owner(&env, &owner);
         }
 
         if let Some(operator) = operator {
-            operatable::set_operator(&_env, &operator);
+            operatable::set_operator(&env, &operator);
         }
     }
 

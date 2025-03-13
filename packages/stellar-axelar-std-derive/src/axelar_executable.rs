@@ -15,7 +15,7 @@ pub fn axelar_executable(name: &Ident) -> TokenStream2 {
         #[allow(non_camel_case_types)]
         type #error_alias = <#name as stellar_axelar_gateway::executable::CustomAxelarExecutable>::Error;
 
-        #[contractimpl]
+        #[stellar_axelar_std::contractimpl]
         impl AxelarExecutableInterface for #name {
             fn gateway(env: &Env) -> Address {
                 Self::__gateway(env)

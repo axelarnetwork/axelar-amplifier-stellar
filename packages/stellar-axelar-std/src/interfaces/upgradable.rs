@@ -90,6 +90,10 @@ fn ensure_is_migrating<T: CustomMigratableInterface>(
     Ok(())
 }
 
+pub fn is_migrating(env: &Env) -> bool {
+    storage::migrating::is_interfaces_migrating(env)
+}
+
 fn custom_migrate<T: CustomMigratableInterface>(
     env: &Env,
     migration_data: T::MigrationData,
