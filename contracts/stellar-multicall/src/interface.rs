@@ -12,8 +12,5 @@ pub trait MulticallInterface {
     ///
     /// # Returns
     /// - `Ok(Vec<Val>)`: Returns a vector with the return data of each function call
-    ///
-    /// # Errors
-    /// - [`ContractError::MulticallFailed`]: If any of the contract calls fail.
     fn multicall(env: &Env, function_calls: Vec<FunctionCall>) -> Result<Vec<Val>, ContractError>;
 }
