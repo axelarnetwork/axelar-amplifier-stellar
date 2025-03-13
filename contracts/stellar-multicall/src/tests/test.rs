@@ -3,14 +3,11 @@ extern crate std;
 
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{
-    contract, contractimpl, symbol_short, vec, Address, Env, IntoVal,
-    Symbol, Val, Vec,
+    contract, contractimpl, symbol_short, vec, Address, Env, IntoVal, Symbol, Val, Vec,
 };
 use stellar_axelar_std::events::{fmt_last_emitted_event, Event};
 use stellar_axelar_std::interfaces::OwnableInterface;
-use stellar_axelar_std::{
-    assert_contract_err, interfaces, IntoEvent,
-};
+use stellar_axelar_std::{assert_contract_err, interfaces, IntoEvent};
 
 use crate::error::ContractError;
 use crate::types::FunctionCall;
