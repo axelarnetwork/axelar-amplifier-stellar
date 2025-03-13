@@ -15,5 +15,8 @@ stellar-axelar-std = { workspace = true }
 goldie = { workspace = true }
 soroban-sdk = { workspace = true, features = ["testutils"] }
 
+[features]
+library = []
+
 [lints]
 workspace = true

@@ -1,8 +1,9 @@
-use soroban_sdk::{Env, Val, Vec};
+use soroban_sdk::{contractclient, Env, Val, Vec};
 
 use crate::error::ContractError;
-use crate::types::MulticallData;
+use crate::types::FunctionCall;
 
+#[contractclient(name = "MulticallClient")]
 pub trait MulticallInterface {
     /// Executes an arbitrary list of contract calls and returns the results of all the calls.
     ///
@@ -14,5 +15,5 @@ pub trait MulticallInterface {
     ///
     /// # Errors
     /// - [`ContractError::MulticallFailed`]: If any of the contract calls fail.
-    fn multicall(env: Env, params: Vec<MulticallData>) -> Result<Vec<Val>, ContractError>;
+    fn multicall(env: &Env, function_calls: Vec<FunctionCall>) -> Result<Vec<Val>, ContractError>;
 }
