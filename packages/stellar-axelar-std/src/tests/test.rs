@@ -1,11 +1,11 @@
 use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{contract, contracterror, contractimpl, Address, Env};
+use soroban_sdk::{contract, contracterror, Address, Env};
 
 use crate as stellar_axelar_std;
 
 mod upgradable {
     use stellar_axelar_std::assert_auth;
-    use stellar_axelar_std_derive::{Ownable, Upgradable};
+    use stellar_axelar_std_derive::{contractimpl, Ownable, Upgradable};
 
     use super::*;
     use crate::std::string::ToString;
@@ -16,6 +16,7 @@ mod upgradable {
     #[repr(u32)]
     pub enum ContractError {
         MigrationNotAllowed = 1,
+        MigrationInProgress = 2,
     }
 
     #[contract]

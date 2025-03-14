@@ -13,4 +13,5 @@ pub enum ContractError {
     InvalidExpirationLedger = 7,
     InsufficientAllowance = 8,
     InsufficientBalance = 9,
+    MigrationInProgress = 10,
 }

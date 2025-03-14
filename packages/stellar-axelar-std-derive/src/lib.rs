@@ -3,17 +3,33 @@
 //! This ensures compatibility and prevents cyclic dependency issues during testing and release.
 
 mod axelar_executable;
+mod contractimpl;
 mod into_event;
 mod its_executable;
-mod modifier;
 mod operatable;
 mod ownable;
 mod pausable;
 mod storage;
 mod upgradable;
+mod utils;
 
 use proc_macro::TokenStream;
-use syn::{parse_macro_input, Attribute, DeriveInput, ItemFn, Path};
+use syn::{parse_macro_input, Attribute, DeriveInput, ItemFn, ItemImpl, Path};
+
+#[proc_macro_attribute]
+pub fn contractimpl(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(item as ItemImpl);
+
+    contractimpl::contractimpl(input)
+        .unwrap_or_else(|err| err.to_compile_error())
+        .into()
+}
+
+/// no-op implementation to make the attribute available for the contractimpl macro
+#[proc_macro_attribute]
+pub fn allow_during_migration(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    item
+}
 
 /// Implements the Operatable interface for a Soroban contract.
 ///
@@ -123,7 +139,9 @@ pub fn derive_pausable(input: TokenStream) -> TokenStream {
 pub fn when_not_paused(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input_fn = parse_macro_input!(item as ItemFn);
 
-    pausable::when_not_paused_impl(input_fn).into()
+    pausable::when_not_paused_impl(input_fn)
+        .unwrap_or_else(|err| err.to_compile_error())
+        .into()
 }
 
 /// Implements the Upgradable and Migratable interfaces for a Soroban contract.
@@ -270,7 +288,9 @@ pub fn derive_axelar_executable(input: TokenStream) -> TokenStream {
 pub fn only_owner(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input_fn = parse_macro_input!(item as ItemFn);
 
-    ownable::only_owner_impl(input_fn).into()
+    ownable::only_owner_impl(input_fn)
+        .unwrap_or_else(|err| err.to_compile_error())
+        .into()
 }
 
 /// Ensures that only a contract's operator can execute the attributed function.
@@ -297,7 +317,9 @@ pub fn only_owner(_attr: TokenStream, item: TokenStream) -> TokenStream {
 pub fn only_operator(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input_fn = parse_macro_input!(item as ItemFn);
 
-    operatable::only_operator_impl(input_fn).into()
+    operatable::only_operator_impl(input_fn)
+        .unwrap_or_else(|err| err.to_compile_error())
+        .into()
 }
 
 /// Implements a storage interface for a Stellar contract storage enum.

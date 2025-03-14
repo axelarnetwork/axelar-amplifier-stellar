@@ -1,12 +1,10 @@
-use soroban_sdk::{
-    contract, contracterror, contractimpl, token, Address, Bytes, BytesN, Env, String,
-};
+use soroban_sdk::{contract, contracterror, token, Address, Bytes, BytesN, Env, String};
 use stellar_axelar_gas_service::AxelarGasServiceClient;
 use stellar_axelar_gateway::executable::{AxelarExecutableInterface, CustomAxelarExecutable};
 use stellar_axelar_gateway::AxelarGatewayMessagingClient;
 use stellar_axelar_std::events::Event;
 use stellar_axelar_std::types::Token;
-use stellar_axelar_std::{ensure, AxelarExecutable, InterchainTokenExecutable};
+use stellar_axelar_std::{contractimpl, ensure, AxelarExecutable, InterchainTokenExecutable};
 use stellar_interchain_token_service::executable::CustomInterchainTokenExecutable;
 use stellar_interchain_token_service::InterchainTokenServiceClient;
 
@@ -27,7 +25,6 @@ pub enum AxelarExampleError {
     InvalidAmount = 3,
 }
 
-#[contractimpl]
 impl CustomAxelarExecutable for AxelarExample {
     type Error = AxelarExampleError;
 
