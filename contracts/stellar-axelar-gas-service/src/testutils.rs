@@ -14,7 +14,7 @@ pub fn setup_gas_service<'a>(env: &Env) -> AxelarGasServiceClient<'a> {
     gas_service_client
 }
 
-pub fn setup_gas_token<'a>(env: &'a Env, sender: &'a Address) -> Token {
+pub fn setup_gas_token(env: &Env, sender: &Address) -> Token {
     let asset = &env.register_stellar_asset_contract_v2(Address::generate(env));
     let gas_amount: i128 = 1;
     let gas_token = Token {

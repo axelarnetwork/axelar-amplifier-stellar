@@ -25,7 +25,7 @@ fn setup_env<'a>() -> (Env, Address, Address, AxelarGasServiceClient<'a>) {
     (env, contract_id, operator, client)
 }
 
-fn setup_token<'a>(env: &'a Env, recipient: &'a Address, amount: i128) -> Token {
+fn setup_token(env: &Env, recipient: &Address, amount: i128) -> Token {
     let asset = env.register_stellar_asset_contract_v2(Address::generate(env));
 
     StellarAssetClient::new(env, &asset.address())
