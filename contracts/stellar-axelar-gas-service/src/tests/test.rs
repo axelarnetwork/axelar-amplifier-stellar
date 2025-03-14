@@ -316,20 +316,14 @@ fn collect_fees_fails_without_authorization() {
 #[test]
 fn collect_fees_succeeds() {
     let (env, contract_id, operator, client) = setup_env();
-
     let supply: i128 = 1000;
-    let asset = &env.register_stellar_asset_contract_v2(Address::generate(&env));
-    StellarAssetClient::new(&env, &asset.address())
-        .mock_all_auths()
-        .mint(&contract_id, &supply);
-
-    let token_client = TokenClient::new(&env, &asset.address());
-
     let refund_amount = 1;
+    let Token { address, .. } = setup_token(&env, &contract_id, supply);
     let token = Token {
-        address: asset.address(),
+        address,
         amount: refund_amount,
     };
+    let token_client = token.client(&env);
 
     let transfer_token_auth = mock_auth!(
         operator,
@@ -355,19 +349,15 @@ fn collect_fees_succeeds() {
 #[test]
 fn refund_fails_without_authorization() {
     let (env, contract_id, _, client) = setup_env();
-
     let supply: i128 = 1000;
-    let asset = &env.register_stellar_asset_contract_v2(Address::generate(&env));
-    StellarAssetClient::new(&env, &asset.address())
-        .mock_all_auths()
-        .mint(&contract_id, &supply);
-
-    let receiver: Address = Address::generate(&env);
-    let refund_amount: i128 = 1;
+    let refund_amount = 1;
+    let Token { address, .. } = setup_token(&env, &contract_id, supply);
     let token = Token {
-        address: asset.address(),
+        address,
         amount: refund_amount,
     };
+
+    let receiver: Address = Address::generate(&env);
     let message_id = message_id(&env);
     let user: Address = Address::generate(&env);
 
@@ -378,20 +368,15 @@ fn refund_fails_without_authorization() {
 #[should_panic(expected = "HostError: Error(Contract, #10)")] // "balance is not sufficient to spend"
 fn refund_fails_with_insufficient_balance() {
     let (env, contract_id, operator, client) = setup_env();
-
     let supply: i128 = 1;
-    let asset = &env.register_stellar_asset_contract_v2(Address::generate(&env));
-    StellarAssetClient::new(&env, &asset.address())
-        .mock_all_auths()
-        .mint(&contract_id, &supply);
-
-    let receiver: Address = Address::generate(&env);
-    let refund_amount: i128 = 2;
+    let refund_amount = 2;
+    let Token { address, .. } = setup_token(&env, &contract_id, supply);
     let token = Token {
-        address: asset.address(),
+        address,
         amount: refund_amount,
     };
-    let token_client = TokenClient::new(&env, &asset.address());
+    let token_client = token.client(&env);
+    let receiver: Address = Address::generate(&env);
     let message_id = message_id(&env);
 
     let transfer_token_auth = mock_auth!(

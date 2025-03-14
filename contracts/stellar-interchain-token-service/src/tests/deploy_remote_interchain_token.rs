@@ -147,7 +147,6 @@ fn deploy_remote_interchain_token_succeeds_without_gas_token() {
 #[test]
 fn deploy_remote_interchain_token_fails_when_paused() {
     let (env, client, _, _, _) = setup_env();
-    let gas_token = setup_gas_token(&env, &Address::generate(&env));
     client.mock_all_auths().pause();
 
     assert_contract_err!(
@@ -155,7 +154,7 @@ fn deploy_remote_interchain_token_fails_when_paused() {
             &Address::generate(&env),
             &BytesN::from_array(&env, &[1; 32]),
             &String::from_str(&env, "ethereum"),
-            &Some(gas_token)
+            &Some(setup_gas_token(&env, &Address::generate(&env)))
         ),
         ContractError::ContractPaused
     );

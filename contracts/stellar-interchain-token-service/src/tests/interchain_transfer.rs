@@ -142,7 +142,6 @@ fn interchain_transfer_canonical_token_send_succeeds() {
 #[test]
 fn interchain_transfer_send_fails_when_paused() {
     let (env, client, _, _, _) = setup_env();
-    let gas_token = setup_gas_token(&env, &Address::generate(&env));
     client.mock_all_auths().pause();
 
     assert_contract_err!(
@@ -153,7 +152,7 @@ fn interchain_transfer_send_fails_when_paused() {
             &Bytes::from_hex(&env, ""),
             &1,
             &Some(Bytes::from_hex(&env, "")),
-            &Some(gas_token)
+            &Some(setup_gas_token(&env, &Address::generate(&env)))
         ),
         ContractError::ContractPaused
     );
