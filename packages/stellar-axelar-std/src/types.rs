@@ -1,4 +1,5 @@
-use soroban_sdk::{contracttype, token::TokenClient, Address, Env};
+use soroban_sdk::token::TokenClient;
+use soroban_sdk::{contracttype, Address, Env};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
