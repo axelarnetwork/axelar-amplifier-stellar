@@ -16,6 +16,7 @@ mod upgradable {
     #[repr(u32)]
     pub enum ContractError {
         MigrationNotAllowed = 1,
+        MigrationInProgress = 2,
     }
 
     #[contract]

@@ -1,6 +1,7 @@
 use stellar_axelar_std::interfaces::{UpgradableInterface as _, MigratableInterface as _};
 #[stellar_axelar_std::contractimpl]
 impl stellar_axelar_std::interfaces::UpgradableInterface for Contract {
+    #[stellar_axelar_std::allow_during_migration]
     fn version(env: &Env) -> soroban_sdk::String {
         soroban_sdk::String::from_str(env, env!("CARGO_PKG_VERSION"))
     }
@@ -13,6 +14,7 @@ type __ContractMigrationData = <Contract as stellar_axelar_std::interfaces::Cust
 #[stellar_axelar_std::contractimpl]
 impl stellar_axelar_std::interfaces::MigratableInterface for Contract {
     type Error = ContractError;
+    #[stellar_axelar_std::allow_during_migration]
     fn migrate(
         env: &Env,
         migration_data: __ContractMigrationData,

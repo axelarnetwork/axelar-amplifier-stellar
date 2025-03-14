@@ -31,6 +31,7 @@ pub fn upgradable(input: &DeriveInput) -> TokenStream2 {
 
         #[stellar_axelar_std::contractimpl]
         impl stellar_axelar_std::interfaces::UpgradableInterface for #name {
+            #[stellar_axelar_std::allow_during_migration]
             fn version(env: &Env) -> soroban_sdk::String {
                 soroban_sdk::String::from_str(env, env!("CARGO_PKG_VERSION"))
             }
@@ -47,6 +48,7 @@ pub fn upgradable(input: &DeriveInput) -> TokenStream2 {
         impl stellar_axelar_std::interfaces::MigratableInterface for #name {
             type Error = ContractError;
 
+            #[stellar_axelar_std::allow_during_migration]
             fn migrate(env: &Env, migration_data: #migration_data_alias) -> Result<(), ContractError> {
                 stellar_axelar_std::interfaces::migrate::<Self>(env, migration_data)
                     .map_err(|err| match err {
@@ -100,6 +102,7 @@ mod tests {
         let formatted_upgradable_impl = prettyplease::unparse(&upgradable_impl_file)
             .replace("pub fn ", "\npub fn ")
             .replace("#[cfg(test)]", "\n#[cfg(test)]");
+
         goldie::assert!(formatted_upgradable_impl);
     }
 }

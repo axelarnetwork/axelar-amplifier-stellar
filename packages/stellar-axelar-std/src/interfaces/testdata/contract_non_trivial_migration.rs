@@ -54,4 +54,5 @@ impl CustomMigratableInterface for ContractNonTrivial {
 #[repr(u32)]
 pub enum ContractError {
     MigrationNotAllowed = 1,
+    MigrationInProgress = 2,
 }

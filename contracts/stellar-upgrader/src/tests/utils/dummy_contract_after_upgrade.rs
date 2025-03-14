@@ -47,6 +47,7 @@ impl DummyContract {
 #[contracterror]
 pub enum ContractError {
     SomeFailure = 1,
+    MigrationInProgress = 2,
 }
 
 mod storage {

@@ -64,6 +64,7 @@ mod test {
     #[repr(u32)]
     pub enum ContractError {
         ContractPaused = 1,
+        MigrationInProgress = 2,
     }
 
     #[contract]

@@ -25,7 +25,6 @@ pub enum AxelarExampleError {
     InvalidAmount = 3,
 }
 
-#[contractimpl]
 impl CustomAxelarExecutable for AxelarExample {
     type Error = AxelarExampleError;
 

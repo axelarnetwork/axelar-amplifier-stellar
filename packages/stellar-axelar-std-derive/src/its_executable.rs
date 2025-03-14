@@ -9,6 +9,7 @@ pub fn its_executable(name: &Ident) -> TokenStream2 {
 
         #[stellar_axelar_std::contractimpl]
         impl stellar_interchain_token_service::executable::InterchainTokenExecutableInterface for #name {
+            #[stellar_axelar_std::allow_during_migration]
             fn interchain_token_service(env: &Env) -> soroban_sdk::Address {
                 <Self as stellar_interchain_token_service::executable::CustomInterchainTokenExecutable>::__interchain_token_service(env)
             }

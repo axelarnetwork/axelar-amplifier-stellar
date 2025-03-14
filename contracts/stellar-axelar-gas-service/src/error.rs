@@ -8,4 +8,5 @@ pub enum ContractError {
     InvalidAddress = 2,
     InvalidAmount = 3,
     InsufficientBalance = 4,
+    MigrationInProgress = 5,
 }
