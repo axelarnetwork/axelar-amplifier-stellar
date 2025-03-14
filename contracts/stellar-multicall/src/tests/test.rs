@@ -7,7 +7,7 @@ use soroban_sdk::{
 };
 use stellar_axelar_std::events::{fmt_last_emitted_event, Event};
 use stellar_axelar_std::interfaces::OwnableInterface;
-use stellar_axelar_std::{assert_contract_err, interfaces, IntoEvent};
+use stellar_axelar_std::{assert_contract_err, interfaces, mock_auth, IntoEvent};
 
 use crate::error::ContractError;
 use crate::types::FunctionCall;
@@ -53,7 +53,6 @@ impl TestTarget {
 
 fn setup<'a>() -> (Env, MulticallClient<'a>, Address, Address) {
     let env = Env::default();
-
     let owner = Address::generate(&env);
     let contract_id = env.register(Multicall, ());
     let client = MulticallClient::new(&env, &contract_id);
@@ -67,17 +66,121 @@ fn setup<'a>() -> (Env, MulticallClient<'a>, Address, Address) {
 fn multicall_succeeds() {
     let (env, client, target, _) = setup();
 
-    let params = vec![
+    let function_calls = vec![
         &env,
         FunctionCall {
-            contract: target,
+            contract: target.clone(),
+            function: symbol_short!("method"),
+            args: vec![&env, IntoVal::<_, Val>::into_val(&42u32, &env)],
+        },
+        FunctionCall {
+            contract: target.clone(),
+            function: symbol_short!("owner"),
+            args: vec![&env],
+        },
+    ];
+
+    client.multicall(&function_calls);
+    goldie::assert!(fmt_last_emitted_event::<ExecutedEvent>(&env));
+}
+
+#[test]
+fn transfer_ownership_auth() {
+    let (env, _, target, current_owner) = setup();
+    let new_owner = Address::generate(&env);
+
+    let test_client = TestTargetClient::new(&env, &target);
+    let transfer_ownership_auth =
+        mock_auth!(current_owner, test_client.transfer_ownership(&new_owner));
+    test_client
+        .mock_auths(&[transfer_ownership_auth])
+        .transfer_ownership(&new_owner);
+}
+
+#[test]
+fn multicall_auth_succeeds() {
+    let (env, client, target, current_owner) = setup();
+    let new_owner = Address::generate(&env);
+
+    let function_calls = vec![
+        &env,
+        FunctionCall {
+            contract: target.clone(),
+            function: symbol_short!("method"),
+            args: vec![&env, IntoVal::<_, Val>::into_val(&42u32, &env)],
+        },
+        FunctionCall {
+            contract: target.clone(),
+            function: Symbol::new(&env, "transfer_ownership"),
+            args: vec![&env, new_owner.to_val()],
+        },
+        FunctionCall {
+            contract: target.clone(),
+            function: symbol_short!("method"),
+            args: vec![&env, IntoVal::<_, Val>::into_val(&0u32, &env)],
+        },
+    ];
+
+    let test_client = TestTargetClient::new(&env, &target);
+
+    let transfer_ownership_auth =
+        mock_auth!(current_owner, test_client.transfer_ownership(&new_owner));
+
+    client
+        .mock_auths(&[transfer_ownership_auth])
+        .multicall(&function_calls);
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Auth, InvalidAction)")]
+fn multicall_auth_no_auth_fails() {
+    let (env, client, target, _) = setup();
+    let new_owner = Address::generate(&env);
+
+    let function_calls = vec![
+        &env,
+        FunctionCall {
+            contract: target.clone(),
+            function: Symbol::new(&env, "transfer_ownership"),
+            args: vec![&env, new_owner.to_val()],
+        },
+        FunctionCall {
+            contract: target.clone(),
             function: symbol_short!("method"),
             args: vec![&env, IntoVal::<_, Val>::into_val(&42u32, &env)],
         },
     ];
 
-    client.multicall(&params);
-    goldie::assert!(fmt_last_emitted_event::<ExecutedEvent>(&env));
+    client.multicall(&function_calls);
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Auth, InvalidAction)")]
+fn multicall_auth_incorrect_auth_fails() {
+    let (env, client, target, _) = setup();
+    let new_owner = Address::generate(&env);
+
+    let function_calls = vec![
+        &env,
+        FunctionCall {
+            contract: target.clone(),
+            function: Symbol::new(&env, "transfer_ownership"),
+            args: vec![&env, new_owner.to_val()],
+        },
+        FunctionCall {
+            contract: target.clone(),
+            function: symbol_short!("method"),
+            args: vec![&env, IntoVal::<_, Val>::into_val(&42u32, &env)],
+        },
+    ];
+
+    let test_client = TestTargetClient::new(&env, &target);
+
+    let transfer_ownership_auth = mock_auth!(new_owner, test_client.transfer_ownership(&new_owner));
+
+    client
+        .mock_auths(&[transfer_ownership_auth])
+        .multicall(&function_calls);
 }
 
 #[test]
@@ -85,7 +188,7 @@ fn multicall_succeeds() {
 fn multicall_fails_when_target_panics() {
     let (env, client, target, _) = setup();
 
-    let params = vec![
+    let function_calls = vec![
         &env,
         FunctionCall {
             contract: target,
@@ -94,14 +197,14 @@ fn multicall_fails_when_target_panics() {
         },
     ];
 
-    client.multicall(&params);
+    client.multicall(&function_calls);
 }
 
 #[test]
 fn multicall_fails_when_target_returns_error() {
     let (env, client, target, _) = setup();
 
-    let params = vec![
+    let function_calls = vec![
         &env,
         FunctionCall {
             contract: target,
@@ -111,7 +214,7 @@ fn multicall_fails_when_target_returns_error() {
     ];
 
     assert_contract_err!(
-        client.try_multicall(&params),
+        client.try_multicall(&function_calls),
         ContractError::FunctionCallFailed
     );
 }
@@ -120,7 +223,7 @@ fn multicall_fails_when_target_returns_error() {
 fn multicall_fails_when_some_calls_returns_error() {
     let (env, client, target, _) = setup();
 
-    let params = vec![
+    let function_calls = vec![
         &env,
         FunctionCall {
             contract: target.clone(),
@@ -139,7 +242,7 @@ fn multicall_fails_when_some_calls_returns_error() {
         },
     ];
     assert_contract_err!(
-        client.try_multicall(&params),
+        client.try_multicall(&function_calls),
         ContractError::FunctionCallFailed
     );
 }
