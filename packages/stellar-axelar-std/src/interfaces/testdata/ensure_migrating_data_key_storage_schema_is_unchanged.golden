@@ -1,0 +1,6 @@
+enum MigratingDataKey {
+
+    #[instance]
+    #[status]
+    Interfaces_Migrating,
+}
