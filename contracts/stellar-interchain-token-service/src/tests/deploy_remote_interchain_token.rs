@@ -18,7 +18,8 @@ fn deploy_remote_interchain_token_succeeds() {
     let (env, client, _, gas_service, _) = setup_env();
 
     let sender = Address::generate(&env);
-    let (gas_token, gas_token_client) = setup_gas_token(&env, &sender);
+    let gas_token = setup_gas_token(&env, &sender);
+    let gas_token_client = gas_token.client(&env);
     let minter: Option<Address> = None;
     let salt = BytesN::<32>::from_array(&env, &[1; 32]);
     let token_metadata = TokenMetadata::new(&env, "name", "symbol", 6);
@@ -146,7 +147,7 @@ fn deploy_remote_interchain_token_succeeds_without_gas_token() {
 #[test]
 fn deploy_remote_interchain_token_fails_when_paused() {
     let (env, client, _, _, _) = setup_env();
-    let (gas_token, _) = setup_gas_token(&env, &Address::generate(&env));
+    let gas_token = setup_gas_token(&env, &Address::generate(&env));
     client.mock_all_auths().pause();
 
     assert_contract_err!(
@@ -165,7 +166,7 @@ fn deploy_remote_interchain_token_fails_untrusted_chain() {
     let (env, client, _, _, _) = setup_env();
 
     let sender = Address::generate(&env);
-    let (gas_token, _) = setup_gas_token(&env, &sender);
+    let gas_token = setup_gas_token(&env, &sender);
     let minter: Option<Address> = None;
     let salt = BytesN::<32>::from_array(&env, &[1; 32]);
     let token_metadata = TokenMetadata::new(&env, "name", "symbol", 6);
@@ -197,7 +198,7 @@ fn deploy_remote_interchain_token_fails_with_invalid_token_id() {
     let (env, client, _, _, _) = setup_env();
 
     let spender = Address::generate(&env);
-    let (gas_token, _) = setup_gas_token(&env, &spender);
+    let gas_token = setup_gas_token(&env, &spender);
     let salt = BytesN::<32>::from_array(&env, &[1; 32]);
 
     let destination_chain = String::from_str(&env, "ethereum");
@@ -218,7 +219,7 @@ fn deploy_remote_token_fails_local_deployment() {
     let (env, client, _, _, _) = setup_env();
 
     let spender = Address::generate(&env);
-    let (gas_token, _) = setup_gas_token(&env, &spender);
+    let gas_token = setup_gas_token(&env, &spender);
     let salt = BytesN::<32>::from_array(&env, &[1; 32]);
     let destination_chain = client.chain_name();
 
