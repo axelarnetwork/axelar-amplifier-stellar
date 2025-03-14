@@ -142,7 +142,6 @@ fn interchain_transfer_canonical_token_send_succeeds() {
 #[test]
 fn interchain_transfer_send_fails_when_paused() {
     let (env, client, _, _, _) = setup_env();
-
     client.mock_all_auths().pause();
 
     assert_contract_err!(
