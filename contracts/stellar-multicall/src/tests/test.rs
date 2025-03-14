@@ -46,7 +46,7 @@ impl TestTarget {
         panic!("This method should fail");
     }
 
-    pub fn failing_with_error(_env: &Env) -> Result<Val, ContractError> {
+    pub const fn failing_with_error(_env: &Env) -> Result<Val, ContractError> {
         Err(ContractError::FunctionCallFailed)
     }
 }
@@ -70,7 +70,7 @@ fn multicall_succeeds() {
     let params = vec![
         &env,
         FunctionCall {
-            contract: target.clone(),
+            contract: target,
             function: symbol_short!("method"),
             args: vec![&env, IntoVal::<_, Val>::into_val(&42u32, &env)],
         },
@@ -133,7 +133,7 @@ fn multicall_fails_when_some_calls_returns_error() {
             args: Vec::<Val>::new(&env),
         },
         FunctionCall {
-            contract: target.clone(),
+            contract: target,
             function: symbol_short!("method"),
             args: vec![&env, IntoVal::<_, Val>::into_val(&0u32, &env)],
         },

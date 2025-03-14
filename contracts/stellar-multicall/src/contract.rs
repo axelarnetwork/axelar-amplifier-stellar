@@ -9,7 +9,7 @@ pub struct Multicall;
 
 #[contractimpl]
 impl Multicall {
-    pub fn __constructor(_env: &Env) {}
+    pub const fn __constructor(_env: &Env) {}
 }
 
 #[contractimpl]
