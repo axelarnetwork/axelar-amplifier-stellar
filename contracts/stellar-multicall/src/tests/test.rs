@@ -74,7 +74,7 @@ fn multicall_succeeds() {
             args: vec![&env, IntoVal::<_, Val>::into_val(&42u32, &env)],
         },
         FunctionCall {
-            contract: target.clone(),
+            contract: target,
             function: symbol_short!("owner"),
             args: vec![&env],
         },
@@ -145,7 +145,7 @@ fn multicall_auth_no_auth_fails() {
             args: vec![&env, new_owner.to_val()],
         },
         FunctionCall {
-            contract: target.clone(),
+            contract: target,
             function: symbol_short!("method"),
             args: vec![&env, IntoVal::<_, Val>::into_val(&42u32, &env)],
         },
