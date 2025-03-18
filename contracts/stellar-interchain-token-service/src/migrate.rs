@@ -49,8 +49,8 @@ impl CustomMigratableInterface for InterchainTokenService {
             } = storage::try_token_id_config(env, token_id.clone())
                 .ok_or(ContractError::InvalidTokenId)?;
 
-            UpgradableClient::new(&env, &token_manager).upgrade(&new_token_manager_wasm_hash);
-            UpgradableClient::new(&env, &interchain_token).upgrade(&new_interchain_token_wasm_hash);
+            UpgradableClient::new(env, &token_manager).upgrade(&new_token_manager_wasm_hash);
+            UpgradableClient::new(env, &interchain_token).upgrade(&new_interchain_token_wasm_hash);
 
             let flow_key = legacy_storage::FlowKey {
                 token_id: token_id.clone(),

@@ -38,7 +38,7 @@ fn migrate_succeeds() {
 
     let token_config = TokenIdConfigValue {
         token_address: interchain_token,
-        token_manager: token_manager.clone(),
+        token_manager,
         token_manager_type: TokenManagerType::LockUnlock,
     };
 
@@ -149,7 +149,7 @@ fn migrate_fails_with_invalid_flow_key() {
 
     let token_config = TokenIdConfigValue {
         token_address: interchain_token,
-        token_manager: token_manager.clone(),
+        token_manager,
         token_manager_type: TokenManagerType::LockUnlock,
     };
 
@@ -206,13 +206,13 @@ fn migrate_succeeds_with_multiple_token_ids() {
 
     let token_config_1 = TokenIdConfigValue {
         token_address: interchain_token_1,
-        token_manager: token_manager_1.clone(),
+        token_manager: token_manager_1,
         token_manager_type: TokenManagerType::LockUnlock,
     };
 
     let token_config_2 = TokenIdConfigValue {
         token_address: interchain_token_2,
-        token_manager: token_manager_2.clone(),
+        token_manager: token_manager_2,
         token_manager_type: TokenManagerType::NativeInterchainToken,
     };
 
