@@ -18,9 +18,9 @@ use stellar_axelar_std::{assert_contract_err, assert_ok, auth_invocation, events
 use stellar_interchain_token_service::testutils::setup_its;
 use stellar_interchain_token_service::InterchainTokenServiceClient;
 
-use crate::contract::ExampleError;
+use crate::contract::AxelarExampleError;
 use crate::event::{ExecutedEvent, TokenReceivedEvent, TokenSentEvent};
-use crate::{Example, ExampleClient};
+use crate::{AxelarExample, AxelarExampleClient};
 
 const SOURCE_CHAIN_NAME: &str = "source";
 const DESTINATION_CHAIN_NAME: &str = "destination";
@@ -30,7 +30,7 @@ struct TestConfig<'a> {
     gateway: AxelarGatewayClient<'a>,
     gas_service: AxelarGasServiceClient<'a>,
     its: InterchainTokenServiceClient<'a>,
-    app: ExampleClient<'a>,
+    app: AxelarExampleClient<'a>,
 }
 
 fn setup_app<'a>(env: &Env, chain_name: String) -> TestConfig<'a> {
@@ -38,10 +38,10 @@ fn setup_app<'a>(env: &Env, chain_name: String) -> TestConfig<'a> {
     let gas_service = setup_gas_service(env);
     let its = setup_its(env, &gateway, &gas_service, Some(chain_name));
     let app = env.register(
-        Example,
+        AxelarExample,
         (&gateway.address, &gas_service.address, &its.address),
     );
-    let app = ExampleClient::new(env, &app);
+    let app = AxelarExampleClient::new(env, &app);
 
     TestConfig {
         signers,
@@ -116,7 +116,6 @@ fn gmp_example() {
     );
 
     let transfer_auth = auth_invocation!(
-        &env,
         user,
         asset_client.transfer(&user, &source_gas_service.address, gas_token.amount)
     );
@@ -124,7 +123,6 @@ fn gmp_example() {
     let source_gas_service_client = source_gas_service;
 
     let pay_gas_auth = auth_invocation!(
-        &env,
         user,
         source_gas_service_client.pay_gas(
             source_app.address.clone(),
@@ -141,7 +139,6 @@ fn gmp_example() {
     let source_app = source_app;
 
     let send_auth = auth_invocation!(
-        &env,
         user,
         source_app.send(
             &user,
@@ -347,7 +344,7 @@ fn its_example() {
     .join("\n\n"));
 
     let destination_token =
-        token::TokenClient::new(&env, &destination_its.token_address(&token_id));
+        token::TokenClient::new(&env, &destination_its.registered_token_address(&token_id));
     assert_eq!(destination_token.balance(&destination_app.address), 0);
 
     let recipient = Address::from_string_bytes(&recipient.to_string_bytes());
@@ -388,6 +385,6 @@ fn execute_fails_with_not_approved() {
 
     assert_contract_err!(
         app.try_execute(&source_chain, &message_id, &source_address, &payload),
-        ExampleError::NotApproved
+        AxelarExampleError::NotApproved
     );
 }

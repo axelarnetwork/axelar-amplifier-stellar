@@ -18,6 +18,7 @@ fn deploy_remote_canonical_token_succeeds() {
     let (env, client, _, gas_service, _) = setup_env();
     let spender = Address::generate(&env);
     let gas_token = setup_gas_token(&env, &spender);
+    let gas_token_client = gas_token.client(&env);
     let asset = &env.register_stellar_asset_contract_v2(Address::generate(&env));
     let initial_amount = 1;
 
@@ -28,7 +29,7 @@ fn deploy_remote_canonical_token_succeeds() {
     let token_address = asset.address();
     let expected_id = client.canonical_interchain_token_id(&token_address);
     assert_eq!(client.register_canonical_token(&token_address), expected_id);
-    assert_eq!(client.token_address(&expected_id), token_address);
+    assert_eq!(client.registered_token_address(&expected_id), token_address);
     assert_eq!(
         client.token_manager_type(&expected_id),
         TokenManagerType::LockUnlock
@@ -69,9 +70,8 @@ fn deploy_remote_canonical_token_succeeds() {
     >(&env, INTERCHAIN_TOKEN_DEPLOYED_EVENT_IDX));
 
     let transfer_auth = auth_invocation!(
-        &env,
         spender,
-        gas_token.transfer(
+        gas_token_client.transfer(
             spender.clone(),
             gas_service.address.clone(),
             gas_token.amount
@@ -79,7 +79,6 @@ fn deploy_remote_canonical_token_succeeds() {
     );
 
     let gas_service_auth = auth_invocation!(
-        &env,
         spender,
         gas_service.pay_gas(
             client.address.clone(),
@@ -94,7 +93,6 @@ fn deploy_remote_canonical_token_succeeds() {
     );
 
     let deploy_remote_canonical_token_auth = auth_invocation!(
-        &env,
         spender,
         client.deploy_remote_canonical_token(
             token_address,
@@ -137,7 +135,6 @@ fn deploy_remote_canonical_token_succeeds_without_gas_token() {
     ));
 
     let deploy_remote_canonical_token_auth = auth_invocation!(
-        &env,
         spender,
         client.deploy_remote_canonical_token(token_address, destination_chain, spender, gas_token)
     );
@@ -187,7 +184,7 @@ fn deploy_remote_canonical_token_succeeds_without_name_truncation() {
         &initial_supply,
         &minter,
     );
-    let token_address = client.token_address(&token_id);
+    let token_address = client.registered_token_address(&token_id);
     let destination_chain = String::from_str(&env, "ethereum");
 
     client.register_canonical_token(&token_address);

@@ -2,64 +2,60 @@ use soroban_sdk::{
     contract, contracterror, contractimpl, token, Address, Bytes, BytesN, Env, String,
 };
 use stellar_axelar_gas_service::AxelarGasServiceClient;
-use stellar_axelar_gateway::executable::{AxelarExecutableInterface, NotApprovedError};
-use stellar_axelar_gateway::{impl_not_approved_error, AxelarGatewayMessagingClient};
+use stellar_axelar_gateway::executable::{AxelarExecutableInterface, CustomAxelarExecutable};
+use stellar_axelar_gateway::AxelarGatewayMessagingClient;
 use stellar_axelar_std::events::Event;
 use stellar_axelar_std::types::Token;
-use stellar_axelar_std::{ensure, InterchainTokenExecutable};
+use stellar_axelar_std::{ensure, AxelarExecutable, InterchainTokenExecutable};
 use stellar_interchain_token_service::executable::CustomInterchainTokenExecutable;
 use stellar_interchain_token_service::InterchainTokenServiceClient;
 
 use crate::event::{ExecutedEvent, TokenReceivedEvent, TokenSentEvent};
-use crate::interface::ExampleInterface;
+use crate::interface::AxelarExampleInterface;
 use crate::storage;
 
 #[contract]
-#[derive(InterchainTokenExecutable)]
-pub struct Example;
+#[derive(InterchainTokenExecutable, AxelarExecutable)]
+pub struct AxelarExample;
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 #[repr(u32)]
-pub enum ExampleError {
+pub enum AxelarExampleError {
     NotApproved = 1,
     InvalidItsAddress = 2,
     InvalidAmount = 3,
 }
 
-impl_not_approved_error!(ExampleError);
-
 #[contractimpl]
-impl AxelarExecutableInterface for Example {
-    type Error = ExampleError;
+impl CustomAxelarExecutable for AxelarExample {
+    type Error = AxelarExampleError;
 
-    fn gateway(env: &Env) -> Address {
+    fn __gateway(env: &Env) -> Address {
         storage::gateway(env)
     }
 
-    fn execute(
-        env: Env,
+    fn __execute(
+        env: &Env,
         source_chain: String,
         message_id: String,
         source_address: String,
         payload: Bytes,
-    ) -> Result<(), ExampleError> {
-        Self::validate_message(&env, &source_chain, &message_id, &source_address, &payload)?;
-
+    ) -> Result<(), Self::Error> {
         ExecutedEvent {
             source_chain,
             message_id,
             source_address,
             payload,
         }
-        .emit(&env);
+        .emit(env);
 
         Ok(())
     }
 }
 
-impl CustomInterchainTokenExecutable for Example {
-    type Error = ExampleError;
+impl CustomInterchainTokenExecutable for AxelarExample {
+    type Error = AxelarExampleError;
 
     fn __interchain_token_service(env: &Env) -> Address {
         storage::interchain_token_service(env)
@@ -75,7 +71,7 @@ impl CustomInterchainTokenExecutable for Example {
         token_address: Address,
         amount: i128,
     ) -> Result<(), Self::Error> {
-        ensure!(amount >= 0, ExampleError::InvalidAmount);
+        ensure!(amount >= 0, AxelarExampleError::InvalidAmount);
 
         let destination_address = Address::from_string_bytes(&payload);
 
@@ -102,7 +98,7 @@ impl CustomInterchainTokenExecutable for Example {
 }
 
 #[contractimpl]
-impl Example {
+impl AxelarExample {
     pub fn __constructor(
         env: &Env,
         gateway: Address,
@@ -116,7 +112,7 @@ impl Example {
 }
 
 #[contractimpl]
-impl ExampleInterface for Example {
+impl AxelarExampleInterface for AxelarExample {
     fn gas_service(env: &Env) -> Address {
         storage::gas_service(env)
     }
@@ -163,7 +159,7 @@ impl ExampleInterface for Example {
         amount: i128,
         recipient: Option<Bytes>,
         gas_token: Option<Token>,
-    ) -> Result<(), ExampleError> {
+    ) -> Result<(), AxelarExampleError> {
         caller.require_auth();
 
         let client = InterchainTokenServiceClient::new(env, &Self::interchain_token_service(env));
