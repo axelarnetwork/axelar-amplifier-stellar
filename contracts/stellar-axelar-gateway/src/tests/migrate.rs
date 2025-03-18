@@ -75,7 +75,11 @@ fn migrate_succeeds_with_valid_message_approvals() {
             source_chain: source_chain_2.clone(),
             message_id: message_id_2.clone(),
         };
-        legacy_storage::set_message_approval(&env, key_2, &legacy_storage::MessageApprovalValue::Executed);
+        legacy_storage::set_message_approval(
+            &env,
+            key_2,
+            &legacy_storage::MessageApprovalValue::Executed,
+        );
     });
 
     assert_auth!(owner, client.upgrade(&new_wasm_hash));
