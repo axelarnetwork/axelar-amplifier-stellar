@@ -38,4 +38,4 @@ Stellar ITS provides a module for ABI encoding/decoding GMP data for transmittin
 The following features are not supported by Stellar ITS at this time:
 
 - Linking custom tokens
-- `MintBurnFrom`, `LockUnlockFee`, and `MintBurn` Token Manager types
+- Only `LockUnlock` and `NativeInterchainToken` Token Manager types are supported
