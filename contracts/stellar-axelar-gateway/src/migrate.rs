@@ -70,7 +70,7 @@ impl CustomMigratableInterface for AxelarGateway {
 
             ensure!(
                 legacy_storage::try_message_approval(_env, message_approval_key.clone()).is_some(),
-                ContractError::MessageApprovalNotFound
+                ContractError::InvalidMessageApproval
             );
 
             let message_approval =
