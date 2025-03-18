@@ -200,3 +200,37 @@ fn migrate_succeeds_with_executed_message_approval() {
         storage::MessageApprovalValue::Executed
     );
 }
+
+#[test]
+fn migrate_fails_with_not_approved_message() {
+    let TestConfig { env, client, .. } = setup_env(1, 5);
+
+    let owner = client.owner();
+    let new_wasm_hash = env.deployer().upload_contract_wasm(NEW_WASM);
+
+    let source_chain = String::from_str(&env, "ethereum");
+    let message_id = String::from_str(&env, "not_approved_message");
+
+    env.as_contract(&client.address, || {
+        let key = legacy_storage::MessageApprovalKey {
+            source_chain: source_chain.clone(),
+            message_id: message_id.clone(),
+        };
+        legacy_storage::set_message_approval(
+            &env,
+            key,
+            &legacy_storage::MessageApprovalValue::NotApproved,
+        );
+    });
+
+    assert_auth!(owner, client.upgrade(&new_wasm_hash));
+
+    let migration_data = vec![&env, (source_chain.clone(), message_id.clone())];
+
+    assert_err!(
+        env.as_contract(&client.address, || {
+            <AxelarGateway as CustomMigratableInterface>::__migrate(&env, migration_data)
+        }),
+        ContractError::InvalidMessageApproval
+    );
+}
