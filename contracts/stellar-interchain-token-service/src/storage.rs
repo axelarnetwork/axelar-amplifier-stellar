@@ -46,11 +46,11 @@ enum DataKey {
 
     #[temporary]
     #[value(i128)]
-    FlowOut { flow_key: FlowKey },
+    FlowOut { token_id: BytesN<32>, epoch: u64 },
 
     #[temporary]
     #[value(i128)]
-    FlowIn { flow_key: FlowKey },
+    FlowIn { token_id: BytesN<32>, epoch: u64 },
 }
 
 #[contracttype]
@@ -59,11 +59,4 @@ pub struct TokenIdConfigValue {
     pub token_address: Address,
     pub token_manager: Address,
     pub token_manager_type: TokenManagerType,
-}
-
-#[contracttype]
-#[derive(Clone, Debug)]
-pub struct FlowKey {
-    pub token_id: BytesN<32>,
-    pub epoch: u64,
 }

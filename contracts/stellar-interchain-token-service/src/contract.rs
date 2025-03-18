@@ -33,6 +33,7 @@ const EXECUTE_WITH_INTERCHAIN_TOKEN: &str = "execute_with_interchain_token";
 
 #[contract]
 #[derive(Operatable, Ownable, Pausable, Upgradable, AxelarExecutable)]
+#[migratable]
 pub struct InterchainTokenService;
 
 #[contractimpl]
