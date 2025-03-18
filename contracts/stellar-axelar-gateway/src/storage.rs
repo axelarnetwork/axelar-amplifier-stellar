@@ -4,7 +4,6 @@ use stellar_axelar_std::contractstorage;
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum MessageApprovalValue {
-    NotApproved,
     Approved(BytesN<32>),
     Executed,
 }

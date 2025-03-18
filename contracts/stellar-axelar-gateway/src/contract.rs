@@ -78,7 +78,7 @@ impl AxelarGatewayMessagingInterface for AxelarGateway {
             Self::message_approval(&env, source_chain.clone(), message_id.clone());
 
         message_approval
-            == Self::message_approval_hash(
+            == Some(Self::message_approval_hash(
                 &env,
                 Message {
                     source_chain,
@@ -87,13 +87,13 @@ impl AxelarGatewayMessagingInterface for AxelarGateway {
                     contract_address,
                     payload_hash,
                 },
-            )
+            ))
     }
 
     fn is_message_executed(env: Env, source_chain: String, message_id: String) -> bool {
         let message_approval = Self::message_approval(&env, source_chain, message_id);
 
-        message_approval == MessageApprovalValue::Executed
+        message_approval == Some(MessageApprovalValue::Executed)
     }
 
     fn validate_message(
@@ -107,8 +107,7 @@ impl AxelarGatewayMessagingInterface for AxelarGateway {
         caller.require_auth();
 
         let message_approval =
-            storage::try_message_approval(&env, source_chain.clone(), message_id.clone())
-                .unwrap_or(MessageApprovalValue::NotApproved);
+            storage::try_message_approval(&env, source_chain.clone(), message_id.clone());
         let message = Message {
             source_chain: source_chain.clone(),
             message_id: message_id.clone(),
@@ -117,7 +116,7 @@ impl AxelarGatewayMessagingInterface for AxelarGateway {
             payload_hash,
         };
 
-        if message_approval == Self::message_approval_hash(&env, message.clone()) {
+        if message_approval == Some(Self::message_approval_hash(&env, message.clone())) {
             storage::set_message_approval(
                 &env,
                 source_chain,
@@ -169,9 +168,8 @@ impl AxelarGatewayInterface for AxelarGateway {
                 env,
                 message.source_chain.clone(),
                 message.message_id.clone(),
-            )
-            .unwrap_or(MessageApprovalValue::NotApproved);
-            if message_approval != MessageApprovalValue::NotApproved {
+            );
+            if message_approval.is_some() {
                 continue;
             }
 
@@ -239,9 +237,8 @@ impl AxelarGateway {
         env: &Env,
         source_chain: String,
         message_id: String,
-    ) -> MessageApprovalValue {
+    ) -> Option<MessageApprovalValue> {
         storage::try_message_approval(env, source_chain, message_id)
-            .unwrap_or(MessageApprovalValue::NotApproved)
     }
 
     fn message_approval_hash(env: &Env, message: Message) -> MessageApprovalValue {

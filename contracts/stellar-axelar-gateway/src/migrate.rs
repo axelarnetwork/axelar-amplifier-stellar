@@ -6,16 +6,22 @@ use crate::error::ContractError;
 use crate::storage;
 
 pub mod legacy_storage {
-    use soroban_sdk::{contracttype, String};
+    use soroban_sdk::{contracttype, BytesN, String};
     use stellar_axelar_std::contractstorage;
-
-    use crate::storage::MessageApprovalValue;
 
     #[contracttype]
     #[derive(Clone, Debug)]
     pub struct MessageApprovalKey {
         pub source_chain: String,
         pub message_id: String,
+    }
+
+    #[contracttype]
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub enum MessageApprovalValue {
+        NotApproved,
+        Approved(BytesN<32>),
+        Executed,
     }
 
     #[contractstorage]
@@ -39,10 +45,26 @@ impl CustomMigratableInterface for AxelarGateway {
                 message_id: message_id.clone(),
             };
 
-            let message_approval = legacy_storage::try_message_approval(env, message_approval_key)
-                .ok_or(ContractError::InvalidMessageApproval)?;
+            let legacy_message_approval =
+                legacy_storage::try_message_approval(env, message_approval_key)
+                    .ok_or(ContractError::InvalidMessageApproval)?;
 
-            storage::set_message_approval(env, source_chain, message_id, &message_approval);
+            let message_approval = match legacy_message_approval {
+                legacy_storage::MessageApprovalValue::Approved(hash) => {
+                    Some(storage::MessageApprovalValue::Approved(hash))
+                }
+                legacy_storage::MessageApprovalValue::Executed => {
+                    Some(storage::MessageApprovalValue::Executed)
+                }
+                legacy_storage::MessageApprovalValue::NotApproved => None,
+            };
+
+            storage::set_message_approval(
+                env,
+                source_chain,
+                message_id,
+                &message_approval.ok_or(ContractError::InvalidMessageApproval)?,
+            );
         }
 
         Ok(())

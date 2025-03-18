@@ -5,10 +5,8 @@ use stellar_axelar_std::{assert_auth, assert_err};
 use crate::contract::AxelarGateway;
 use crate::error::ContractError;
 use crate::migrate::legacy_storage;
-use crate::storage::{self, MessageApprovalValue};
-use crate::tests::testutils::{
-    setup_env, TestConfig,
-};
+use crate::storage;
+use crate::tests::testutils::{setup_env, TestConfig};
 
 const NEW_WASM: &[u8] = include_bytes!("testdata/stellar_axelar_gateway.optimized.wasm");
 
@@ -30,7 +28,11 @@ fn migrate_succeeds() {
             message_id: message_id.clone(),
         };
 
-        legacy_storage::set_message_approval(&env, key, &MessageApprovalValue::Approved(hash.clone()));
+        legacy_storage::set_message_approval(
+            &env,
+            key,
+            &legacy_storage::MessageApprovalValue::Approved(hash.clone()),
+        );
     });
 
     assert_auth!(owner, client.upgrade(&new_wasm_hash));
@@ -63,13 +65,17 @@ fn migrate_succeeds_with_valid_message_approvals() {
             source_chain: source_chain_1.clone(),
             message_id: message_id_1.clone(),
         };
-        legacy_storage::set_message_approval(&env, key_1, &MessageApprovalValue::Approved(hash.clone()));
+        legacy_storage::set_message_approval(
+            &env,
+            key_1,
+            &legacy_storage::MessageApprovalValue::Approved(hash.clone()),
+        );
 
         let key_2 = legacy_storage::MessageApprovalKey {
             source_chain: source_chain_2.clone(),
             message_id: message_id_2.clone(),
         };
-        legacy_storage::set_message_approval(&env, key_2, &MessageApprovalValue::Executed);
+        legacy_storage::set_message_approval(&env, key_2, &legacy_storage::MessageApprovalValue::Executed);
     });
 
     assert_auth!(owner, client.upgrade(&new_wasm_hash));
@@ -86,13 +92,13 @@ fn migrate_succeeds_with_valid_message_approvals() {
         env.as_contract(&client.address, || {
             storage::message_approval(&env, source_chain_1, message_id_1)
         }),
-        MessageApprovalValue::Approved(hash)
+        storage::MessageApprovalValue::Approved(hash)
     );
     assert_eq!(
         env.as_contract(&client.address, || {
             storage::message_approval(&env, source_chain_2, message_id_2)
         }),
-        MessageApprovalValue::Executed
+        storage::MessageApprovalValue::Executed
     );
 }
 
@@ -117,7 +123,11 @@ fn migrate_fails_when_invalid_message_approval() {
             message_id: message_id_1.clone(),
         };
 
-        legacy_storage::set_message_approval(&env, key, &MessageApprovalValue::Approved(hash.clone()));
+        legacy_storage::set_message_approval(
+            &env,
+            key,
+            &legacy_storage::MessageApprovalValue::Approved(hash.clone()),
+        );
     });
 
     assert_auth!(owner, client.upgrade(&new_wasm_hash));
