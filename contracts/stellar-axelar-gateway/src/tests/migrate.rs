@@ -164,3 +164,39 @@ fn migrate_succeeds_with_empty_migration_data() {
 
     assert_auth!(owner, client.migrate(&migration_data));
 }
+
+#[test]
+fn migrate_succeeds_with_executed_message_approval() {
+    let TestConfig { env, client, .. } = setup_env(1, 5);
+
+    let owner = client.owner();
+    let new_wasm_hash = env.deployer().upload_contract_wasm(NEW_WASM);
+
+    let source_chain = String::from_str(&env, "ethereum");
+    let message_id = String::from_str(&env, "executed_message");
+
+    env.as_contract(&client.address, || {
+        let key = legacy_storage::MessageApprovalKey {
+            source_chain: source_chain.clone(),
+            message_id: message_id.clone(),
+        };
+        legacy_storage::set_message_approval(
+            &env,
+            key,
+            &legacy_storage::MessageApprovalValue::Executed,
+        );
+    });
+
+    assert_auth!(owner, client.upgrade(&new_wasm_hash));
+
+    let migration_data = vec![&env, (source_chain.clone(), message_id.clone())];
+
+    assert_auth!(owner, client.migrate(&migration_data));
+
+    assert_eq!(
+        env.as_contract(&client.address, || {
+            storage::message_approval(&env, source_chain, message_id)
+        }),
+        storage::MessageApprovalValue::Executed
+    );
+}
