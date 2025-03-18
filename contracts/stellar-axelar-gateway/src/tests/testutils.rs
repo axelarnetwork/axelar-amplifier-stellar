@@ -1,7 +1,7 @@
 use soroban_sdk::{Address, Env, String};
 
 use crate::migrate::legacy_storage;
-use crate::storage::MessageApprovalValue;
+use crate::storage::{self, MessageApprovalValue};
 use crate::testutils::{setup_gateway, TestSignerSet};
 use crate::AxelarGatewayClient;
 
@@ -43,6 +43,6 @@ pub fn get_message_approval(
     message_id: &String,
 ) -> MessageApprovalValue {
     env.as_contract(contract_id, || {
-        crate::storage::message_approval(env, source_chain.clone(), message_id.clone())
+        storage::message_approval(env, source_chain.clone(), message_id.clone())
     })
 }

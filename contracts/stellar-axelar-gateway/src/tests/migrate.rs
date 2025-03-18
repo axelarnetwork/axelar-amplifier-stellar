@@ -62,7 +62,7 @@ fn migrate_succeeds_with_valid_message_approvals() {
 }
 
 #[test]
-fn migrate_fails_when_message_approval_not_found() {
+fn migrate_fails_when_invalid_message_approval() {
     let TestConfig { env, client, .. } = setup_env(1, 5);
 
     let owner = client.owner();
@@ -97,7 +97,7 @@ fn migrate_fails_when_message_approval_not_found() {
         env.as_contract(&client.address, || {
             <AxelarGateway as CustomMigratableInterface>::__migrate(&env, migration_data)
         }),
-        ContractError::MessageApprovalNotFound
+        ContractError::InvalidMessageApproval
     );
 }
 
