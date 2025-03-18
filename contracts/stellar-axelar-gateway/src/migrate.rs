@@ -6,7 +6,7 @@ use crate::error::ContractError;
 use crate::storage;
 
 pub mod legacy_storage {
-    use soroban_sdk::{contracttype, BytesN, String};
+    use soroban_sdk::{contracttype, String};
     use stellar_axelar_std::contractstorage;
 
     use crate::storage::MessageApprovalValue;
@@ -25,34 +25,6 @@ pub mod legacy_storage {
         MessageApproval {
             message_approval_key: MessageApprovalKey,
         },
-
-        #[instance]
-        #[value(u64)]
-        PreviousSignerRetention,
-
-        #[instance]
-        #[value(BytesN<32>)]
-        DomainSeparator,
-
-        #[instance]
-        #[value(u64)]
-        MinimumRotationDelay,
-
-        #[instance]
-        #[value(u64)]
-        Epoch,
-
-        #[instance]
-        #[value(u64)]
-        LastRotationTimestamp,
-
-        #[persistent]
-        #[value(BytesN<32>)]
-        SignersHashByEpoch { epoch: u64 },
-
-        #[persistent]
-        #[value(u64)]
-        EpochBySignersHash { signers_hash: BytesN<32> },
     }
 }
 
@@ -63,20 +35,14 @@ impl CustomMigratableInterface for AxelarGateway {
     fn __migrate(env: &Env, migration_data: Self::MigrationData) -> Result<(), Self::Error> {
         for (source_chain, message_id) in migration_data {
             let message_approval_key = legacy_storage::MessageApprovalKey {
-                source_chain,
-                message_id,
+                source_chain: source_chain.clone(),
+                message_id: message_id.clone(),
             };
 
-            let message_approval =
-                legacy_storage::try_message_approval(env, message_approval_key.clone())
-                    .ok_or(ContractError::InvalidMessageApproval)?;
+            let message_approval = legacy_storage::try_message_approval(env, message_approval_key)
+                .ok_or(ContractError::InvalidMessageApproval)?;
 
-            storage::set_message_approval(
-                env,
-                message_approval_key.source_chain.clone(),
-                message_approval_key.message_id.clone(),
-                &message_approval,
-            );
+            storage::set_message_approval(env, source_chain, message_id, &message_approval);
         }
 
         Ok(())
