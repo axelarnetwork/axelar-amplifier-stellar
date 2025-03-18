@@ -11,7 +11,7 @@ pub mod legacy_storage {
     use crate::storage::TokenIdConfigValue;
 
     #[contractstorage]
-    enum DataKey {
+    enum LegacyDataKey {
         #[instance]
         #[value(Address)]
         Gateway,
