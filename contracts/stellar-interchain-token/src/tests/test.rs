@@ -139,7 +139,7 @@ fn set_admin_fails_when_not_owner() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #6)")] // NegativeAmount
+#[should_panic(expected = "HostError: Error(Contract, #3)")] // InvalidAmount
 fn transfer_fails_with_negative_amount() {
     let env = Env::default();
 
@@ -153,7 +153,7 @@ fn transfer_fails_with_negative_amount() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #9)")] // InsufficientBalance
+#[should_panic(expected = "HostError: Error(Contract, #6)")] // InsufficientBalance
 fn transfer_fails_with_insufficient_balance() {
     let env = Env::default();
 
@@ -185,7 +185,7 @@ fn transfer() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #6)")] // NegativeAmount
+#[should_panic(expected = "HostError: Error(Contract, #3)")] // InvalidAmount
 fn transfer_from_fails_with_negative_amount() {
     let env = Env::default();
 
@@ -213,7 +213,7 @@ fn transfer_from_fails_with_negative_amount() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #8)")] // InsufficientAllowance
+#[should_panic(expected = "HostError: Error(Contract, #5)")] // InsufficientAllowance
 fn transfer_from_fails_without_approval() {
     let env = Env::default();
 
@@ -232,7 +232,7 @@ fn transfer_from_fails_without_approval() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #8)")] // InsufficientAllowance
+#[should_panic(expected = "HostError: Error(Contract, #5)")] // InsufficientAllowance
 fn transfer_from_fails_with_insufficient_allowance() {
     let env = Env::default();
 
@@ -259,7 +259,7 @@ fn transfer_from_fails_with_insufficient_allowance() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #8)")] // InsufficientAllowance
+#[should_panic(expected = "HostError: Error(Contract, #5)")] // InsufficientAllowance
 fn transfer_from_fails_with_expired_allowance() {
     let env = Env::default();
 
@@ -444,7 +444,7 @@ fn burn_succeeds() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #6)")] // NegativeAmount
+#[should_panic(expected = "HostError: Error(Contract, #3)")] // InvalidAmount
 fn burn_fails_with_negative_amount() {
     let env = Env::default();
 
@@ -462,7 +462,7 @@ fn burn_fails_with_negative_amount() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #9)")] // InsufficientBalance
+#[should_panic(expected = "HostError: Error(Contract, #6)")] // InsufficientBalance
 fn burn_fails_with_insufficient_balance() {
     let env = Env::default();
 
@@ -506,7 +506,7 @@ fn burn_from_succeeds() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #6)")] // NegativeAmount
+#[should_panic(expected = "HostError: Error(Contract, #3)")] // InvalidAmount
 fn burn_from_fails_with_negative_amount() {
     let env = Env::default();
 
@@ -522,7 +522,7 @@ fn burn_from_fails_with_negative_amount() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #8)")] // InsufficientAllowance
+#[should_panic(expected = "HostError: Error(Contract, #5)")] // InsufficientAllowance
 fn burn_from_fails_without_approval() {
     let env = Env::default();
 
@@ -601,7 +601,7 @@ fn allowance_returns_zero_when_expired() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #7)")] // InvalidExpirationLedger
+#[should_panic(expected = "HostError: Error(Contract, #4)")] // InvalidExpirationLedger
 fn approve_fails_with_expired_ledger() {
     let env = Env::default();
 
@@ -624,7 +624,7 @@ fn approve_fails_with_expired_ledger() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #7)")] // InvalidExpirationLedger
+#[should_panic(expected = "HostError: Error(Contract, #4)")] // InvalidExpirationLedger
 fn allowance_preserves_expiration_when_expired() {
     let env = Env::default();
     let user1 = Address::generate(&env);
