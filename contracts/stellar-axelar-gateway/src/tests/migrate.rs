@@ -225,7 +225,7 @@ fn migrate_fails_with_not_approved_message() {
 
     assert_auth!(owner, client.upgrade(&new_wasm_hash));
 
-    let migration_data = vec![&env, (source_chain.clone(), message_id.clone())];
+    let migration_data = vec![&env, (source_chain, message_id)];
 
     assert_err!(
         env.as_contract(&client.address, || {
