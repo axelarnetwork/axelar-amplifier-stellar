@@ -75,7 +75,7 @@ impl AxelarGatewayMessagingInterface for AxelarGateway {
         payload_hash: BytesN<32>,
     ) -> bool {
         let message_approval =
-            Self::message_approval(&env, source_chain.clone(), message_id.clone());
+            storage::try_message_approval(&env, source_chain.clone(), message_id.clone());
 
         message_approval
             == Some(Self::message_approval_hash(
@@ -91,7 +91,7 @@ impl AxelarGatewayMessagingInterface for AxelarGateway {
     }
 
     fn is_message_executed(env: Env, source_chain: String, message_id: String) -> bool {
-        let message_approval = Self::message_approval(&env, source_chain, message_id);
+        let message_approval = storage::try_message_approval(&env, source_chain, message_id);
 
         message_approval == Some(MessageApprovalValue::Executed)
     }
@@ -164,12 +164,13 @@ impl AxelarGatewayInterface for AxelarGateway {
 
         for message in messages.into_iter() {
             // Prevent replay if message is already approved/executed
-            let message_approval = storage::try_message_approval(
+            if storage::try_message_approval(
                 env,
                 message.source_chain.clone(),
                 message.message_id.clone(),
-            );
-            if message_approval.is_some() {
+            )
+            .is_some()
+            {
                 continue;
             }
 
@@ -232,15 +233,6 @@ impl AxelarGatewayInterface for AxelarGateway {
 }
 
 impl AxelarGateway {
-    /// Get the message approval value by `source_chain` and `message_id`, defaulting to `MessageNotApproved`
-    fn message_approval(
-        env: &Env,
-        source_chain: String,
-        message_id: String,
-    ) -> Option<MessageApprovalValue> {
-        storage::try_message_approval(env, source_chain, message_id)
-    }
-
     fn message_approval_hash(env: &Env, message: Message) -> MessageApprovalValue {
         MessageApprovalValue::Approved(env.crypto().keccak256(&message.to_xdr(env)).into())
     }
