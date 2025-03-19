@@ -1,4 +1,4 @@
-use soroban_sdk::{contractclient, Env, Val, Vec, Address};
+use soroban_sdk::{contractclient, Env, Val, Vec};
 
 use crate::error::ContractError;
 use crate::types::FunctionCall;
@@ -12,7 +12,7 @@ pub trait MulticallInterface {
     ///
     /// # Returns
     /// - `Ok(Vec<Val>)`: Returns a vector with the return data of each function call
-    /// 
+    ///
     /// # Errors:
     /// - Propagates any error that occurs during the execution of the contract calls.
     fn multicall(env: &Env, function_calls: Vec<FunctionCall>) -> Result<Vec<Val>, ContractError>;

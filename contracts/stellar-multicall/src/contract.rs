@@ -1,4 +1,4 @@
-use soroban_sdk::{contract, contractimpl, Env, Val, Vec, Address};
+use soroban_sdk::{contract, contractimpl, Env, Val, Vec};
 
 use crate::error::ContractError;
 use crate::interface::MulticallInterface;

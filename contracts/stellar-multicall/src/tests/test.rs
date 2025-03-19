@@ -1,25 +1,23 @@
 #![cfg(test)]
 extern crate std;
 
-use soroban_sdk::testutils::Address as _;
+use soroban_sdk::testutils::{Address as _, BytesN as _, Ledger};
 use soroban_sdk::{
-    contract, contractimpl, bytes, symbol_short, vec, Address, String, Bytes, Env, IntoVal, Symbol, Val, Vec, BytesN,
+    bytes, contract, contractimpl, vec, Address, Bytes, BytesN, Env, IntoVal, String, Val, Vec,
 };
+use soroban_token_sdk::metadata::TokenMetadata;
+use stellar_axelar_gas_service::event::GasPaidEvent;
+use stellar_axelar_gas_service::testutils::setup_gas_token;
+use stellar_axelar_gas_service::{AxelarGasService, AxelarGasServiceClient};
+use stellar_axelar_operators::{AxelarOperators, AxelarOperatorsClient};
 use stellar_axelar_std::events::{fmt_last_emitted_event, Event};
 use stellar_axelar_std::interfaces::OwnableInterface;
-use stellar_axelar_std::{assert_contract_err, interfaces, mock_auth, IntoEvent};
-use stellar_axelar_std::Ownable;
-use stellar_axelar_gas_service::testutils::{setup_gas_service, setup_gas_token};
+use stellar_axelar_std::{assert_contract_err, interfaces, mock_auth, IntoEvent, Ownable};
+use stellar_interchain_token::{InterchainToken, InterchainTokenClient};
 
 use crate::error::ContractError;
 use crate::types::FunctionCall;
 use crate::{Multicall, MulticallClient};
-use stellar_axelar_gas_service::{AxelarGasService, AxelarGasServiceClient};
-use stellar_axelar_operators::{AxelarOperators, AxelarOperatorsClient};
-use stellar_interchain_token::{InterchainToken, InterchainTokenClient};
-use soroban_token_sdk::metadata::TokenMetadata;
-use soroban_sdk::testutils::{Address as _, BytesN as _, Ledger};
-use stellar_axelar_gas_service::event::GasPaidEvent;
 
 #[macro_export]
 macro_rules! function_call_args {
@@ -69,7 +67,6 @@ pub struct TestConfig<'a> {
     pub owner: Address,
 }
 
-
 fn setup<'a>() -> TestConfig<'a> {
     let env = Env::default();
     let owner = Address::generate(&env);
@@ -78,7 +75,13 @@ fn setup<'a>() -> TestConfig<'a> {
 
     let target_id = env.register(TestTarget, (owner.clone(),));
 
-    TestConfig{env, client, contract_id, target_id, owner}
+    TestConfig {
+        env,
+        client,
+        contract_id,
+        target_id,
+        owner,
+    }
 }
 
 fn setup_token_metadata(env: &Env, name: &str, symbol: &str, decimal: u32) -> TokenMetadata {
@@ -106,7 +109,13 @@ fn setup_token<'a>(env: &Env) -> (InterchainTokenClient<'a>, Address, Address) {
 
 #[test]
 fn multicall_succeeds() {
-    let TestConfig { env, client, contract_id, target_id, owner } = setup();
+    let TestConfig {
+        env,
+        client,
+        contract_id,
+        target_id,
+        owner,
+    } = setup();
 
     let operator_id = env.register(AxelarOperators, (&owner,));
     let operator_client = AxelarOperatorsClient::new(&env, &operator_id);
@@ -117,41 +126,72 @@ fn multicall_succeeds() {
 
     let function_calls = vec![
         &env,
-        function_call_args!(env, token_contract_id, token_client.owner(), mint(user.to_val(), amount)),
-        function_call_args!(env, token_contract_id, token_client.owner(), balance(user.to_val())),
+        function_call_args!(
+            env,
+            token_contract_id,
+            token_client.owner(),
+            mint(user.to_val(), amount)
+        ),
+        function_call_args!(
+            env,
+            token_contract_id,
+            token_client.owner(),
+            balance(user.to_val())
+        ),
         function_call_args!(env, operator_id, owner, is_operator(owner.to_val())),
         function_call_args!(env, operator_id, owner, add_operator(owner.to_val())),
-        function_call_args!(env, target_id, owner, method(IntoVal::<_, Val>::into_val(&42u32, &env))),
+        function_call_args!(
+            env,
+            target_id,
+            owner,
+            method(IntoVal::<_, Val>::into_val(&42u32, &env))
+        ),
         function_call_args!(env, target_id, owner, owner()),
     ];
 
     let token_auth = mock_auth!(token_client.owner(), token_client.mint(user, &amount));
-    let multicall_token_auth = mock_auth!(token_client.owner(), client.multicall(&function_calls), &[(token_auth.invoke).clone()]);
+    let multicall_token_auth = mock_auth!(
+        token_client.owner(),
+        client.multicall(&function_calls),
+        &[(token_auth.invoke).clone()]
+    );
 
     let operators_auth = mock_auth!(owner, operator_client.add_operator(&owner));
-    let multicall_operators_auth = mock_auth!(owner, client.multicall(&function_calls), &[(operators_auth.invoke).clone()]);
+    let multicall_operators_auth = mock_auth!(
+        owner,
+        client.multicall(&function_calls),
+        &[(operators_auth.invoke).clone()]
+    );
 
     client
-        .mock_auths(&[multicall_token_auth.clone(),
-         multicall_token_auth,
-          multicall_operators_auth.clone(),
-           multicall_operators_auth.clone(),
+        .mock_auths(&[
+            multicall_token_auth.clone(),
+            multicall_token_auth,
             multicall_operators_auth.clone(),
-             multicall_operators_auth])
+            multicall_operators_auth.clone(),
+            multicall_operators_auth.clone(),
+            multicall_operators_auth,
+        ])
         .multicall(&function_calls);
-    
+
     goldie::assert!(fmt_last_emitted_event::<ExecutedEvent>(&env));
 }
 
 #[test]
 fn multicall_long_auth_chain_succeeds() {
-    let TestConfig { env, client, contract_id, target_id, owner } = setup();
+    let TestConfig {
+        env,
+        client,
+        contract_id,
+        target_id,
+        owner,
+    } = setup();
 
     let spender: Address = Address::generate(&env);
     let sender: Address = Address::generate(&env);
     let operator: Address = Address::generate(&env);
     let payload = bytes!(&env, 0x1234);
-    
+
     let gas_service_id = env.register(AxelarGasService, (&owner, &operator));
     let gas_service_client = AxelarGasServiceClient::new(&env, &gas_service_id);
     let token = setup_gas_token(&env, &spender);
@@ -162,13 +202,20 @@ fn multicall_long_auth_chain_succeeds() {
 
     let function_calls = vec![
         &env,
-        function_call_args!(env, gas_service_id, owner, pay_gas(sender.to_val(),
-            destination_chain.to_val(),
-             destination_address.to_val(),
-              payload.to_val(),
-               spender.to_val(),
-               IntoVal::<_, Val>::into_val(&token, &env),
-                 Bytes::new(&env).to_val())),
+        function_call_args!(
+            env,
+            gas_service_id,
+            owner,
+            pay_gas(
+                sender.to_val(),
+                destination_chain.to_val(),
+                destination_address.to_val(),
+                payload.to_val(),
+                spender.to_val(),
+                IntoVal::<_, Val>::into_val(&token, &env),
+                Bytes::new(&env).to_val()
+            )
+        ),
     ];
 
     let transfer_token_auth = mock_auth!(
@@ -190,7 +237,11 @@ fn multicall_long_auth_chain_succeeds() {
         &[(transfer_token_auth.invoke).clone()]
     );
 
-    let multicall_auth = mock_auth!(owner, client.multicall(&function_calls), &[(pay_gas_auth.invoke).clone()]);
+    let multicall_auth = mock_auth!(
+        owner,
+        client.multicall(&function_calls),
+        &[(pay_gas_auth.invoke).clone()]
+    );
 
     client
         .mock_auths(&[multicall_auth, pay_gas_auth])
@@ -210,39 +261,88 @@ fn multicall_zero_call_succeeds() {
 
 #[test]
 fn multicall_auth_succeeds() {
-    let TestConfig { env, client, contract_id, target_id, owner} = setup();
+    let TestConfig {
+        env,
+        client,
+        contract_id,
+        target_id,
+        owner,
+    } = setup();
     let new_owner = Address::generate(&env);
 
     let function_calls = vec![
         &env,
-        function_call_args!(env, target_id, owner, method(IntoVal::<_, Val>::into_val(&42u32, &env))),
-        function_call_args!(env, target_id, owner, transfer_ownership(new_owner.to_val())),
-        function_call_args!(env, target_id, owner, method(IntoVal::<_, Val>::into_val(&0u32, &env))),
+        function_call_args!(
+            env,
+            target_id,
+            owner,
+            method(IntoVal::<_, Val>::into_val(&42u32, &env))
+        ),
+        function_call_args!(
+            env,
+            target_id,
+            owner,
+            transfer_ownership(new_owner.to_val())
+        ),
+        function_call_args!(
+            env,
+            target_id,
+            owner,
+            method(IntoVal::<_, Val>::into_val(&0u32, &env))
+        ),
     ];
 
     let test_client = TestTargetClient::new(&env, &target_id);
 
-    let transfer_ownership_auth =
-        mock_auth!(owner, test_client.transfer_ownership(&new_owner));
-    let multicall_auth_chained = mock_auth!(owner, client.multicall(&function_calls), &[(transfer_ownership_auth.invoke).clone()]);
+    let transfer_ownership_auth = mock_auth!(owner, test_client.transfer_ownership(&new_owner));
+    let multicall_auth_chained = mock_auth!(
+        owner,
+        client.multicall(&function_calls),
+        &[(transfer_ownership_auth.invoke).clone()]
+    );
     let multicall_auth = mock_auth!(owner, client.multicall(&function_calls));
 
     client
-        .mock_auths(&[multicall_auth.clone(), multicall_auth_chained, multicall_auth])
+        .mock_auths(&[
+            multicall_auth.clone(),
+            multicall_auth_chained,
+            multicall_auth,
+        ])
         .multicall(&function_calls);
 }
 
 #[test]
 #[should_panic(expected = "HostError: Error(Auth, InvalidAction)")]
 fn multicall_auth_no_auth_fails() {
-    let TestConfig { env, client, contract_id, target_id, owner} = setup();
+    let TestConfig {
+        env,
+        client,
+        contract_id,
+        target_id,
+        owner,
+    } = setup();
     let new_owner = Address::generate(&env);
 
     let function_calls = vec![
         &env,
-        function_call_args!(env, target_id, owner, method(IntoVal::<_, Val>::into_val(&42u32, &env))),
-        function_call_args!(env, target_id, owner, transfer_ownership(new_owner.to_val())),
-        function_call_args!(env, target_id, owner, method(IntoVal::<_, Val>::into_val(&0u32, &env))),
+        function_call_args!(
+            env,
+            target_id,
+            owner,
+            method(IntoVal::<_, Val>::into_val(&42u32, &env))
+        ),
+        function_call_args!(
+            env,
+            target_id,
+            owner,
+            transfer_ownership(new_owner.to_val())
+        ),
+        function_call_args!(
+            env,
+            target_id,
+            owner,
+            method(IntoVal::<_, Val>::into_val(&0u32, &env))
+        ),
     ];
 
     client.multicall(&function_calls);
@@ -251,39 +351,88 @@ fn multicall_auth_no_auth_fails() {
 #[test]
 #[should_panic(expected = "HostError: Error(Auth, InvalidAction)")]
 fn multicall_auth_incorrect_approver_auth_fails() {
-    let TestConfig { env, client, contract_id, target_id, owner} = setup();
+    let TestConfig {
+        env,
+        client,
+        contract_id,
+        target_id,
+        owner,
+    } = setup();
     let new_owner = Address::generate(&env);
 
     let function_calls = vec![
         &env,
-        function_call_args!(env, target_id, owner, method(IntoVal::<_, Val>::into_val(&42u32, &env))),
-        function_call_args!(env, target_id, owner, transfer_ownership(new_owner.to_val())),
-        function_call_args!(env, target_id, owner, method(IntoVal::<_, Val>::into_val(&0u32, &env))),
+        function_call_args!(
+            env,
+            target_id,
+            owner,
+            method(IntoVal::<_, Val>::into_val(&42u32, &env))
+        ),
+        function_call_args!(
+            env,
+            target_id,
+            owner,
+            transfer_ownership(new_owner.to_val())
+        ),
+        function_call_args!(
+            env,
+            target_id,
+            owner,
+            method(IntoVal::<_, Val>::into_val(&0u32, &env))
+        ),
     ];
 
     let test_client = TestTargetClient::new(&env, &target_id);
 
-    let transfer_ownership_auth =
-        mock_auth!(new_owner, test_client.transfer_ownership(&new_owner));
-    let multicall_auth_chained = mock_auth!(new_owner, client.multicall(&function_calls), &[(transfer_ownership_auth.invoke).clone()]);
+    let transfer_ownership_auth = mock_auth!(new_owner, test_client.transfer_ownership(&new_owner));
+    let multicall_auth_chained = mock_auth!(
+        new_owner,
+        client.multicall(&function_calls),
+        &[(transfer_ownership_auth.invoke).clone()]
+    );
     let multicall_auth = mock_auth!(new_owner, client.multicall(&function_calls));
 
     client
-        .mock_auths(&[multicall_auth.clone(), multicall_auth_chained, multicall_auth])
+        .mock_auths(&[
+            multicall_auth.clone(),
+            multicall_auth_chained,
+            multicall_auth,
+        ])
         .multicall(&function_calls);
 }
 
 #[test]
 #[should_panic(expected = "HostError: Error(Auth, InvalidAction)")]
 fn multicall_auth_incomplete_auth_fails() {
-    let TestConfig { env, client, contract_id, target_id, owner} = setup();
+    let TestConfig {
+        env,
+        client,
+        contract_id,
+        target_id,
+        owner,
+    } = setup();
     let new_owner = Address::generate(&env);
 
     let function_calls = vec![
         &env,
-        function_call_args!(env, target_id, owner, method(IntoVal::<_, Val>::into_val(&42u32, &env))),
-        function_call_args!(env, target_id, owner, transfer_ownership(new_owner.to_val())),
-        function_call_args!(env, target_id, owner, method(IntoVal::<_, Val>::into_val(&0u32, &env))),
+        function_call_args!(
+            env,
+            target_id,
+            owner,
+            method(IntoVal::<_, Val>::into_val(&42u32, &env))
+        ),
+        function_call_args!(
+            env,
+            target_id,
+            owner,
+            transfer_ownership(new_owner.to_val())
+        ),
+        function_call_args!(
+            env,
+            target_id,
+            owner,
+            method(IntoVal::<_, Val>::into_val(&0u32, &env))
+        ),
     ];
 
     let test_client = TestTargetClient::new(&env, &target_id);
@@ -291,19 +440,26 @@ fn multicall_auth_incomplete_auth_fails() {
     let multicall_auth = mock_auth!(owner, client.multicall(&function_calls));
 
     client
-        .mock_auths(&[multicall_auth.clone(), multicall_auth.clone(), multicall_auth])
+        .mock_auths(&[
+            multicall_auth.clone(),
+            multicall_auth.clone(),
+            multicall_auth,
+        ])
         .multicall(&function_calls);
 }
 
 #[test]
 #[should_panic(expected = "HostError: Error(WasmVm, InvalidAction)")]
 fn multicall_fails_when_target_panics() {
-    let TestConfig { env, client, contract_id, target_id, owner} = setup();
+    let TestConfig {
+        env,
+        client,
+        contract_id,
+        target_id,
+        owner,
+    } = setup();
 
-    let function_calls = vec![
-        &env,
-        function_call_args!(env, target_id, owner, failing()),
-    ];
+    let function_calls = vec![&env, function_call_args!(env, target_id, owner, failing())];
 
     let multicall_auth = mock_auth!(owner, client.multicall(&function_calls));
 
@@ -314,7 +470,13 @@ fn multicall_fails_when_target_panics() {
 
 #[test]
 fn multicall_fails_when_target_returns_error() {
-    let TestConfig { env, client, contract_id, target_id, owner} = setup();
+    let TestConfig {
+        env,
+        client,
+        contract_id,
+        target_id,
+        owner,
+    } = setup();
 
     let function_calls = vec![
         &env,
@@ -324,26 +486,50 @@ fn multicall_fails_when_target_returns_error() {
     let multicall_auth = mock_auth!(owner, client.multicall(&function_calls));
 
     assert_contract_err!(
-        client.mock_auths(&[multicall_auth]).try_multicall(&function_calls),
+        client
+            .mock_auths(&[multicall_auth])
+            .try_multicall(&function_calls),
         ContractError::FunctionCallFailed
     );
 }
 
 #[test]
 fn multicall_fails_when_some_calls_returns_error() {
-    let TestConfig { env, client, contract_id, target_id, owner} = setup();
+    let TestConfig {
+        env,
+        client,
+        contract_id,
+        target_id,
+        owner,
+    } = setup();
 
     let function_calls = vec![
         &env,
-        function_call_args!(env, target_id, owner, method(IntoVal::<_, Val>::into_val(&42u32, &env))),
+        function_call_args!(
+            env,
+            target_id,
+            owner,
+            method(IntoVal::<_, Val>::into_val(&42u32, &env))
+        ),
         function_call_args!(env, target_id, owner, failing_with_error()),
-        function_call_args!(env, target_id, owner, method(IntoVal::<_, Val>::into_val(&0u32, &env))),
+        function_call_args!(
+            env,
+            target_id,
+            owner,
+            method(IntoVal::<_, Val>::into_val(&0u32, &env))
+        ),
     ];
 
     let multicall_auth = mock_auth!(owner, client.multicall(&function_calls));
 
     assert_contract_err!(
-        client.mock_auths(&[multicall_auth.clone(), multicall_auth.clone(), multicall_auth]).try_multicall(&function_calls),
+        client
+            .mock_auths(&[
+                multicall_auth.clone(),
+                multicall_auth.clone(),
+                multicall_auth
+            ])
+            .try_multicall(&function_calls),
         ContractError::FunctionCallFailed
     );
 }
