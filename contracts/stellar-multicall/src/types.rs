@@ -4,6 +4,7 @@ use soroban_sdk::{contracttype, Address, Symbol, Val, Vec};
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FunctionCall {
     pub contract: Address,
+    pub approver: Address,
     pub function: Symbol,
     pub args: Vec<Val>,
 }

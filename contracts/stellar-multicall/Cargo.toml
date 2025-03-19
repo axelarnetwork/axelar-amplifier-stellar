@@ -15,6 +15,10 @@ stellar-axelar-std = { workspace = true }
 goldie = { workspace = true }
 soroban-sdk = { workspace = true, features = ["testutils"] }
 stellar-axelar-std = { workspace = true, features = ["testutils"] }
+stellar-axelar-operators = { workspace = true }
+stellar-interchain-token = { workspace = true, features = ["testutils"] }
+soroban-token-sdk = { workspace = true }
+stellar-axelar-gas-service = { workspace = true, features = ["testutils"]}
 
 [features]
 library = []

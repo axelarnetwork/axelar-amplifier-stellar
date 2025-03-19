@@ -2085,7 +2085,11 @@ dependencies = [
  "cfg-if",
  "goldie",
  "soroban-sdk",
+ "soroban-token-sdk",
+ "stellar-axelar-gas-service",
+ "stellar-axelar-operators",
  "stellar-axelar-std",
+ "stellar-interchain-token",
 ]
 
 [[package]]
