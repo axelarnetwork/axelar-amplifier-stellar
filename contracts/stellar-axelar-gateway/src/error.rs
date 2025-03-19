@@ -20,4 +20,5 @@ pub enum ContractError {
     OutdatedSigners = 14,
     EmptyMessages = 15,
     ContractPaused = 16,
+    InvalidMessageApproval = 17,
 }
