@@ -45,19 +45,18 @@ impl CustomMigratableInterface for AxelarGateway {
                 message_id: message_id.clone(),
             };
 
-            let legacy_message_approval =
-                legacy_storage::try_message_approval(env, message_approval_key)
-                    .ok_or(ContractError::InvalidMessageApproval)?;
-
-            let message_approval = match legacy_message_approval {
-                legacy_storage::MessageApprovalValue::Approved(hash) => {
-                    Some(storage::MessageApprovalValue::Approved(hash))
-                }
-                legacy_storage::MessageApprovalValue::Executed => {
-                    Some(storage::MessageApprovalValue::Executed)
-                }
-                legacy_storage::MessageApprovalValue::NotApproved => None,
-            };
+            let message_approval =
+                match legacy_storage::try_message_approval(env, message_approval_key)
+                    .ok_or(ContractError::InvalidMessageApproval)?
+                {
+                    legacy_storage::MessageApprovalValue::Approved(hash) => {
+                        Some(storage::MessageApprovalValue::Approved(hash))
+                    }
+                    legacy_storage::MessageApprovalValue::Executed => {
+                        Some(storage::MessageApprovalValue::Executed)
+                    }
+                    legacy_storage::MessageApprovalValue::NotApproved => None,
+                };
 
             storage::set_message_approval(
                 env,
