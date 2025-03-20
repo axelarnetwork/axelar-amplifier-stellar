@@ -25,6 +25,7 @@ impl MulticallInterface for Multicall {
         } in function_calls.into_iter()
         {
             approver.require_auth();
+            
             let result: Val = env.invoke_contract(&contract, &function, args.clone());
 
             results.push_back(result);
