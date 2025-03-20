@@ -46,10 +46,11 @@ impl OwnableInterface for InterchainToken {
     }
 
     fn transfer_ownership(env: &Env, new_owner: Address) {
+        let old_owner = Self::owner(env);
+
         interfaces::transfer_ownership::<Self>(env, new_owner.clone());
 
-        // Emit the standard soroban event for setting admin
-        TokenEvents::new(env).set_admin(Self::owner(env), new_owner);
+        TokenEvents::new(env).set_admin(old_owner, new_owner);
     }
 }
 

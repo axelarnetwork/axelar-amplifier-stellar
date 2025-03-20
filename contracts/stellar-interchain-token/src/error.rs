@@ -6,12 +6,9 @@ use soroban_sdk::contracterror;
 pub enum ContractError {
     MigrationNotAllowed = 1,
     NotMinter = 2,
-    InvalidDecimal = 3,
-    InvalidTokenName = 4,
-    InvalidTokenSymbol = 5,
-    InvalidAmount = 6,
-    InvalidExpirationLedger = 7,
-    InsufficientAllowance = 8,
-    InsufficientBalance = 9,
-    MigrationInProgress = 10,
+    InvalidAmount = 3,
+    InvalidExpirationLedger = 4,
+    InsufficientAllowance = 5,
+    InsufficientBalance = 6,
+    MigrationInProgress = 7,
 }
