@@ -15,5 +15,6 @@ pub trait MulticallInterface {
     ///
     /// # Errors:
     /// - Propagates any error that occurs during the execution of the contract calls.
+    /// - Propagates any error that occurs during the execution of the contract calls.
     fn multicall(env: &Env, function_calls: Vec<FunctionCall>) -> Result<Vec<Val>, ContractError>;
 }
