@@ -17,7 +17,7 @@ pub fn axelar_executable(name: &Ident) -> TokenStream2 {
 
         #[stellar_axelar_std::contractimpl]
         impl AxelarExecutableInterface for #name {
-            #[stellar_axelar_std::allow_during_migration]
+            #[allow_during_migration]
             fn gateway(env: &Env) -> Address {
                 Self::__gateway(env)
             }

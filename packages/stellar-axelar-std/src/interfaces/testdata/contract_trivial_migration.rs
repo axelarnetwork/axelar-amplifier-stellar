@@ -2,7 +2,7 @@ use core::convert::Infallible;
 
 use soroban_sdk::testutils::arbitrary::std;
 use soroban_sdk::{contract, contracterror, contracttype, Address, BytesN, Env, String};
-use stellar_axelar_std_derive::{allow_during_migration, contractimpl};
+use stellar_axelar_std_derive::contractimpl;
 
 use crate as stellar_axelar_std;
 use crate::interfaces::{

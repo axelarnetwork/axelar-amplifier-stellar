@@ -10,7 +10,7 @@ pub fn operatable(name: &Ident) -> TokenStream2 {
 
         #[stellar_axelar_std::contractimpl]
         impl stellar_axelar_std::interfaces::OperatableInterface for #name {
-            #[stellar_axelar_std::allow_during_migration]
+            #[allow_during_migration]
             fn operator(env: &Env) -> soroban_sdk::Address {
                 stellar_axelar_std::interfaces::operator(env)
             }

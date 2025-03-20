@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use proc_macro2::Ident;
 use quote::quote;
 use syn::{
@@ -7,32 +8,25 @@ use syn::{
 
 use crate::utils::{parse_env_identifier, PrependStatement};
 
-pub fn contractimpl(mut impl_block: ItemImpl) -> Result<proc_macro2::TokenStream, syn::Error> {
-    // if the block implements a trait, all of its functions are implicitly public, otherwise we only need to match public functions
-    let match_contract_endpoint = if impl_block.trait_.is_some() {
-        match_any_fn
-    } else {
-        match_pub_fn
-    };
+pub fn contractimpl(impl_block: &mut ItemImpl) -> Result<proc_macro2::TokenStream, syn::Error> {
+    // this needs to be defined before the iteration, because during it, we can't get a reference to the impl block
+    let any_stateful_endpoints = any_stateful_endpoints(impl_block);
 
     impl_block
         .items
         .iter_mut()
-        .filter_map(match_only_fn)
-        .filter_map(match_contract_endpoint)
-        // if a function doesn't have any arguments it cannot modify the environment, so it's safe to be called during migration
-        .filter(has_args)
-        .filter(should_be_blocked_during_migration)
-        .try_for_each::<_, Result<_, syn::Error>>(|method| {
-            let env_ident = parse_env_identifier(&method.sig.inputs)?;
-            let error_handling = if can_return_contract_error(&method.sig.output) {
-                return_migration_in_progress()
+        .filter_map(any_stateful_endpoints)
+        .chunk_by(is_allowed_during_migration)
+        .into_iter()
+        .try_for_each(|(is_allowed, mut method)| {
+            if is_allowed {
+                // if this the attribute is not removed, the compiler will try to resolve it,
+                // and it will need to be defined as a standalone attribute macro
+                method.for_each(remove_allow_during_migration_attribute);
             } else {
-                panic_on_failure()
-            };
-
-            method.prepend_statement(migration_in_progess_check(env_ident, error_handling));
-            Ok(())
+                method.try_for_each(block_during_migration)?
+            }
+            Ok::<_, syn::Error>(())
         })?;
 
     Ok(quote! {
@@ -41,18 +35,55 @@ pub fn contractimpl(mut impl_block: ItemImpl) -> Result<proc_macro2::TokenStream
     })
 }
 
-fn match_only_fn(item: &mut ImplItem) -> Option<&mut ImplItemFn> {
+/// If a function doesn't have any arguments it cannot modify the environment, so it's safe to be called during migration
+fn any_stateful_endpoints(
+    impl_block: &ItemImpl,
+) -> impl Fn(&mut ImplItem) -> Option<&mut ImplItemFn> {
+    // if the block implements a trait, all of its functions are implicitly public, otherwise we only need to match public functions
+    // to help the compiler resolve lifetimes, this is defined first and moved into the closure
+    let any_contract_endpoint = if impl_block.trait_.is_some() {
+        any
+    } else {
+        any_pub_fn
+    };
+
+    move |item| {
+        any_fn(item)
+            .and_then(any_contract_endpoint)
+            .filter(has_args)
+    }
+}
+
+fn block_during_migration(method: &mut ImplItemFn) -> Result<(), syn::Error> {
+    let env_ident = parse_env_identifier(&method.sig.inputs)?;
+    let error_handling = if can_return_contract_error(&method.sig.output) {
+        return_migration_in_progress()
+    } else {
+        panic_on_failure()
+    };
+
+    method.prepend_statement(expect_migration_complete(env_ident, error_handling));
+    Ok(())
+}
+
+fn remove_allow_during_migration_attribute(method: &mut ImplItemFn) {
+    method
+        .attrs
+        .retain(|attr| !attr.path().is_ident("allow_during_migration"))
+}
+
+fn any_fn(item: &mut ImplItem) -> Option<&mut ImplItemFn> {
     match item {
         ImplItem::Fn(fn_) => Some(fn_),
         _ => None,
     }
 }
 
-fn match_any_fn(fn_: &mut ImplItemFn) -> Option<&mut ImplItemFn> {
-    Some(fn_)
+fn any<T>(item: &mut T) -> Option<&mut T> {
+    Some(item)
 }
 
-fn match_pub_fn(fn_: &mut ImplItemFn) -> Option<&mut ImplItemFn> {
+fn any_pub_fn(fn_: &mut ImplItemFn) -> Option<&mut ImplItemFn> {
     match fn_ {
         ImplItemFn {
             vis: Visibility::Public(_),
@@ -66,20 +97,20 @@ fn has_args(fn_: &&mut ImplItemFn) -> bool {
     !fn_.sig.inputs.is_empty()
 }
 
-fn should_be_blocked_during_migration(fn_: &&mut ImplItemFn) -> bool {
+fn is_allowed_during_migration(fn_: &&mut ImplItemFn) -> bool {
     fn_.attrs
         .iter()
-        .all(|attr| !attr.path().is_ident("allow_during_migration"))
+        .any(|attr| attr.path().is_ident("allow_during_migration"))
 }
 
 fn can_return_contract_error(return_type: &ReturnType) -> bool {
-    match_result(return_type)
-        .and_then(match_error_arg)
-        .and_then(match_contract_error_type)
+    any_result(return_type)
+        .and_then(extract_error_arg)
+        .filter(is_contract_error_type)
         .is_some()
 }
 
-fn match_result(return_type: &ReturnType) -> Option<&PathSegment> {
+fn any_result(return_type: &ReturnType) -> Option<&PathSegment> {
     match return_type {
         ReturnType::Type(_, ty) => match ty.as_ref() {
             Type::Path(TypePath { path, .. }) => path
@@ -92,7 +123,7 @@ fn match_result(return_type: &ReturnType) -> Option<&PathSegment> {
     }
 }
 
-fn match_error_arg(result_segment: &PathSegment) -> Option<&GenericArgument> {
+fn extract_error_arg(result_segment: &PathSegment) -> Option<&GenericArgument> {
     match &result_segment.arguments {
         PathArguments::AngleBracketed(AngleBracketedGenericArguments { args, .. }) => {
             (args.len() == 2).then(|| args.last()).flatten()
@@ -101,14 +132,12 @@ fn match_error_arg(result_segment: &PathSegment) -> Option<&GenericArgument> {
     }
 }
 
-fn match_contract_error_type(error: &GenericArgument) -> Option<&PathSegment> {
-    match error {
-        GenericArgument::Type(Type::Path(TypePath { path, .. })) => path
-            .segments
-            .last()
-            .filter(|segment| segment.ident == "ContractError"),
-        _ => None,
-    }
+fn is_contract_error_type(error: &&GenericArgument) -> bool {
+    matches!(error, GenericArgument::Type(Type::Path(TypePath { path, .. })) 
+        if path.segments
+        .last()
+        .filter(|segment| segment.ident == "ContractError")
+        .is_some())
 }
 
 fn return_migration_in_progress() -> Stmt {
@@ -123,10 +152,51 @@ fn panic_on_failure() -> Stmt {
     }
 }
 
-fn migration_in_progess_check(env_ident: &Ident, error_handling: Stmt) -> Stmt {
+fn expect_migration_complete(env: &Ident, error_handling: Stmt) -> Stmt {
     parse_quote! {
-        if stellar_axelar_std::interfaces::is_migrating(&#env_ident){
+        if stellar_axelar_std::interfaces::is_migrating(&#env){
             #error_handling
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn entrypoints_with_result_return_contract_error() {
+        let mut contract_input: syn::ItemImpl = syn::parse_quote! {
+            #[contractimpl]
+            impl Contract {
+                pub fn return_result(env: &Env, arg: String) -> Result<u32, ContractError> {
+                    // entrypoint code
+                }
+            }
+        };
+
+        let contract_impl: proc_macro2::TokenStream =
+            crate::contractimpl::contractimpl(&mut contract_input).unwrap();
+        let contract_impl_file: syn::File = syn::parse2(contract_impl).unwrap();
+        let formatted_contract_impl = prettyplease::unparse(&contract_impl_file);
+
+        goldie::assert!(formatted_contract_impl);
+    }
+
+    #[test]
+    fn entrypoints_without_result_panics() {
+        let mut contract_input: syn::ItemImpl = syn::parse_quote! {
+            #[contractimpl]
+            impl Contract {
+                pub fn do_something(env: &Env, arg: String) {
+                    // entrypoint code
+                }
+            }
+        };
+
+        let contract_impl: proc_macro2::TokenStream =
+            crate::contractimpl::contractimpl(&mut contract_input).unwrap();
+        let contract_impl_file: syn::File = syn::parse2(contract_impl).unwrap();
+        let formatted_contract_impl = prettyplease::unparse(&contract_impl_file);
+
+        goldie::assert!(formatted_contract_impl);
     }
 }

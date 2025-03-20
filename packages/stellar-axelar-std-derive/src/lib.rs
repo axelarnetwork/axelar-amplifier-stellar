@@ -16,19 +16,57 @@ mod utils;
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, Attribute, DeriveInput, ItemFn, ItemImpl, Path};
 
+/// Designates functions in an `impl` block as contract entrypoints.
+/// This is a wrapper around the soroban-sdk's `#[contractimpl]` attribute.
+/// It adds additional checks to ensure entrypoints don't get accidentally, or maliciously, called
+/// after a contract upgrade, but before the data migration is complete.
+///
+/// # Example
+/// ```rust, ignore
+/// # mod test {
+/// # use soroban_sdk::{contract, contracterror};
+/// use stellar_axelar_std_derive::{contractimpl, Upgradable};
+///
+/// #[contract]
+/// #[derive(Upgradable)]
+/// pub struct Contract;
+///
+/// // any function in this impl block will panic if called during migration
+/// #[contractimpl]
+/// impl Contract {
+///     pub fn __constructor(env: &Env) {
+///         // constructor code
+///     }
+///
+///     pub fn do_something(env: &Env, arg: String) {
+///         // entrypoint code
+///     }
+/// }
+///
+/// #[contracterror]
+/// #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+/// #[repr(u32)]
+/// pub enum ContractError {
+///     MigrationInProgress = 1,
+/// }
+///
+/// // if an entrypoint is able to return a Result<_, ContractError>,
+/// // it will return ContractError::MigrationInProgress instead of panicking when called during migration
+/// #[contractimpl]
+/// impl Contract {
+///     pub fn return_result(env: &Env, arg: String) -> Result<u32, ContractError> {
+///         // entrypoint code
+///     }
+/// }
+/// # }
+/// ```
 #[proc_macro_attribute]
 pub fn contractimpl(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(item as ItemImpl);
+    let mut input = parse_macro_input!(item as ItemImpl);
 
-    contractimpl::contractimpl(input)
+    contractimpl::contractimpl(&mut input)
         .unwrap_or_else(|err| err.to_compile_error())
         .into()
-}
-
-/// no-op implementation to make the attribute available for the contractimpl macro
-#[proc_macro_attribute]
-pub fn allow_during_migration(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    item
 }
 
 /// Implements the Operatable interface for a Soroban contract.
