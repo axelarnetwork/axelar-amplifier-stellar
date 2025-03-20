@@ -1,9 +1,0 @@
-#[soroban_sdk::contractimpl]
-#[contractimpl]
-impl Contract {
-    pub fn return_result(env: &Env, arg: String) -> Result<u32, ContractError> {
-        if stellar_axelar_std::interfaces::is_migrating(&env) {
-            return Err(ContractError::MigrationInProgress);
-        }
-    }
-}

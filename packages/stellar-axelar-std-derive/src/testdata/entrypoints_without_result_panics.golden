@@ -1,9 +1,0 @@
-#[soroban_sdk::contractimpl]
-#[contractimpl]
-impl Contract {
-    pub fn do_something(env: &Env, arg: String) {
-        if stellar_axelar_std::interfaces::is_migrating(&env) {
-            panic!("contract migration in progress");
-        }
-    }
-}

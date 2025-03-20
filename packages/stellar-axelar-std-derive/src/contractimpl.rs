@@ -163,11 +163,26 @@ fn expect_migration_complete(env: &Ident, error_handling: Stmt) -> Stmt {
 #[cfg(test)]
 mod tests {
     #[test]
-    fn entrypoints_with_result_return_contract_error() {
+    fn entrypoints_have_appropriate_checks_added() {
         let mut contract_input: syn::ItemImpl = syn::parse_quote! {
             #[contractimpl]
             impl Contract {
-                pub fn return_result(env: &Env, arg: String) -> Result<u32, ContractError> {
+                pub fn should_return_contract_error(env: &Env, arg: String) -> Result<u32, ContractError> {
+                    // entrypoint code
+
+                    Ok(3)
+                }
+
+                pub fn should_panic(env: &Env, arg: String) {
+                    // entrypoint code
+                }
+
+                pub fn should_have_no_check_because_not_stateful(){
+                    // entrypoint code
+                }
+
+                #[allow_during_migration]
+                pub fn is_allowed_during_migration(env: &Env, arg: String) {
                     // entrypoint code
                 }
             }
@@ -182,11 +197,26 @@ mod tests {
     }
 
     #[test]
-    fn entrypoints_without_result_panics() {
+    fn trait_entrypoints_have_appropriate_checks_added() {
         let mut contract_input: syn::ItemImpl = syn::parse_quote! {
             #[contractimpl]
-            impl Contract {
-                pub fn do_something(env: &Env, arg: String) {
+            impl SomeTrait for Contract {
+                fn should_return_contract_error(env: &Env, arg: String) -> Result<u32, ContractError> {
+                    // entrypoint code
+
+                    Ok(3)
+                }
+
+                fn should_panic(env: &Env, arg: String) {
+                    // entrypoint code
+                }
+
+                fn should_have_no_check_because_not_stateful(){
+                    // entrypoint code
+                }
+
+                #[allow_during_migration]
+                fn is_allowed_during_migration(env: &Env, arg: String) {
                     // entrypoint code
                 }
             }
