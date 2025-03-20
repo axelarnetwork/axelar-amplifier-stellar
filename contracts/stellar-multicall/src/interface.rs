@@ -1,8 +1,9 @@
-use soroban_sdk::{Env, Val, Vec};
+use soroban_sdk::{contractclient, Env, Val, Vec};
 
 use crate::error::ContractError;
 use crate::types::FunctionCall;
 
+#[contractclient(name = "MulticallClient")]
 pub trait MulticallInterface {
     /// Executes an arbitrary list of contract calls and returns the results of all the calls.
     ///
