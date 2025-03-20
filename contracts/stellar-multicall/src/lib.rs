@@ -14,7 +14,7 @@ mod tests;
 
 cfg_if::cfg_if! {
     if #[cfg(all(feature = "library", not(test)))] {
-        pub use interface::{MulticallClient, MulticallInterface};
+        pub use interface::{MulticallInterface};
     } else {
         mod contract;
 
