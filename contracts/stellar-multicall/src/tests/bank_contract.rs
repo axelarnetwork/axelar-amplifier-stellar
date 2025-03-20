@@ -1,14 +1,8 @@
 #![cfg(test)]
 extern crate std;
 
-use soroban_sdk::contractimpl;
-use stellar_axelar_std::Ownable;
-use soroban_sdk::contract;
-use soroban_sdk::Symbol;
-use soroban_sdk::Env;
-use soroban_sdk::Address;
-use stellar_axelar_std::interfaces;
-use soroban_sdk::symbol_short;
+use soroban_sdk::{contract, contractimpl, symbol_short, Address, Env, Symbol};
+use stellar_axelar_std::{interfaces, Ownable};
 
 #[contract]
 #[derive(Ownable)]
@@ -24,7 +18,8 @@ impl TestBankContract {
     }
 
     pub fn balance(env: &Env) -> u32 {
-        env.storage().instance()
+        env.storage()
+            .instance()
             .get(&Self::BALANCE_KEY)
             .unwrap_or(0u32)
     }
@@ -33,20 +28,32 @@ impl TestBankContract {
         let owner = Self::owner(env);
         owner.require_auth();
 
-        let current_balance: u32 = env.storage().instance().get(&Self::BALANCE_KEY).unwrap_or(0u32);
+        let current_balance: u32 = env
+            .storage()
+            .instance()
+            .get(&Self::BALANCE_KEY)
+            .unwrap_or(0u32);
         let new_balance = current_balance + amount;
-        env.storage().instance().set(&Self::BALANCE_KEY, &new_balance);
+        env.storage()
+            .instance()
+            .set(&Self::BALANCE_KEY, &new_balance);
     }
 
     pub fn withdraw(env: &Env, amount: u32) {
         let owner = Self::owner(env);
         owner.require_auth();
 
-        let current_balance: u32 = env.storage().instance().get(&Self::BALANCE_KEY).unwrap_or(0u32);
+        let current_balance: u32 = env
+            .storage()
+            .instance()
+            .get(&Self::BALANCE_KEY)
+            .unwrap_or(0u32);
         if current_balance < amount {
             panic!("Insufficient balance");
         }
         let new_balance = current_balance - amount;
-        env.storage().instance().set(&Self::BALANCE_KEY, &new_balance);
+        env.storage()
+            .instance()
+            .set(&Self::BALANCE_KEY, &new_balance);
     }
 }
