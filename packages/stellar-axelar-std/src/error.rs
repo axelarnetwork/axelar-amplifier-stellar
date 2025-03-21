@@ -108,10 +108,11 @@ macro_rules! assert_some {
 ///
 /// # Example
 ///
-/// ```rust,ignore
-/// # use soroban_sdk::{Address, Env, contract, contractimpl};
-/// # use soroban_sdk::testutils::Address as _;
+/// ```rust, ignore
+/// # use stellar_axelar_std::{Address, Env, contract, contractimpl};
+/// # use stellar_axelar_std::testutils::Address as _;
 /// # use stellar_axelar_std::assert_auth;
+/// # use stellar_axelar_std::soroban_sdk;
 ///
 /// #[contract]
 /// pub struct Contract;
@@ -133,7 +134,7 @@ macro_rules! assert_some {
 #[macro_export]
 macro_rules! assert_auth {
     ($caller:expr, $client:ident . $method:ident ( $($arg:expr),* $(,)? )) => {{
-        use soroban_sdk::IntoVal;
+        use stellar_axelar_std::IntoVal;
 
         // Evaluate the expression before the method call.
         // If the expression itself called the contract, e.g. client.owner(),
@@ -164,10 +165,10 @@ macro_rules! assert_auth {
             $client.env.auths(),
             std::vec![(
                 caller,
-                soroban_sdk::testutils::AuthorizedInvocation {
-                    function: soroban_sdk::testutils::AuthorizedFunction::Contract((
+                stellar_axelar_std::testutils::AuthorizedInvocation {
+                    function: stellar_axelar_std::testutils::AuthorizedFunction::Contract((
                         $client.address.clone(),
-                        soroban_sdk::Symbol::new(&$client.env, stringify!($method)),
+                        stellar_axelar_std::Symbol::new(&$client.env, stringify!($method)),
                         ($($arg.clone(),)*).into_val(&$client.env)
                     )),
                     sub_invocations: std::vec![]
@@ -182,7 +183,7 @@ macro_rules! assert_auth {
 #[macro_export]
 macro_rules! assert_auth_err {
     ($caller:expr, $client:ident . $method:ident ( $($arg:expr),* $(,)? )) => {{
-        use soroban_sdk::xdr::{ScError, ScErrorCode, ScVal};
+        use stellar_axelar_std::xdr::{ScError, ScErrorCode, ScVal};
 
         let caller = $caller.clone();
 
@@ -214,11 +215,11 @@ macro_rules! mock_auth {
         $client:ident . $method:ident ( $($arg:expr),* $(,)? ),
         $sub_invokes:expr
     ) => {{
-        use soroban_sdk::IntoVal;
+        use stellar_axelar_std::IntoVal;
 
-        soroban_sdk::testutils::MockAuth {
+        stellar_axelar_std::testutils::MockAuth {
             address: &$caller,
-            invoke: &soroban_sdk::testutils::MockAuthInvoke {
+            invoke: &stellar_axelar_std::testutils::MockAuthInvoke {
                 contract: &$client.address,
                 fn_name: &stringify!($method).replace("try_", ""),
                 args: ($($arg.clone(),)*).into_val(&$client.env),

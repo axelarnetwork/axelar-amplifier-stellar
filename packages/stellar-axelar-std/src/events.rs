@@ -14,10 +14,10 @@ pub trait Event: Debug + PartialEq + Sized {
 
 #[cfg(any(test, feature = "testutils"))]
 mod testutils {
-    use soroban_sdk::testutils::Events;
     use soroban_sdk::Env;
 
     use crate::events::Event;
+    use crate::testutils::Events;
 
     pub fn fmt_last_emitted_event<E>(env: &Env) -> std::string::String
     where
@@ -49,9 +49,9 @@ mod testutils {
 mod test {
     use core::fmt::Debug;
 
-    use soroban_sdk::xdr::Int32;
-    use soroban_sdk::{contract, BytesN, Env, String, Symbol};
     use stellar_axelar_std::events::Event;
+    use stellar_axelar_std::xdr::Int32;
+    use stellar_axelar_std::{contract, BytesN, Env, String, Symbol};
     use stellar_axelar_std_derive::{contractimpl, IntoEvent};
 
     use crate as stellar_axelar_std;

@@ -1,5 +1,5 @@
-use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{contract, contracterror, Address, Env};
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::{contract, contracterror, Address, Env};
 
 use crate as stellar_axelar_std;
 
