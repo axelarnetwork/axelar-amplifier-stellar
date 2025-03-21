@@ -1,0 +1,15 @@
+ApprovedEvent {
+    from: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM),
+    spender: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4),
+    amount: 1000,
+    expiration_ledger: 200,
+}
+
+Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM)
+
+approved {
+    #[topic] from: Address,
+    #[topic] spender: Address,
+    #[topic] amount: i128,
+    #[topic] expiration_ledger: u32,
+}
