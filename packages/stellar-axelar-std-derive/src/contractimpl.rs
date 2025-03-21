@@ -177,6 +177,12 @@ mod tests {
                     // entrypoint code
                 }
 
+                pub fn should_panic_because_not_contract_error(env: &Env, arg: String) ->Result<u32, OtherError> {
+                    // entrypoint code
+
+                    Ok(5)
+                }
+
                 pub fn should_have_no_check_because_not_stateful(){
                     // entrypoint code
                 }
