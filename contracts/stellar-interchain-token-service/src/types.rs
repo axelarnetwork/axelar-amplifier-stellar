@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, Address, Bytes, BytesN, String, Vec};
+use soroban_sdk::{contracttype, Bytes, BytesN, String};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Message {
@@ -49,14 +49,4 @@ pub enum TokenManagerType {
     LockUnlock = 2,
     // LockUnlockFee = 3,
     // MintBurn = 4,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct CustomMigrationData {
-    pub upgrader_client: Address,
-    pub new_version: String,
-    pub token_ids: Vec<BytesN<32>>,
-    pub new_token_manager_wasm_hash: BytesN<32>,
-    pub new_interchain_token_wasm_hash: BytesN<32>,
 }

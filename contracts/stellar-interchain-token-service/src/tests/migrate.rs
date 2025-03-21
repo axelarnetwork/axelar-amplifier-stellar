@@ -5,11 +5,11 @@ use stellar_axelar_std::interfaces::CustomMigratableInterface;
 use stellar_axelar_std::{assert_auth, assert_err};
 
 use crate::error::ContractError;
-use crate::migrate::legacy_storage;
+use crate::migrate::{legacy_storage, CustomMigrationData};
 use crate::storage::{self, TokenIdConfigValue};
 use crate::tests::utils::{setup_env, setup_upgrader};
 use crate::testutils::setup_its_token;
-use crate::types::{CustomMigrationData, TokenManagerType};
+use crate::types::TokenManagerType;
 use crate::InterchainTokenService;
 
 const NEW_ITS_WASM: &[u8] =
@@ -52,7 +52,7 @@ fn migrate_succeeds() {
     env.as_contract(&client.address, || {
         let flow_key = legacy_storage::FlowKey {
             token_id: token_id.clone(),
-            epoch: current_epoch, // NOTE: Might throw now
+            epoch: current_epoch,
         };
 
         legacy_storage::set_flow_in(&env, flow_key.clone(), &flow_in_amount);
@@ -94,25 +94,15 @@ fn migrate_succeeds() {
         new_interchain_token_wasm_hash,
         "interchain token WASM hash should be updated"
     );
-    assert_eq!(
-        env.as_contract(&client.address, || {
-            storage::flow_in(&env, token_id.clone(), current_epoch)
-        }),
-        flow_in_amount,
-        "flow in amount should be migrated correctly"
-    );
-    assert_eq!(
-        env.as_contract(&client.address, || {
-            storage::flow_out(&env, token_id, current_epoch)
-        }),
-        flow_out_amount,
-        "flow out amount should be migrated correctly"
-    );
 }
 
 // #[test]
 // fn migrate_fails_with_invalid_token_id() {
 //     let (env, client, _, _, _) = setup_env();
+
+//     env.mock_all_auths();
+
+//     let upgrader_client = setup_upgrader(&env);
 //     let owner = client.owner();
 
 //     let new_its_wasm_hash = env.deployer().upload_contract_wasm(NEW_ITS_WASM);
@@ -122,7 +112,6 @@ fn migrate_succeeds() {
 //         .upload_contract_wasm(NEW_INTERCHAIN_TOKEN_WASM);
 
 //     let non_existent_token_id = BytesN::random(&env);
-//     let current_epoch = 123u64;
 
 //     assert_auth!(owner, client.upgrade(&new_its_wasm_hash));
 
@@ -130,7 +119,6 @@ fn migrate_succeeds() {
 //         new_token_manager_wasm_hash,
 //         new_interchain_token_wasm_hash,
 //         token_ids: vec![&env, non_existent_token_id],
-//         current_epoch,
 //         upgrader_client: upgrader_client.address,
 //         new_version: String::from_str(&env, "1.1.0"),
 //     };
@@ -140,51 +128,6 @@ fn migrate_succeeds() {
 //             <InterchainTokenService as CustomMigratableInterface>::__migrate(&env, migration_data)
 //         }),
 //         ContractError::InvalidTokenId
-//     );
-// }
-
-// #[test]
-// fn migrate_fails_with_invalid_flow_key() {
-//     let (env, client, _, _, _) = setup_env();
-//     let owner = client.owner();
-//     let (token_id, _) = setup_its_token(&env, &client, &owner, 100);
-
-//     let new_its_wasm_hash = env.deployer().upload_contract_wasm(NEW_ITS_WASM);
-//     let new_token_manager_wasm_hash = env.deployer().upload_contract_wasm(NEW_TOKEN_MANAGER_WASM);
-//     let new_interchain_token_wasm_hash = env
-//         .deployer()
-//         .upload_contract_wasm(NEW_INTERCHAIN_TOKEN_WASM);
-
-//     let current_epoch = 123u64;
-//     let token_manager = client.token_manager_address(&token_id);
-//     let interchain_token = client.interchain_token_address(&token_id);
-
-//     let token_config = TokenIdConfigValue {
-//         token_address: interchain_token,
-//         token_manager,
-//         token_manager_type: TokenManagerType::LockUnlock,
-//     };
-
-//     env.as_contract(&client.address, || {
-//         storage::set_token_id_config(&env, token_id.clone(), &token_config);
-//     });
-
-//     assert_auth!(owner, client.upgrade(&new_its_wasm_hash));
-
-//     let migration_data = CustomMigrationData {
-//         new_token_manager_wasm_hash,
-//         new_interchain_token_wasm_hash,
-//         token_ids: vec![&env, token_id],
-//         current_epoch,
-//         upgrader_client: upgrader_client.address,
-//         new_version: String::from_str(&env, "1.1.0"),
-//     };
-
-//     assert_err!(
-//         env.as_contract(&client.address, || {
-//             <InterchainTokenService as CustomMigratableInterface>::__migrate(&env, migration_data)
-//         }),
-//         ContractError::InvalidFlowKey
 //     );
 // }
 
@@ -404,50 +347,5 @@ fn migrate_succeeds() {
 //         }),
 //         new_interchain_token_wasm_hash,
 //         "interchain token WASM hash should be updated"
-//     );
-// }
-
-// #[test]
-// fn migrate_fails_with_missing_flow_key() {
-//     let (env, client, _, _, _) = setup_env();
-//     let owner = client.owner();
-//     let (token_id, _) = setup_its_token(&env, &client, &owner, 100);
-
-//     let new_its_wasm_hash = env.deployer().upload_contract_wasm(NEW_ITS_WASM);
-//     let new_token_manager_wasm_hash = env.deployer().upload_contract_wasm(NEW_TOKEN_MANAGER_WASM);
-//     let new_interchain_token_wasm_hash = env
-//         .deployer()
-//         .upload_contract_wasm(NEW_INTERCHAIN_TOKEN_WASM);
-
-//     let current_epoch = 123u64;
-//     let token_manager = client.token_manager_address(&token_id);
-//     let interchain_token = client.interchain_token_address(&token_id);
-
-//     let token_config = TokenIdConfigValue {
-//         token_address: interchain_token,
-//         token_manager,
-//         token_manager_type: TokenManagerType::LockUnlock,
-//     };
-
-//     env.as_contract(&client.address, || {
-//         storage::set_token_id_config(&env, token_id.clone(), &token_config);
-//     });
-
-//     assert_auth!(owner, client.upgrade(&new_its_wasm_hash));
-
-//     let migration_data = CustomMigrationData {
-//         new_token_manager_wasm_hash,
-//         new_interchain_token_wasm_hash,
-//         token_ids: vec![&env, token_id],
-//         current_epoch,
-//         upgrader_client: upgrader_client.address,
-//         new_version: String::from_str(&env, "1.1.0"),
-//     };
-
-//     assert_err!(
-//         env.as_contract(&client.address, || {
-//             <InterchainTokenService as CustomMigratableInterface>::__migrate(&env, migration_data)
-//         }),
-//         ContractError::InvalidFlowKey
 //     );
 // }

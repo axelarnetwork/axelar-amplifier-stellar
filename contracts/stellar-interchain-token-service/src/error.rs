@@ -34,5 +34,4 @@ pub enum ContractError {
     ContractPaused = 28,
     InvalidInitialSupply = 29,
     TokenInvocationError = 30,
-    InvalidFlowKey = 31,
 }

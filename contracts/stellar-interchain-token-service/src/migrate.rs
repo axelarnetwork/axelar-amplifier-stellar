@@ -1,12 +1,22 @@
-use soroban_sdk::Env;
+use soroban_sdk::{contracttype, Address, BytesN, Env, String, Vec};
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
 use stellar_upgrader::interface::UpgraderClient;
 
 use crate::error::ContractError;
 use crate::flow_limit::current_epoch;
 use crate::storage::TokenIdConfigValue;
-use crate::types::{CustomMigrationData, TokenManagerType};
+use crate::types::TokenManagerType;
 use crate::{storage, InterchainTokenService};
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CustomMigrationData {
+    pub upgrader_client: Address,
+    pub new_version: String,
+    pub token_ids: Vec<BytesN<32>>,
+    pub new_token_manager_wasm_hash: BytesN<32>,
+    pub new_interchain_token_wasm_hash: BytesN<32>,
+}
 
 pub mod legacy_storage {
     use soroban_sdk::{contracttype, BytesN};
@@ -55,17 +65,18 @@ impl CustomMigratableInterface for InterchainTokenService {
             } = storage::try_token_id_config(env, token_id.clone())
                 .ok_or(ContractError::InvalidTokenId)?;
 
-            if token_manager_type == TokenManagerType::LockUnlock {
-                continue;
-            }
-
             upgrader_client.upgrade( // FIXME: Err(Abort) immediately on internal call to upgrade()
                 &token_manager,
                 &new_version,
                 &new_token_manager_wasm_hash,
                 &soroban_sdk::Vec::new(env),
             );
-            upgrader_client.upgrade( // FIXME: Err(Abort) immediately on internal call to upgrade()
+
+            if token_manager_type == TokenManagerType::LockUnlock {
+                continue;
+            }
+
+            upgrader_client.upgrade(
                 &interchain_token,
                 &new_version,
                 &new_interchain_token_wasm_hash,
@@ -77,13 +88,12 @@ impl CustomMigratableInterface for InterchainTokenService {
                 epoch: current_epoch,
             };
 
-            let flow_out = legacy_storage::try_flow_out(env, flow_key.clone())
-                .ok_or(ContractError::InvalidFlowKey)?;
-            let flow_in = legacy_storage::try_flow_in(env, flow_key.clone())
-                .ok_or(ContractError::InvalidFlowKey)?;
-
-            storage::set_flow_in(env, token_id.clone(), current_epoch, &flow_in);
-            storage::set_flow_out(env, token_id.clone(), current_epoch, &flow_out);
+            if let Some(flow_out) = legacy_storage::try_flow_out(env, flow_key.clone()) {
+                storage::set_flow_out(env, token_id.clone(), current_epoch, &flow_out);
+            }
+            if let Some(flow_in) = legacy_storage::try_flow_in(env, flow_key.clone()) {
+                storage::set_flow_in(env, token_id.clone(), current_epoch, &flow_in);
+            }
         }
 
         storage::set_token_manager_wasm_hash(env, &new_token_manager_wasm_hash);
