@@ -65,7 +65,8 @@ impl CustomMigratableInterface for InterchainTokenService {
             } = storage::try_token_id_config(env, token_id.clone())
                 .ok_or(ContractError::InvalidTokenId)?;
 
-            upgrader_client.upgrade( // FIXME: Err(Abort) immediately on internal call to upgrade()
+            upgrader_client.upgrade(
+                // FIXME: Err(Abort) immediately on internal call to upgrade()
                 &token_manager,
                 &new_version,
                 &new_token_manager_wasm_hash,
