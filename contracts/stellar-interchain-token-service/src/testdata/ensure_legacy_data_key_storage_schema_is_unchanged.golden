@@ -1,0 +1,10 @@
+enum LegacyDataKey {
+
+    #[temporary]
+    #[value(i128)]
+    FlowOut { flow_key: FlowKey },
+
+    #[temporary]
+    #[value(i128)]
+    FlowIn { flow_key: FlowKey },
+}
