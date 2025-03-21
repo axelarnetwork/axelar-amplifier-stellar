@@ -109,10 +109,7 @@ impl InterchainTokenInterface for InterchainToken {
     ) -> Result<(), ContractError> {
         minter.require_auth();
 
-        ensure!(
-            Self::is_minter(env, minter),
-            ContractError::NotMinter
-        );
+        ensure!(Self::is_minter(env, minter), ContractError::NotMinter);
 
         Self::validate_amount(env, amount);
 
