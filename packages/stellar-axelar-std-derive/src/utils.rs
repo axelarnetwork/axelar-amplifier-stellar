@@ -23,9 +23,9 @@ impl PrependStatement for ImplItemFn {
 
 pub fn parse_env_identifier(args: &Punctuated<FnArg, Comma>) -> Result<&Ident, syn::Error> {
     args.iter()
-        .find_map(match_arg_type_pattern)
+        .filter_map(match_arg_type_pattern)
         .filter(|type_pattern| is_env_type(&type_pattern.ty))
-        .and_then(|pat_type| match_env_arg_identifier(&pat_type.pat))
+        .find_map(|pat_type| match_env_arg_identifier(&pat_type.pat))
         .ok_or_else(|| {
             syn::Error::new_spanned(
                 args,
@@ -64,7 +64,7 @@ mod tests {
     use quote::ToTokens;
     use syn::parse_quote;
 
-    use crate::utils::PrependStatement;
+    use crate::utils::{parse_env_identifier, PrependStatement};
 
     #[test]
     fn prepend_statement_empty_body_generation_succeeds() {
@@ -102,5 +102,19 @@ mod tests {
         let formatted_generated_function = prettyplease::unparse(&generated_function_file);
 
         goldie::assert!(formatted_generated_function);
+    }
+
+    #[test]
+    fn function_with_args_but_no_env() {
+        let args = syn::parse_quote! { something:String, other: i32 };
+
+        assert!(parse_env_identifier(&args).is_err());
+    }
+
+    #[test]
+    fn function_with_args_and_env() {
+        let args = syn::parse_quote! { something:String, other: i32, some_env: Env};
+
+        assert!(parse_env_identifier(&args).is_ok());
     }
 }
