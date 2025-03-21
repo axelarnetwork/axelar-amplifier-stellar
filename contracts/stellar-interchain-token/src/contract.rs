@@ -8,7 +8,9 @@ use stellar_axelar_std::interfaces::OwnableInterface;
 use stellar_axelar_std::{ensure, interfaces, only_owner, Upgradable};
 
 use crate::error::ContractError;
-use crate::event::{MinterAddedEvent, MinterRemovedEvent, MintedEvent, ApprovedEvent, TransferredEvent, BurnedEvent};
+use crate::event::{
+    ApprovedEvent, BurnedEvent, MintedEvent, MinterAddedEvent, MinterRemovedEvent, TransferredEvent,
+};
 use crate::interface::InterchainTokenInterface;
 use crate::storage::{self, AllowanceDataKey, AllowanceValue};
 
@@ -108,7 +110,7 @@ impl InterchainTokenInterface for InterchainToken {
         minter.require_auth();
 
         ensure!(
-            Self::is_minter(env, minter.clone()),
+            Self::is_minter(env, minter),
             ContractError::NotMinter
         );
 
@@ -160,7 +162,8 @@ impl token::Interface for InterchainToken {
             spender,
             amount,
             expiration_ledger,
-        }.emit(&env);
+        }
+        .emit(&env);
     }
 
     fn balance(env: Env, id: Address) -> i128 {

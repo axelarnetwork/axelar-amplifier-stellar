@@ -8,7 +8,9 @@ use stellar_axelar_std::events::{fmt_emitted_event_at_idx, fmt_last_emitted_even
 use stellar_axelar_std::interfaces::OwnershipTransferredEvent;
 use stellar_axelar_std::{assert_auth, assert_auth_err};
 
-use crate::event::{MinterAddedEvent, MinterRemovedEvent, MintedEvent, ApprovedEvent, TransferredEvent, BurnedEvent};
+use crate::event::{
+    ApprovedEvent, BurnedEvent, MintedEvent, MinterAddedEvent, MinterRemovedEvent, TransferredEvent,
+};
 use crate::{InterchainToken, InterchainTokenClient};
 
 fn setup_token_metadata(env: &Env, name: &str, symbol: &str, decimal: u32) -> TokenMetadata {
@@ -335,7 +337,7 @@ fn mint_succeeds() {
     let (token, _) = setup_token(&env);
 
     assert_auth!(token.owner(), token.mint(&user, &amount));
-   goldie::assert!(fmt_last_emitted_event::<MintedEvent>(&env));
+    goldie::assert!(fmt_last_emitted_event::<MintedEvent>(&env));
 
     assert_eq!(token.balance(&user), amount);
 
