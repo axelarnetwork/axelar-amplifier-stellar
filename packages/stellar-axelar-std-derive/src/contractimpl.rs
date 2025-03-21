@@ -185,6 +185,10 @@ mod tests {
                 pub fn is_allowed_during_migration(env: &Env, arg: String) {
                     // entrypoint code
                 }
+
+                fn should_have_no_check_because_private(env: &Env, arg: String) {
+                    // some logic
+                }
             }
         };
 
