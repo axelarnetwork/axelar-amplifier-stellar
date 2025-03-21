@@ -1,2 +1,2 @@
-mod test;
 mod migrate;
+mod test;
