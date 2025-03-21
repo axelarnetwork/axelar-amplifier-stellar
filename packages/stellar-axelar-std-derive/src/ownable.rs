@@ -11,11 +11,11 @@ pub fn ownable(name: &Ident) -> TokenStream2 {
         #[stellar_axelar_std::contractimpl]
         impl stellar_axelar_std::interfaces::OwnableInterface for #name {
             #[allow_during_migration]
-            fn owner(env: &Env) -> soroban_sdk::Address {
+            fn owner(env: &Env) -> stellar_axelar_std::Address {
                 stellar_axelar_std::interfaces::owner(env)
             }
 
-            fn transfer_ownership(env: &Env, new_owner: soroban_sdk::Address) {
+            fn transfer_ownership(env: &Env, new_owner: stellar_axelar_std::Address) {
                 stellar_axelar_std::interfaces::transfer_ownership::<Self>(env, new_owner);
             }
         }

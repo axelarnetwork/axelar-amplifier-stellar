@@ -11,11 +11,11 @@ pub fn operatable(name: &Ident) -> TokenStream2 {
         #[stellar_axelar_std::contractimpl]
         impl stellar_axelar_std::interfaces::OperatableInterface for #name {
             #[allow_during_migration]
-            fn operator(env: &Env) -> soroban_sdk::Address {
+            fn operator(env: &Env) -> stellar_axelar_std::Address {
                 stellar_axelar_std::interfaces::operator(env)
             }
 
-            fn transfer_operatorship(env: &Env, new_operator: soroban_sdk::Address) {
+            fn transfer_operatorship(env: &Env, new_operator: stellar_axelar_std::Address) {
                 stellar_axelar_std::interfaces::transfer_operatorship::<Self>(env, new_operator);
             }
         }

@@ -1,7 +1,8 @@
-use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{contract, contracterror, Address, Env};
 use stellar_axelar_std::interfaces::OperatableClient;
-use stellar_axelar_std::{assert_auth, assert_auth_err, only_operator};
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::{
+    assert_auth, assert_auth_err, contract, contracterror, only_operator, Address, Env,
+};
 use stellar_axelar_std_derive::{contractimpl, Operatable};
 
 use crate as stellar_axelar_std;

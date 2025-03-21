@@ -1,6 +1,6 @@
 use core::fmt::Debug;
 
-use soroban_sdk::{contract, contracterror, Address, Env};
+use stellar_axelar_std::{contract, contracterror, Address, Env};
 use stellar_axelar_std_derive::{contractimpl, Ownable, Upgradable};
 
 use crate as stellar_axelar_std;
