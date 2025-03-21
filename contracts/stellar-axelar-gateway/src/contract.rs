@@ -168,8 +168,7 @@ impl AxelarGatewayInterface for AxelarGateway {
                 env,
                 message.source_chain.clone(),
                 message.message_id.clone(),
-            )
-            {
+            ) {
                 continue;
             }
 
