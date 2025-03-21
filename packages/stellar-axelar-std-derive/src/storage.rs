@@ -251,9 +251,7 @@ impl Value {
 
             pub fn #has(#params) -> bool {
                 let key = #storage_key;
-                let value = #storage_method.get::<_, #value_type>(&key);
-
-                value.is_some()
+                #storage_method.has(&key)
             }
         }
     }
@@ -268,7 +266,7 @@ impl Value {
                 remover: format_ident!("remove_{}_status", ident),
                 try_getter: format_ident!("_"),
                 ttl_extender: format_ident!("extend_{}_ttl", ident),
-                has: format_ident!("has_{}_status", ident),
+                has: format_ident!("_"),
             },
             Self::Type(_) => StorageFunctionNames {
                 getter: format_ident!("{}", ident),

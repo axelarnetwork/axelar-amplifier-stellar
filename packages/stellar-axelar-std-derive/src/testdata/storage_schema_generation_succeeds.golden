@@ -43,8 +43,7 @@ pub fn extend_counter_ttl(env: &soroban_sdk::Env, threshold: u32, extend_to: u32
 
 pub fn has_counter(env: &soroban_sdk::Env) -> bool {
     let key = DataKey::Counter;
-    let value = env.storage().instance().get::<_, u32>(&key);
-    value.is_some()
+    env.storage().instance().has(&key)
 }
 
 pub fn message(env: &soroban_sdk::Env, sender: Address) -> String {
@@ -86,8 +85,7 @@ pub fn extend_message_ttl(
 
 pub fn has_message(env: &soroban_sdk::Env, sender: Address) -> bool {
     let key = DataKey::Message(sender);
-    let value = env.storage().persistent().get::<_, String>(&key);
-    value.is_some()
+    env.storage().persistent().has(&key)
 }
 
 pub fn last_caller(env: &soroban_sdk::Env, timestamp: u64) -> Address {
@@ -125,8 +123,7 @@ pub fn extend_last_caller_ttl(
 
 pub fn has_last_caller(env: &soroban_sdk::Env, timestamp: u64) -> bool {
     let key = DataKey::LastCaller(timestamp);
-    let value = env.storage().temporary().get::<_, Address>(&key);
-    value.is_some()
+    env.storage().temporary().has(&key)
 }
 
 pub fn flag(env: &soroban_sdk::Env, key: String, owner: Address) -> bool {
@@ -169,8 +166,7 @@ pub fn extend_flag_ttl(
 
 pub fn has_flag(env: &soroban_sdk::Env, key: String, owner: Address) -> bool {
     let key = DataKey::Flag(key, owner);
-    let value = env.storage().persistent().get::<_, bool>(&key);
-    value.is_some()
+    env.storage().persistent().has(&key)
 }
 
 pub fn optional_message(env: &soroban_sdk::Env, id: u32) -> Option<String> {
@@ -212,8 +208,7 @@ pub fn extend_optional_message_ttl(
 
 pub fn has_optional_message(env: &soroban_sdk::Env, id: u32) -> bool {
     let key = DataKey::OptionalMessage(id);
-    let value = env.storage().persistent().get::<_, Option<String>>(&key);
-    value.is_some()
+    env.storage().persistent().has(&key)
 }
 
 pub fn is_initialized(env: &soroban_sdk::Env) -> bool {
