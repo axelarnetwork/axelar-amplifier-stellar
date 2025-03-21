@@ -164,12 +164,11 @@ impl AxelarGatewayInterface for AxelarGateway {
 
         for message in messages.into_iter() {
             // Prevent replay if message is already approved/executed
-            if storage::try_message_approval(
+            if storage::has_message_approval(
                 env,
                 message.source_chain.clone(),
                 message.message_id.clone(),
             )
-            .is_some()
             {
                 continue;
             }
