@@ -74,7 +74,7 @@ impl FlowDirection {
     }
 }
 
-fn current_epoch(env: &Env) -> u64 {
+pub fn current_epoch(env: &Env) -> u64 {
     env.ledger().timestamp() / EPOCH_TIME
 }
 

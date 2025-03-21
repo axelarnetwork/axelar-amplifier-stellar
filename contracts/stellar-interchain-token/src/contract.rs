@@ -16,6 +16,7 @@ use crate::storage::{self, AllowanceDataKey, AllowanceValue};
 
 #[contract]
 #[derive(Upgradable)]
+#[migratable]
 pub struct InterchainToken;
 
 #[contractimpl]

@@ -1,4 +1,4 @@
-use stellar_axelar_std::interfaces::OwnableInterface;
+use stellar_axelar_std::interfaces::{OwnableInterface, UpgradableInterface};
 use stellar_axelar_std::token::{self, StellarAssetInterface};
 use stellar_axelar_std::{contractclient, soroban_sdk, Address, BytesN, Env};
 
@@ -6,7 +6,7 @@ use crate::error::ContractError;
 
 #[contractclient(name = "InterchainTokenClient")]
 pub trait InterchainTokenInterface:
-    token::Interface + StellarAssetInterface + OwnableInterface
+    token::Interface + StellarAssetInterface + OwnableInterface + UpgradableInterface
 {
     /// Returns the Interchain Token ID
     fn token_id(env: &Env) -> BytesN<32>;

@@ -1,4 +1,4 @@
-use stellar_axelar_std::{contracttype, soroban_sdk, Bytes, BytesN, String, Vec};
+use stellar_axelar_std::{contracttype, soroban_sdk, Address, Bytes, BytesN, String, Vec};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Message {
@@ -54,8 +54,9 @@ pub enum TokenManagerType {
 #[contracttype]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CustomMigrationData {
+    pub upgrader_client: Address,
+    pub new_version: String,
+    pub token_ids: Vec<BytesN<32>>,
     pub new_token_manager_wasm_hash: BytesN<32>,
     pub new_interchain_token_wasm_hash: BytesN<32>,
-    pub token_ids: Vec<BytesN<32>>,
-    pub current_epoch: u64,
 }

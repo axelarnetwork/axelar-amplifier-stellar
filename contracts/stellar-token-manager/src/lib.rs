@@ -15,6 +15,7 @@ cfg_if::cfg_if! {
         pub use interface::{TokenManagerClient, TokenManagerInterface};
     } else {
         mod contract;
+        mod migrate;
 
         pub use contract::{TokenManager, TokenManagerClient};
     }

@@ -4,6 +4,8 @@ use stellar_axelar_gas_service::AxelarGasServiceClient;
 use stellar_axelar_gateway::testutils::{setup_gateway, TestSignerSet};
 use stellar_axelar_gateway::AxelarGatewayClient;
 use stellar_axelar_std::{Env, IntoVal};
+use stellar_upgrader::interface::UpgraderClient;
+use stellar_upgrader::Upgrader;
 
 use crate::testutils::setup_its;
 use crate::InterchainTokenServiceClient;
@@ -23,6 +25,12 @@ pub fn setup_env<'a>() -> (
     let client = setup_its(&env, &gateway_client, &gas_service_client, None);
 
     (env, client, gateway_client, gas_service_client, signers)
+}
+
+pub fn setup_upgrader<'a>(env: &Env) -> UpgraderClient<'a> {
+    let contract_id = env.register(Upgrader, ());
+
+    UpgraderClient::new(env, &contract_id)
 }
 
 pub trait TokenMetadataExt {
