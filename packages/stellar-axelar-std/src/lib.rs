@@ -30,6 +30,8 @@ pub mod address;
 // This is needed to make the soroban_sdk macros work, 
 // because they generate code containing soroban_sdk::{...} 
 pub use soroban_sdk;
+// re-export the soroban_sdk so all types are available at the top level,
+// and can be overwritten if necessary
 pub use soroban_sdk::*;
 // override specific soroban_sdk macro
 pub use stellar_axelar_std_derive::contractimpl;
