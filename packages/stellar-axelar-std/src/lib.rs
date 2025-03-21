@@ -34,6 +34,7 @@ pub use soroban_sdk;
 // and can be overwritten if necessary
 pub use soroban_sdk::*;
 // override specific soroban_sdk macro
+#[cfg(any(test, feature = "derive"))]
 pub use stellar_axelar_std_derive::contractimpl;
 #[cfg(any(test, feature = "derive"))]
 pub use stellar_axelar_std_derive::*;
