@@ -27,7 +27,8 @@ pub mod interfaces;
 
 pub mod address;
 
-// This is needed to make the soroban_sdk macros work
+// This is needed to make the soroban_sdk macros work, 
+// because they generate code containing soroban_sdk::{...} 
 pub use soroban_sdk;
 pub use soroban_sdk::*;
 // override specific soroban_sdk macro
