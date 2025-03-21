@@ -1,11 +1,11 @@
 use soroban_sdk::token::{StellarAssetInterface, TokenInterface};
-use soroban_sdk::{assert_with_error, contract, contractimpl, token, Address, BytesN, Env, String};
+use soroban_sdk::{assert_with_error, contract, token, Address, BytesN, Env, String};
 use soroban_token_sdk::event::Events as TokenEvents;
 use soroban_token_sdk::metadata::TokenMetadata;
 use soroban_token_sdk::TokenUtils;
 use stellar_axelar_std::events::Event;
 use stellar_axelar_std::interfaces::OwnableInterface;
-use stellar_axelar_std::{ensure, interfaces, only_owner, Upgradable};
+use stellar_axelar_std::{contractimpl, ensure, interfaces, only_owner, Upgradable};
 
 use crate::error::ContractError;
 use crate::event::{MinterAddedEvent, MinterRemovedEvent};

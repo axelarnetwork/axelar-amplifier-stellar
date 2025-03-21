@@ -1,8 +1,8 @@
 use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{contract, contracterror, contractimpl, Address, Env};
+use soroban_sdk::{contract, contracterror, Address, Env};
 use stellar_axelar_std::interfaces::OperatableClient;
 use stellar_axelar_std::{assert_auth, assert_auth_err, only_operator};
-use stellar_axelar_std_derive::Operatable;
+use stellar_axelar_std_derive::{contractimpl, Operatable};
 
 use crate as stellar_axelar_std;
 
@@ -24,7 +24,7 @@ impl Contract {
     }
 
     #[only_operator]
-    pub fn operator_function(env: &Env) {}
+    pub fn operator_function(_env: &Env) {}
 }
 
 #[test]

@@ -3,17 +3,71 @@
 //! This ensures compatibility and prevents cyclic dependency issues during testing and release.
 
 mod axelar_executable;
+mod contractimpl;
 mod into_event;
 mod its_executable;
-mod modifier;
 mod operatable;
 mod ownable;
 mod pausable;
 mod storage;
 mod upgradable;
+mod utils;
 
 use proc_macro::TokenStream;
-use syn::{parse_macro_input, Attribute, DeriveInput, ItemFn, Path};
+use syn::{parse_macro_input, Attribute, DeriveInput, ItemFn, ItemImpl, Path};
+
+/// Designates functions in an `impl` block as contract entrypoints.
+/// This is a wrapper around the soroban-sdk's `#[contractimpl]` attribute.
+/// It adds additional checks to ensure entrypoints don't get accidentally, or maliciously, called
+/// after a contract upgrade, but before the data migration is complete.
+///
+/// # Example
+/// ```rust, ignore
+/// # mod test {
+/// # use soroban_sdk::{contract, contracterror};
+/// use stellar_axelar_std_derive::{contractimpl, Upgradable};
+///
+/// #[contract]
+/// #[derive(Upgradable)]
+/// pub struct Contract;
+///
+/// // any function in this impl block will panic if called during migration
+/// #[contractimpl]
+/// impl Contract {
+///     pub fn __constructor(env: &Env) {
+///         // constructor code
+///     }
+///
+///     pub fn do_something(env: &Env, arg: String) {
+///         // entrypoint code
+///     }
+/// }
+///
+/// #[contracterror]
+/// #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+/// #[repr(u32)]
+/// pub enum ContractError {
+///     MigrationInProgress = 1,
+/// }
+///
+/// // if an entrypoint is able to return a Result<_, ContractError>,
+/// // it will return ContractError::MigrationInProgress instead of panicking when called during migration
+/// #[contractimpl]
+/// impl Contract {
+///     pub fn return_result(env: &Env, arg: String) -> Result<u32, ContractError> {
+///         // entrypoint code
+///     }
+/// }
+/// # }
+/// ```
+#[proc_macro_attribute]
+pub fn contractimpl(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let mut input = parse_macro_input!(item as ItemImpl);
+
+    contractimpl::contractimpl(&mut input)
+        .unwrap_or_else(|err| err.to_compile_error())
+        .into()
+}
 
 /// Implements the Operatable interface for a Soroban contract.
 ///
@@ -123,7 +177,9 @@ pub fn derive_pausable(input: TokenStream) -> TokenStream {
 pub fn when_not_paused(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input_fn = parse_macro_input!(item as ItemFn);
 
-    pausable::when_not_paused_impl(input_fn).into()
+    pausable::when_not_paused_impl(input_fn)
+        .unwrap_or_else(|err| err.to_compile_error())
+        .into()
 }
 
 /// Implements the Upgradable and Migratable interfaces for a Soroban contract.
@@ -270,7 +326,9 @@ pub fn derive_axelar_executable(input: TokenStream) -> TokenStream {
 pub fn only_owner(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input_fn = parse_macro_input!(item as ItemFn);
 
-    ownable::only_owner_impl(input_fn).into()
+    ownable::only_owner_impl(input_fn)
+        .unwrap_or_else(|err| err.to_compile_error())
+        .into()
 }
 
 /// Ensures that only a contract's operator can execute the attributed function.
@@ -297,7 +355,9 @@ pub fn only_owner(_attr: TokenStream, item: TokenStream) -> TokenStream {
 pub fn only_operator(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input_fn = parse_macro_input!(item as ItemFn);
 
-    operatable::only_operator_impl(input_fn).into()
+    operatable::only_operator_impl(input_fn)
+        .unwrap_or_else(|err| err.to_compile_error())
+        .into()
 }
 
 /// Implements a storage interface for a Stellar contract storage enum.
