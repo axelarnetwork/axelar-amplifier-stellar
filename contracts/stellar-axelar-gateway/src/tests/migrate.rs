@@ -1,6 +1,6 @@
 use soroban_sdk::{vec, BytesN, String};
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
-use stellar_axelar_std::{assert_auth, assert_err};
+use stellar_axelar_std::{assert_auth, assert_err, assert_ok};
 
 use crate::contract::AxelarGateway;
 use crate::error::ContractError;
@@ -40,8 +40,7 @@ fn migrate_succeeds() {
     let migration_data = vec![&env, (source_chain, message_id)];
 
     env.as_contract(&client.address, || {
-        let result = AxelarGateway::__migrate(&env, migration_data);
-        assert!(result.is_ok());
+        assert_ok!(AxelarGateway::__migrate(&env, migration_data));
     });
 }
 
@@ -191,10 +190,10 @@ fn migrate_succeeds_with_executed_message_approval() {
 
     let migration_data = vec![&env, (source_chain.clone(), message_id.clone())];
 
-    assert_auth!(owner, client.migrate(&migration_data));
-
     assert_eq!(
         env.as_contract(&client.address, || {
+            assert_ok!(AxelarGateway::__migrate(&env, migration_data));
+
             storage::message_approval(&env, source_chain, message_id)
         }),
         storage::MessageApprovalValue::Executed
