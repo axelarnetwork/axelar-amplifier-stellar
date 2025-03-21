@@ -1,9 +1,11 @@
 use soroban_sdk::Env;
-use stellar_axelar_std::interfaces::{CustomMigratableInterface, UpgradableClient};
+use stellar_axelar_std::interfaces::CustomMigratableInterface;
+use stellar_upgrader::interface::UpgraderClient;
 
 use crate::error::ContractError;
+use crate::flow_limit::current_epoch;
 use crate::storage::TokenIdConfigValue;
-use crate::types::CustomMigrationData;
+use crate::types::{CustomMigrationData, TokenManagerType};
 use crate::{storage, InterchainTokenService};
 
 pub mod legacy_storage {
@@ -35,22 +37,40 @@ impl CustomMigratableInterface for InterchainTokenService {
 
     fn __migrate(env: &Env, migration_data: Self::MigrationData) -> Result<(), Self::Error> {
         let CustomMigrationData {
+            upgrader_client,
+            new_version,
+            token_ids,
             new_token_manager_wasm_hash,
             new_interchain_token_wasm_hash,
-            token_ids,
-            current_epoch,
         } = migration_data;
+
+        let current_epoch = current_epoch(env);
+        let upgrader_client = UpgraderClient::new(env, &upgrader_client);
 
         for token_id in token_ids.into_iter() {
             let TokenIdConfigValue {
                 token_address: interchain_token,
                 token_manager,
-                ..
+                token_manager_type,
             } = storage::try_token_id_config(env, token_id.clone())
                 .ok_or(ContractError::InvalidTokenId)?;
 
-            UpgradableClient::new(env, &token_manager).upgrade(&new_token_manager_wasm_hash);
-            UpgradableClient::new(env, &interchain_token).upgrade(&new_interchain_token_wasm_hash);
+            if token_manager_type == TokenManagerType::LockUnlock {
+                continue;
+            }
+
+            upgrader_client.upgrade( // FIXME: Err(Abort) immediately on internal call to upgrade()
+                &token_manager,
+                &new_version,
+                &new_token_manager_wasm_hash,
+                &soroban_sdk::Vec::new(env),
+            );
+            upgrader_client.upgrade( // FIXME: Err(Abort) immediately on internal call to upgrade()
+                &interchain_token,
+                &new_version,
+                &new_interchain_token_wasm_hash,
+                &soroban_sdk::Vec::new(env),
+            );
 
             let flow_key = legacy_storage::FlowKey {
                 token_id: token_id.clone(),
