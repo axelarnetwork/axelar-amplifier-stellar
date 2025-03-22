@@ -1,6 +1,6 @@
-use soroban_sdk::{contracttype, Address, BytesN, Env, String, Vec};
+use soroban_sdk::{contracttype, Address, BytesN, Env, String, Val, Vec};
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
-use stellar_upgrader::interface::UpgraderClient;
+use stellar_upgrader::UpgraderClient;
 
 use crate::error::ContractError;
 use crate::flow_limit::current_epoch;
@@ -54,6 +54,9 @@ impl CustomMigratableInterface for InterchainTokenService {
             new_interchain_token_wasm_hash,
         } = migration_data;
 
+        storage::set_token_manager_wasm_hash(env, &new_token_manager_wasm_hash);
+        storage::set_interchain_token_wasm_hash(env, &new_interchain_token_wasm_hash);
+
         let current_epoch = current_epoch(env);
         let upgrader_client = UpgraderClient::new(env, &upgrader_client);
 
@@ -66,23 +69,20 @@ impl CustomMigratableInterface for InterchainTokenService {
                 .ok_or(ContractError::InvalidTokenId)?;
 
             upgrader_client.upgrade(
-                // FIXME: Err(Abort) immediately on internal call to upgrade()
                 &token_manager,
                 &new_version,
                 &new_token_manager_wasm_hash,
-                &soroban_sdk::Vec::new(env),
+                &soroban_sdk::Vec::<Val>::new(env),
             );
 
-            if token_manager_type == TokenManagerType::LockUnlock {
-                continue;
+            if token_manager_type != TokenManagerType::LockUnlock {
+                upgrader_client.upgrade(
+                    &interchain_token,
+                    &new_version,
+                    &new_interchain_token_wasm_hash,
+                    &soroban_sdk::Vec::new(env),
+                );
             }
-
-            upgrader_client.upgrade(
-                &interchain_token,
-                &new_version,
-                &new_interchain_token_wasm_hash,
-                &soroban_sdk::Vec::new(env),
-            );
 
             let flow_key = legacy_storage::FlowKey {
                 token_id: token_id.clone(),
@@ -96,9 +96,6 @@ impl CustomMigratableInterface for InterchainTokenService {
                 storage::set_flow_in(env, token_id.clone(), current_epoch, &flow_in);
             }
         }
-
-        storage::set_token_manager_wasm_hash(env, &new_token_manager_wasm_hash);
-        storage::set_interchain_token_wasm_hash(env, &new_interchain_token_wasm_hash);
 
         Ok(())
     }

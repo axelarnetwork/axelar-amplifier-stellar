@@ -3,6 +3,7 @@ use stellar_axelar_gas_service::AxelarGasServiceClient;
 use stellar_axelar_gateway::AxelarGatewayClient;
 use stellar_axelar_std::testutils::Address as _;
 use stellar_axelar_std::{Address, BytesN, Env, String};
+use stellar_upgrader::{Upgrader, UpgraderClient};
 
 use crate::{InterchainTokenService, InterchainTokenServiceClient};
 
@@ -70,4 +71,10 @@ pub fn setup_its_token(
     );
 
     (token_id, token_metadata)
+}
+
+pub fn setup_upgrader<'a>(env: &Env) -> UpgraderClient<'a> {
+    let contract_id = env.register(Upgrader, ());
+
+    UpgraderClient::new(env, &contract_id)
 }

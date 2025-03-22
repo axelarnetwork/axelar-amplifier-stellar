@@ -27,12 +27,6 @@ pub fn setup_env<'a>() -> (
     (env, client, gateway_client, gas_service_client, signers)
 }
 
-pub fn setup_upgrader<'a>(env: &Env) -> UpgraderClient<'a> {
-    let contract_id = env.register(Upgrader, ());
-
-    UpgraderClient::new(env, &contract_id)
-}
-
 pub trait TokenMetadataExt {
     fn new(env: &Env, name: &str, symbol: &str, decimal: u32) -> Self;
 }
