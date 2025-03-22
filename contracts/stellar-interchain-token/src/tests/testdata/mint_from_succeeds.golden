@@ -1,0 +1,11 @@
+MintedEvent {
+    to: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM),
+    amount: 1000,
+}
+
+Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4)
+
+minted {
+    #[topic] to: Address,
+    #[topic] amount: i128,
+}

@@ -8,7 +8,9 @@ use stellar_axelar_std::interfaces::OwnableInterface;
 use stellar_axelar_std::{ensure, interfaces, only_owner, Upgradable};
 
 use crate::error::ContractError;
-use crate::event::{MinterAddedEvent, MinterRemovedEvent};
+use crate::event::{
+    ApprovedEvent, BurnedEvent, MintedEvent, MinterAddedEvent, MinterRemovedEvent, TransferredEvent,
+};
 use crate::interface::InterchainTokenInterface;
 use crate::storage::{self, AllowanceDataKey, AllowanceValue};
 
@@ -81,7 +83,7 @@ impl StellarAssetInterface for InterchainToken {
 
         Self::receive_balance(&env, to.clone(), amount);
 
-        TokenUtils::new(&env).events().mint(owner, to, amount);
+        MintedEvent { to, amount }.emit(&env);
     }
 
     fn clawback(_env: Env, _from: Address, _amount: i128) {
@@ -107,16 +109,13 @@ impl InterchainTokenInterface for InterchainToken {
     ) -> Result<(), ContractError> {
         minter.require_auth();
 
-        ensure!(
-            Self::is_minter(env, minter.clone()),
-            ContractError::NotMinter
-        );
+        ensure!(Self::is_minter(env, minter), ContractError::NotMinter);
 
         Self::validate_amount(env, amount);
 
         Self::receive_balance(env, to.clone(), amount);
 
-        TokenUtils::new(env).events().mint(minter, to, amount);
+        MintedEvent { to, amount }.emit(env);
 
         Ok(())
     }
@@ -155,9 +154,13 @@ impl token::Interface for InterchainToken {
             expiration_ledger,
         );
 
-        TokenUtils::new(&env)
-            .events()
-            .approve(from, spender, amount, expiration_ledger);
+        ApprovedEvent {
+            from,
+            spender,
+            amount,
+            expiration_ledger,
+        }
+        .emit(&env);
     }
 
     fn balance(env: Env, id: Address) -> i128 {
@@ -171,7 +174,7 @@ impl token::Interface for InterchainToken {
         Self::spend_balance(&env, from.clone(), amount);
         Self::receive_balance(&env, to.clone(), amount);
 
-        TokenUtils::new(&env).events().transfer(from, to, amount);
+        TransferredEvent { from, to, amount }.emit(&env);
     }
 
     fn transfer_from(env: Env, spender: Address, from: Address, to: Address, amount: i128) {
@@ -182,7 +185,7 @@ impl token::Interface for InterchainToken {
         Self::spend_balance(&env, from.clone(), amount);
         Self::receive_balance(&env, to.clone(), amount);
 
-        TokenUtils::new(&env).events().transfer(from, to, amount)
+        TransferredEvent { from, to, amount }.emit(&env);
     }
 
     fn burn(env: Env, from: Address, amount: i128) {
@@ -191,7 +194,7 @@ impl token::Interface for InterchainToken {
         Self::validate_amount(&env, amount);
         Self::spend_balance(&env, from.clone(), amount);
 
-        TokenUtils::new(&env).events().burn(from, amount);
+        BurnedEvent { from, amount }.emit(&env);
     }
 
     fn burn_from(env: Env, spender: Address, from: Address, amount: i128) {
@@ -201,7 +204,7 @@ impl token::Interface for InterchainToken {
         Self::spend_allowance(&env, from.clone(), spender, amount);
         Self::spend_balance(&env, from.clone(), amount);
 
-        TokenUtils::new(&env).events().burn(from, amount)
+        BurnedEvent { from, amount }.emit(&env);
     }
 
     fn decimals(env: Env) -> u32 {

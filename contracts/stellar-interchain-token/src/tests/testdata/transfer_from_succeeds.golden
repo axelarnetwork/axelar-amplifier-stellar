@@ -1,0 +1,13 @@
+TransferredEvent {
+    from: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM),
+    to: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M),
+    amount: 400,
+}
+
+Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4)
+
+transferred {
+    #[topic] from: Address,
+    #[topic] to: Address,
+    #[topic] amount: i128,
+}

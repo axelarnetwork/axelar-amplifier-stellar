@@ -1,0 +1,11 @@
+BurnedEvent {
+    from: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM),
+    amount: 100,
+}
+
+Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM)
+
+burned {
+    #[topic] from: Address,
+    #[topic] amount: i128,
+}
