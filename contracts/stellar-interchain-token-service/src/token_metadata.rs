@@ -1,7 +1,6 @@
-use soroban_sdk::{token, Address, Env, String};
 use soroban_token_sdk::metadata::TokenMetadata;
-use stellar_axelar_std::ensure;
 use stellar_axelar_std::string::StringExt;
+use stellar_axelar_std::{ensure, token, Address, Env, String};
 
 use crate::error::ContractError;
 
