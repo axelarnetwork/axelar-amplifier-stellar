@@ -1,6 +1,8 @@
 #![cfg(any(test, feature = "testutils"))]
 extern crate std;
 
+pub use soroban_sdk::testutils::*;
+
 /// Helper macro for building and verifying authorization chains in Soroban contract tests.
 ///
 /// Used to verify that contract calls require the correct sequence of authorizations.

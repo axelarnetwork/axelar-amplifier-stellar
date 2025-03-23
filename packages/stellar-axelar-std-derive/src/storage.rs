@@ -76,9 +76,9 @@ impl VariantExt for Variant {
         let (field_names, field_types) = (self.fields.names(), self.fields.types());
 
         if field_names.is_empty() {
-            quote! { env: &soroban_sdk::Env }
+            quote! { env: &stellar_axelar_std::Env }
         } else {
-            quote! { env: &soroban_sdk::Env, #(#field_names: #field_types),* }
+            quote! { env: &stellar_axelar_std::Env, #(#field_names: #field_types),* }
         }
     }
 
@@ -364,7 +364,7 @@ pub fn contract_storage(input: &DeriveInput) -> TokenStream {
         .collect();
 
     let contract_storage = quote! {
-        #[soroban_sdk::contracttype]
+        #[stellar_axelar_std::contracttype]
         enum #r#enum {
             #(#transformed_variants,)*
         }
