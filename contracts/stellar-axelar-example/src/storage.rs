@@ -1,5 +1,4 @@
-use soroban_sdk::Address;
-use stellar_axelar_std::contractstorage;
+use stellar_axelar_std::{contractstorage, soroban_sdk, Address};
 
 #[contractstorage]
 #[derive(Clone, Debug)]
