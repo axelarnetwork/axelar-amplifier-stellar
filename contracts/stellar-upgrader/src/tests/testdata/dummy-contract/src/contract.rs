@@ -2,7 +2,7 @@
 
 use soroban_sdk::{contract, contracterror, vec, Address, BytesN, Env};
 use stellar_axelar_std::interfaces::{OwnableInterface, UpgradableInterface};
-use stellar_axelar_std::{contractimpl, contractstorage, interfaces, only_owner};
+use stellar_axelar_std::{contractimpl, contractstorage, interfaces};
 
 #[contract]
 pub struct DummyContract;

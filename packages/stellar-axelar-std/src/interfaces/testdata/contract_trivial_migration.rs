@@ -1,7 +1,7 @@
 use core::convert::Infallible;
 
 use soroban_sdk::testutils::arbitrary::std;
-use soroban_sdk::{contract, contracterror, contracttype, vec, Address, BytesN, Env, String};
+use soroban_sdk::{contract, contracterror, contracttype, vec, Address, BytesN, Env, String, Vec};
 use stellar_axelar_std_derive::contractimpl;
 
 use crate as stellar_axelar_std;
@@ -88,6 +88,7 @@ impl UpgradableInterface for Contract {
         String::from_str(env, "0.1.0")
     }
 
+    #[allow_during_migration]
     fn required_auths(env: &Env) -> Vec<Address> {
         vec![env, Self::owner(env)]
     }

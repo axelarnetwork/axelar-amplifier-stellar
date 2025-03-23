@@ -5,9 +5,11 @@ impl stellar_axelar_std::interfaces::UpgradableInterface for Contract {
     fn version(env: &Env) -> soroban_sdk::String {
         soroban_sdk::String::from_str(env, env!("CARGO_PKG_VERSION"))
     }
+    #[allow_during_migration]
     fn required_auths(env: &Env) -> soroban_sdk::Vec<soroban_sdk::Address> {
         stellar_axelar_std::interfaces::required_auths::<Self>(env)
     }
+    #[allow_during_migration]
     fn upgrade(env: &Env, new_wasm_hash: soroban_sdk::BytesN<32>) {
         stellar_axelar_std::interfaces::upgrade::<Self>(env, new_wasm_hash);
     }
