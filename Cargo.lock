@@ -2006,7 +2006,6 @@ dependencies = [
  "paste",
  "rand",
  "rand_chacha",
- "soroban-sdk",
  "stellar-axelar-std",
 ]
 
