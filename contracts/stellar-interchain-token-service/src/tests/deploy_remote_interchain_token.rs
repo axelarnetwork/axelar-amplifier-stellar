@@ -1,9 +1,10 @@
-use soroban_sdk::testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation};
-use soroban_sdk::{Address, Bytes, BytesN, IntoVal, String, Symbol};
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_gas_service::testutils::setup_gas_token;
+use stellar_axelar_std::testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation};
 use stellar_axelar_std::types::Token;
-use stellar_axelar_std::{assert_contract_err, auth_invocation, events};
+use stellar_axelar_std::{
+    assert_contract_err, auth_invocation, events, Address, Bytes, BytesN, IntoVal, String, Symbol,
+};
 
 use super::utils::{setup_env, TokenMetadataExt};
 use crate::error::ContractError;

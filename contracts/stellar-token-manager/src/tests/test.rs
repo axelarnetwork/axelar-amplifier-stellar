@@ -1,12 +1,11 @@
 #![cfg(test)]
 extern crate std;
-
-use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{
-    contract, contracterror, symbol_short, vec, Address, Env, IntoVal, Symbol, Val, Vec,
-};
 use stellar_axelar_std::events::Event;
-use stellar_axelar_std::{assert_auth, assert_auth_err, contractimpl, IntoEvent};
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::{
+    assert_auth, assert_auth_err, contract, contracterror, contractimpl, soroban_sdk, symbol_short,
+    vec, Address, Env, IntoEvent, IntoVal, Symbol, Val, Vec,
+};
 
 use crate::{TokenManager, TokenManagerClient};
 
