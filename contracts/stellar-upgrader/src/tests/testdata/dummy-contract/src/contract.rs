@@ -1,4 +1,4 @@
-//! Dummy contract to test the [crate::Upgrader]
+//! Dummy contract to test the `Upgrader` contract
 
 use soroban_sdk::{contract, contracterror, vec, Address, BytesN, Env};
 use stellar_axelar_std::interfaces::{OwnableInterface, UpgradableInterface};
