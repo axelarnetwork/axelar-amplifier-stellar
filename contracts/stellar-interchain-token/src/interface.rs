@@ -1,6 +1,6 @@
-use soroban_sdk::token::{self, StellarAssetInterface};
-use soroban_sdk::{contractclient, Address, BytesN, Env};
 use stellar_axelar_std::interfaces::OwnableInterface;
+use stellar_axelar_std::token::{self, StellarAssetInterface};
+use stellar_axelar_std::{contractclient, soroban_sdk, Address, BytesN, Env};
 
 use crate::error::ContractError;
 
