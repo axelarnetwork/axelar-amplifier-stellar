@@ -1,7 +1,7 @@
 use core::fmt::Debug;
 
-use soroban_sdk::{Address, Bytes, BytesN, String};
 use stellar_axelar_std::IntoEvent;
+use stellar_axelar_std::{Address, Bytes, BytesN, String};
 
 use crate::types::{Message, WeightedSigners};
 

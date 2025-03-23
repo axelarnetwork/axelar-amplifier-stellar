@@ -1,13 +1,14 @@
-use soroban_sdk::{Env, String, Vec};
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
+use stellar_axelar_std::{Env, String, Vec};
 
 use crate::contract::AxelarGateway;
 use crate::error::ContractError;
 use crate::storage;
 
 pub mod legacy_storage {
-    use soroban_sdk::{contracttype, BytesN, String};
     use stellar_axelar_std::contractstorage;
+    use stellar_axelar_std::soroban_sdk;
+    use stellar_axelar_std::{contracttype, BytesN, String};
 
     #[contracttype]
     #[derive(Clone, Debug)]

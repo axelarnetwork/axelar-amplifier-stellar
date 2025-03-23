@@ -1,6 +1,6 @@
-use soroban_sdk::testutils::{Address as _, Events};
-use soroban_sdk::{bytes, vec, Address, BytesN, String};
+use stellar_axelar_std::testutils::{Address as _, Events};
 use stellar_axelar_std::{assert_auth, assert_auth_err, assert_contract_err, events};
+use stellar_axelar_std::{bytes, vec, Address, BytesN, String};
 
 use crate::error::ContractError;
 use crate::event::{
@@ -176,7 +176,7 @@ fn approve_messages_fail_empty_messages() {
         client,
     } = setup_env(1, randint(1, 10));
 
-    let messages = soroban_sdk::Vec::new(&env);
+    let messages = stellar_axelar_std::Vec::new(&env);
     let data_hash = get_approve_hash(&env, messages.clone());
     let proof = generate_proof(&env, data_hash, signers);
 

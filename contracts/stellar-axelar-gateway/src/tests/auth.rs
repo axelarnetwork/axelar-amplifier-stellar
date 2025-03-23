@@ -1,6 +1,6 @@
-use soroban_sdk::testutils::{Address as _, BytesN as _};
-use soroban_sdk::{vec, Address, BytesN, Env, Vec};
+use stellar_axelar_std::testutils::{Address as _, BytesN as _};
 use stellar_axelar_std::{assert_auth, assert_contract_err};
+use stellar_axelar_std::{vec, Address, BytesN, Env, Vec};
 
 use crate::error::ContractError;
 use crate::tests::testutils::{setup_env, TestConfig};

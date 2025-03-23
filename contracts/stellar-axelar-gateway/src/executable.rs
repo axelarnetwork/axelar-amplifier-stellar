@@ -1,4 +1,5 @@
-use soroban_sdk::{Address, Bytes, Env, String};
+use stellar_axelar_std::{Address, Bytes, Env, String};
+
 pub use stellar_axelar_std::AxelarExecutable;
 use stellar_axelar_std::{derive_only, ensure};
 
@@ -27,7 +28,7 @@ pub trait AxelarExecutableInterface: CustomAxelarExecutable + DeriveOnly {
 ///
 /// Do NOT add the implementation of [`CustomAxelarExecutable`] to the public interface of the contract, i.e. do not annotate the `impl` block with `#[contractimpl]`
 pub trait CustomAxelarExecutable {
-    type Error: Into<soroban_sdk::Error>;
+    type Error: Into<stellar_axelar_std::Error>;
 
     /// Custom implementation of the gateway query function that's called by [`AxelarExecutableInterface::gateway`].
     fn __gateway(env: &Env) -> Address;

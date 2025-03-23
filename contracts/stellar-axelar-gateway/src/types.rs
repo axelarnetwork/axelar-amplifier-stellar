@@ -1,5 +1,6 @@
-use soroban_sdk::xdr::ToXdr;
-use soroban_sdk::{contracttype, Address, BytesN, Env, String, Vec};
+use stellar_axelar_std::soroban_sdk;
+use stellar_axelar_std::xdr::ToXdr;
+use stellar_axelar_std::{contracttype, Address, BytesN, Env, String, Vec};
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -97,8 +98,8 @@ impl Proof {
 #[cfg(test)]
 mod test {
     use hex_literal::hex;
-    use soroban_sdk::xdr::ToXdr;
-    use soroban_sdk::{Address, BytesN, Env, String, Vec};
+    use stellar_axelar_std::xdr::ToXdr;
+    use stellar_axelar_std::{Address, BytesN, Env, String, Vec};
 
     use crate::types::{CommandType, Message, WeightedSigner, WeightedSigners};
 
@@ -171,7 +172,7 @@ mod test {
         ]
         .map(|hash| BytesN::<32>::from_array(&env, &hash));
 
-        let mut messages = soroban_sdk::Vec::new(&env);
+        let mut messages = stellar_axelar_std::Vec::new(&env);
 
         for (i, payload_hash) in payload_hashes.into_iter().enumerate() {
             messages.push_back(Message {
