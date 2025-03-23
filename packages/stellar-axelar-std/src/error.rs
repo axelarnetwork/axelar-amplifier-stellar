@@ -112,7 +112,6 @@ macro_rules! assert_some {
 /// # use stellar_axelar_std::{Address, Env, contract, contractimpl};
 /// # use stellar_axelar_std::testutils::Address as _;
 /// # use stellar_axelar_std::assert_auth;
-/// # use stellar_axelar_std::soroban_sdk;
 ///
 /// #[contract]
 /// pub struct Contract;
