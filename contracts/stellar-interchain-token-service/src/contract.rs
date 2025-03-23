@@ -1,8 +1,6 @@
 use soroban_sdk::token::StellarAssetClient;
 use soroban_sdk::xdr::ToXdr;
-use soroban_sdk::{
-    contract, contractimpl, vec, Address, Bytes, BytesN, Env, IntoVal, String, Symbol,
-};
+use soroban_sdk::{contract, vec, Address, Bytes, BytesN, Env, IntoVal, String, Symbol};
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_gas_service::AxelarGasServiceClient;
 use stellar_axelar_gateway::executable::{AxelarExecutableInterface, CustomAxelarExecutable};
@@ -11,8 +9,8 @@ use stellar_axelar_std::address::AddressExt;
 use stellar_axelar_std::events::Event;
 use stellar_axelar_std::types::Token;
 use stellar_axelar_std::{
-    ensure, interfaces, only_operator, only_owner, when_not_paused, AxelarExecutable, Operatable,
-    Ownable, Pausable, Upgradable,
+    contractimpl, ensure, interfaces, only_operator, only_owner, when_not_paused, AxelarExecutable,
+    Operatable, Ownable, Pausable, Upgradable,
 };
 use stellar_interchain_token::InterchainTokenClient;
 

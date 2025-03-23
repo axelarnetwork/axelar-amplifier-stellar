@@ -1,9 +1,10 @@
 use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{contract, contractimpl, Address, Env, String};
-use stellar_axelar_std::contractstorage;
+use soroban_sdk::{contract, Address, Env, String};
+use stellar_axelar_std_derive::contractimpl;
 
 // this is needed because the contractstorage macro generates code namespaced to stellar_axelar_std
 use crate as stellar_axelar_std;
+use stellar_axelar_std::contractstorage;
 
 #[contract]
 pub struct Contract;

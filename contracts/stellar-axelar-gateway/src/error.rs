@@ -21,4 +21,5 @@ pub enum ContractError {
     EmptyMessages = 15,
     ContractPaused = 16,
     InvalidMessageApproval = 17,
+    MigrationInProgress = 18,
 }

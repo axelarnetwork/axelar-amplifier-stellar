@@ -1,8 +1,8 @@
 //! Base for the dummy_contract_after_upgrade.wasm file. This is the dummy contract after upgrade.
 
-use soroban_sdk::{contract, contracterror, contractimpl, vec, Address, BytesN, Env};
+use soroban_sdk::{contract, contracterror, vec, Address, BytesN, Env};
 use stellar_axelar_std::interfaces::{OwnableInterface, UpgradableInterface};
-use stellar_axelar_std::{contractstorage, interfaces};
+use stellar_axelar_std::{contractimpl, contractstorage, interfaces};
 
 #[contract]
 pub struct DummyContract;
@@ -56,6 +56,7 @@ impl DummyContract {
 #[contracterror]
 pub enum ContractError {
     SomeFailure = 1,
+    MigrationInProgress = 2,
 }
 
 mod storage {

@@ -1,6 +1,6 @@
-use soroban_sdk::{contract, contractimpl, Address, Env, Symbol, Val, Vec};
+use soroban_sdk::{contract, Address, Env, Symbol, Val, Vec};
 use stellar_axelar_std::ttl::extend_instance_ttl;
-use stellar_axelar_std::{interfaces, only_owner, Ownable, Upgradable};
+use stellar_axelar_std::{contractimpl, interfaces, only_owner, Ownable, Upgradable};
 
 use crate::error::ContractError;
 use crate::interface::TokenManagerInterface;
