@@ -13,8 +13,8 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
     let data_type_tokens = data_types.iter().map(|ty| quote!(#ty));
 
     let emit_impl = quote! {
-        fn emit(self, env: &stellar_axelar_std::soroban_sdk::Env) {
-            use stellar_axelar_std::soroban_sdk::{IntoVal, Symbol, Env, Val, Vec, vec};
+        fn emit(self, env: &stellar_axelar_std::Env) {
+            use stellar_axelar_std::{IntoVal, Symbol, Env, Val, Vec, vec};
 
             let topics = (Symbol::new(env, #event_name),
                 #(IntoVal::<Env, Val>::into_val(&self.#topic_field_idents, env),)*
@@ -30,9 +30,9 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
     };
 
     let from_event_impl = quote! {
-        fn from_event(env: &stellar_axelar_std::soroban_sdk::Env,
-            topics: stellar_axelar_std::soroban_sdk::Vec<stellar_axelar_std::soroban_sdk::Val>, data: stellar_axelar_std::soroban_sdk::Val) -> Self {
-            use stellar_axelar_std::soroban_sdk::{TryFromVal, Symbol, Val, Vec};
+        fn from_event(env: &stellar_axelar_std::Env,
+            topics: stellar_axelar_std::Vec<stellar_axelar_std::Val>, data: stellar_axelar_std::Val) -> Self {
+            use stellar_axelar_std::{TryFromVal, Symbol, Val, Vec};
 
             // Verify the event name matches
             let event_name = Symbol::try_from_val(env, &topics.get(0)
@@ -78,7 +78,7 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
     };
 
     let schema_impl = quote! {
-        fn schema(env: &stellar_axelar_std::soroban_sdk::Env) -> &'static str {
+        fn schema(env: &stellar_axelar_std::Env) -> &'static str {
             concat!(
                 #event_name, " {\n",
                 #(
