@@ -7,4 +7,5 @@ pub enum ContractError {
     MigrationNotAllowed = 1,
     InvalidAmount = 2,
     InsufficientBalance = 3,
+    MigrationInProgress = 4,
 }

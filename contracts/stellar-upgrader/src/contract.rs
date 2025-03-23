@@ -1,8 +1,6 @@
-use soroban_sdk::{
-    contract, contractimpl, symbol_short, Address, BytesN, Env, String, Symbol, Val,
-};
-use stellar_axelar_std::ensure;
+use soroban_sdk::{contract, symbol_short, Address, BytesN, Env, String, Symbol, Val};
 use stellar_axelar_std::interfaces::UpgradableClient;
+use stellar_axelar_std::{contractimpl, ensure};
 
 use crate::error::ContractError;
 use crate::interface::UpgraderInterface;
