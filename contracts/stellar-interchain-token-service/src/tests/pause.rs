@@ -1,7 +1,6 @@
-use soroban_sdk::testutils::Address as _;
-use soroban_sdk::Address;
 use stellar_axelar_std::interfaces::{PausedEvent, UnpausedEvent};
-use stellar_axelar_std::{assert_auth, assert_auth_err, events};
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::{assert_auth, assert_auth_err, events, Address};
 
 use super::utils::setup_env;
 

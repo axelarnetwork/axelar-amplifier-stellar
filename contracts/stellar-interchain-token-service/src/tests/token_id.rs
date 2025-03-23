@@ -1,4 +1,4 @@
-use soroban_sdk::{Address, BytesN};
+use stellar_axelar_std::{Address, BytesN};
 
 use super::utils::setup_env;
 

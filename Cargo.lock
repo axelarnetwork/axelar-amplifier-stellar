@@ -2065,7 +2065,6 @@ dependencies = [
  "goldie",
  "hex",
  "paste",
- "soroban-sdk",
  "soroban-token-sdk",
  "stellar-axelar-gas-service",
  "stellar-axelar-gateway",
