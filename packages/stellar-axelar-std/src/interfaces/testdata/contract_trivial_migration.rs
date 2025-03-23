@@ -1,7 +1,9 @@
 use core::convert::Infallible;
 
 use stellar_axelar_std::testutils::arbitrary::std;
-use stellar_axelar_std::{contract, contracterror, contracttype, vec, Address, BytesN, Env, String, Vec};
+use stellar_axelar_std::{
+    contract, contracterror, contracttype, vec, Address, BytesN, Env, String, Vec,
+};
 use stellar_axelar_std_derive::contractimpl;
 
 use crate as stellar_axelar_std;
