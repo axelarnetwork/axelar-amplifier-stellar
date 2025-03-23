@@ -1,7 +1,7 @@
 use core::convert::Infallible;
 
-use soroban_sdk::testutils::arbitrary::std;
-use soroban_sdk::{contract, contracterror, contracttype, vec, Address, BytesN, Env, String, Vec};
+use stellar_axelar_std::testutils::arbitrary::std;
+use stellar_axelar_std::{contract, contracterror, contracttype, vec, Address, BytesN, Env, String, Vec};
 use stellar_axelar_std_derive::contractimpl;
 
 use crate as stellar_axelar_std;
@@ -111,9 +111,10 @@ pub enum TrivialContractError {
 }
 
 mod test {
-    use soroban_sdk::{contracttype, Address, Env};
+    use stellar_axelar_std::{contracttype, Address, Env};
 
     use super::{Contract, DataKey};
+    use crate as stellar_axelar_std;
 
     #[test]
     fn contracttype_enum_name_is_irrelevant_for_key_collision() {

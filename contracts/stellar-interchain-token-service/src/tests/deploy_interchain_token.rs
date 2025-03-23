@@ -1,7 +1,8 @@
-use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{Address, BytesN, Env};
 use soroban_token_sdk::metadata::TokenMetadata;
-use stellar_axelar_std::{assert_auth, assert_auth_err, assert_contract_err, events};
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::{
+    assert_auth, assert_auth_err, assert_contract_err, events, Address, BytesN, Env,
+};
 use stellar_interchain_token::InterchainTokenClient;
 
 use super::utils::{setup_env, TokenMetadataExt};

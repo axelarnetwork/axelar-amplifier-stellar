@@ -76,9 +76,9 @@ impl VariantExt for Variant {
         let (field_names, field_types) = (self.fields.names(), self.fields.types());
 
         if field_names.is_empty() {
-            quote! { env: &soroban_sdk::Env }
+            quote! { env: &stellar_axelar_std::Env }
         } else {
-            quote! { env: &soroban_sdk::Env, #(#field_names: #field_types),* }
+            quote! { env: &stellar_axelar_std::Env, #(#field_names: #field_types),* }
         }
     }
 
@@ -102,6 +102,7 @@ struct StorageFunctionNames {
     remover: Ident,
     try_getter: Ident,
     ttl_extender: Ident,
+    has: Ident,
 }
 
 impl Value {
@@ -198,6 +199,7 @@ impl Value {
             remover,
             try_getter,
             ttl_extender,
+            has,
         }: &StorageFunctionNames,
         params: &TokenStream,
         storage_key: &TokenStream,
@@ -246,6 +248,11 @@ impl Value {
                 let key = #storage_key;
                 #ttl_function
             }
+
+            pub fn #has(#params) -> bool {
+                let key = #storage_key;
+                #storage_method.has(&key)
+            }
         }
     }
 
@@ -259,6 +266,7 @@ impl Value {
                 remover: format_ident!("remove_{}_status", ident),
                 try_getter: format_ident!("_"),
                 ttl_extender: format_ident!("extend_{}_ttl", ident),
+                has: format_ident!("_"),
             },
             Self::Type(_) => StorageFunctionNames {
                 getter: format_ident!("{}", ident),
@@ -266,6 +274,7 @@ impl Value {
                 remover: format_ident!("remove_{}", ident),
                 try_getter: format_ident!("try_{}", ident),
                 ttl_extender: format_ident!("extend_{}_ttl", ident),
+                has: format_ident!("has_{}", ident),
             },
         }
     }
@@ -355,7 +364,7 @@ pub fn contract_storage(input: &DeriveInput) -> TokenStream {
         .collect();
 
     let contract_storage = quote! {
-        #[soroban_sdk::contracttype]
+        #[stellar_axelar_std::contracttype]
         enum #r#enum {
             #(#transformed_variants,)*
         }

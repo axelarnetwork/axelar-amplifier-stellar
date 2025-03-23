@@ -131,9 +131,10 @@ pub enum MigrationError<T> {
 
 #[cfg(test)]
 mod test {
-    use soroban_sdk::testutils::Address as _;
-    use soroban_sdk::{Address, BytesN, Env, String};
+    use stellar_axelar_std::testutils::Address as _;
+    use stellar_axelar_std::{Address, BytesN, Env, String};
 
+    use crate as stellar_axelar_std;
     use crate::interfaces::testdata::{ContractClient, ContractNonTrivialClient, MigrationData};
     use crate::interfaces::upgradable::UpgradedEvent;
     use crate::interfaces::{testdata, upgradable};

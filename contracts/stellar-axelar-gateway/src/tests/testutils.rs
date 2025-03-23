@@ -1,4 +1,4 @@
-use soroban_sdk::Env;
+use stellar_axelar_std::Env;
 
 use crate::testutils::{setup_gateway, TestSignerSet};
 use crate::AxelarGatewayClient;

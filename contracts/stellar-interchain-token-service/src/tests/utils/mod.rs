@@ -1,9 +1,9 @@
-use soroban_sdk::{Env, IntoVal};
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_gas_service::testutils::setup_gas_service;
 use stellar_axelar_gas_service::AxelarGasServiceClient;
 use stellar_axelar_gateway::testutils::{setup_gateway, TestSignerSet};
 use stellar_axelar_gateway::AxelarGatewayClient;
+use stellar_axelar_std::{Env, IntoVal};
 
 use crate::testutils::setup_its;
 use crate::InterchainTokenServiceClient;

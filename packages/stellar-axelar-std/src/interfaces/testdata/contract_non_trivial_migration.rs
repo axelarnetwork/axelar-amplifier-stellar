@@ -1,6 +1,8 @@
 // this is only needed in this crate itself, any crate that imports this one doesn't have to do this manual import resolution
-use soroban_sdk::{contract, contracterror, contracttype, Address, Env, String};
-use stellar_axelar_std_derive::{contractimpl, Ownable, Upgradable};
+use stellar_axelar_std::{
+    contract, contracterror, contractimpl, contracttype, Address, Env, String,
+};
+use stellar_axelar_std_derive::{Ownable, Upgradable};
 
 use crate as stellar_axelar_std;
 use crate::interfaces::testdata::contract_trivial_migration::DataKey;

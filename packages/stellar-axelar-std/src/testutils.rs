@@ -1,6 +1,8 @@
 #![cfg(any(test, feature = "testutils"))]
 extern crate std;
 
+pub use soroban_sdk::testutils::*;
+
 use std::env;
 use std::path::{Path, PathBuf};
 
