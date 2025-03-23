@@ -2,7 +2,7 @@
 
 use soroban_sdk::{contract, contracterror, contractimpl, vec, Address, BytesN, Env};
 use stellar_axelar_std::interfaces::{OwnableInterface, UpgradableInterface};
-use stellar_axelar_std::{contractstorage, interfaces, only_owner};
+use stellar_axelar_std::{contractstorage, interfaces};
 
 #[contract]
 pub struct DummyContract;
@@ -17,7 +17,6 @@ impl UpgradableInterface for DummyContract {
         vec![env, Self::owner(env)]
     }
 
-    #[only_owner]
     fn upgrade(env: &Env, new_wasm_hash: BytesN<32>) {
         Self::required_auths(env)
             .iter()
@@ -43,8 +42,11 @@ impl DummyContract {
         interfaces::set_owner(&env, &owner);
     }
 
-    #[only_owner]
     pub fn migrate(env: Env, migration_data: soroban_sdk::String) -> Result<(), ContractError> {
+        Self::required_auths(&env)
+            .iter()
+            .for_each(|addr| addr.require_auth());
+
         storage::set_data(&env, &migration_data);
 
         Ok(())
