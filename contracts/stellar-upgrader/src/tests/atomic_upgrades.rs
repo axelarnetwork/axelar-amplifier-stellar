@@ -1,5 +1,3 @@
-use std::println;
-
 use dummy_contract::contract::{DummyContract, DummyContractClient};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{Address, BytesN, Env, String};
@@ -26,33 +24,27 @@ fn upgrade_and_migrate_are_atomic() {
     let original_version: String = dummy_client.version();
     assert_eq!(original_version, String::from_str(&env, "0.1.0"));
 
-    env.mock_all_auths();
-
     let upgrader = UpgraderClient::new(&env, &upgrader_address);
 
-    // let upgrade_auth = mock_auth!(owner, dummy_client.upgrade(hash_after_upgrade));
-    // let migrate_auth = mock_auth!(owner, dummy_client.migrate(expected_data));
-    // let root_upgrade = mock_auth!(
-    //     owner,
-    //     upgrader.upgrade(
-    //         &contract_address,
-    //         &expected_version,
-    //         &hash_after_upgrade,
-    //         &soroban_sdk::vec![&env, expected_data.to_val()],
-    //     ),
-    //     &[upgrade_auth.invoke.clone(), migrate_auth.invoke.clone()]
-    // );
-
-    upgrader
-        // .mock_auths(&[root_upgrade, upgrade_auth, migrate_auth])
-        .upgrade(
+    let upgrade_auth = mock_auth!(owner, dummy_client.upgrade(hash_after_upgrade));
+    let migrate_auth = mock_auth!(owner, dummy_client.migrate(expected_data));
+    let root_upgrade = mock_auth!(
+        owner,
+        upgrader.upgrade(
             &contract_address,
             &expected_version,
             &hash_after_upgrade,
             &soroban_sdk::vec![&env, expected_data.to_val()],
-        );
+        ),
+        &[upgrade_auth.invoke.clone(), migrate_auth.invoke.clone()]
+    );
 
-    println!("{:?}", env.auths());
+    upgrader.mock_auths(&[root_upgrade]).upgrade(
+        &contract_address,
+        &expected_version,
+        &hash_after_upgrade,
+        &soroban_sdk::vec![&env, expected_data.to_val()],
+    );
 
     // ensure new version is set correctly
     let upgraded_version: String = dummy_client.version();
