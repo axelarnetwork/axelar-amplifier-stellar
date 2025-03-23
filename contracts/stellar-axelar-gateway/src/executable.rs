@@ -1,7 +1,5 @@
-use stellar_axelar_std::{Address, Bytes, Env, String};
-
 pub use stellar_axelar_std::AxelarExecutable;
-use stellar_axelar_std::{derive_only, ensure};
+use stellar_axelar_std::{derive_only, ensure, Address, Bytes, Env, String};
 
 use crate::AxelarGatewayMessagingClient;
 

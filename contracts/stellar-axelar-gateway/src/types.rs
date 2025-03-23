@@ -1,6 +1,5 @@
-use stellar_axelar_std::soroban_sdk;
 use stellar_axelar_std::xdr::ToXdr;
-use stellar_axelar_std::{contracttype, Address, BytesN, Env, String, Vec};
+use stellar_axelar_std::{contracttype, soroban_sdk, Address, BytesN, Env, String, Vec};
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq, Eq)]

@@ -1,5 +1,4 @@
-use stellar_axelar_std::contracterror;
-use stellar_axelar_std::soroban_sdk;
+use stellar_axelar_std::{contracterror, soroban_sdk};
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

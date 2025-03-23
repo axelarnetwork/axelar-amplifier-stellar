@@ -1,9 +1,9 @@
+use stellar_axelar_std::interfaces::{OperatableInterface, OwnableInterface, UpgradableInterface};
+use stellar_axelar_std::{contractclient, soroban_sdk, BytesN, Env, Vec};
+
 use crate::error::ContractError;
 use crate::types::{Message, Proof, WeightedSigners};
 use crate::AxelarGatewayMessagingInterface;
-use stellar_axelar_std::interfaces::{OperatableInterface, OwnableInterface, UpgradableInterface};
-use stellar_axelar_std::soroban_sdk;
-use stellar_axelar_std::{contractclient, BytesN, Env, Vec};
 
 #[contractclient(name = "AxelarGatewayClient")]
 pub trait AxelarGatewayInterface:

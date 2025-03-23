@@ -1,6 +1,7 @@
 use stellar_axelar_std::testutils::{Address as _, Events};
-use stellar_axelar_std::{assert_auth, assert_auth_err, assert_contract_err, events};
-use stellar_axelar_std::{bytes, vec, Address, BytesN, String};
+use stellar_axelar_std::{
+    assert_auth, assert_auth_err, assert_contract_err, bytes, events, vec, Address, BytesN, String,
+};
 
 use crate::error::ContractError;
 use crate::event::{
