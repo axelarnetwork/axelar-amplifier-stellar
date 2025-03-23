@@ -1,11 +1,10 @@
 #![cfg(test)]
 extern crate std;
-
-use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{contract, contracterror, symbol_short, Address, Env, Symbol, Val, Vec};
 use stellar_axelar_std::events::{fmt_last_emitted_event, Event};
+use stellar_axelar_std::testutils::Address as _;
 use stellar_axelar_std::{
-    assert_auth, assert_auth_err, assert_contract_err, contractimpl, IntoEvent,
+    assert_auth, assert_auth_err, assert_contract_err, contract, contracterror, contractimpl,
+    soroban_sdk, symbol_short, Address, Env, IntoEvent, Symbol, Val, Vec,
 };
 
 use crate::error::ContractError;
