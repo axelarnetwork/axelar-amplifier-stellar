@@ -1,11 +1,10 @@
-use soroban_sdk::testutils::Address as _;
-use soroban_sdk::token::{StellarAssetClient, TokenClient};
-use soroban_sdk::{vec, Address, Bytes, BytesN, Env, String};
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_gateway::testutils::approve_gateway_messages;
 use stellar_axelar_gateway::types::Message as GatewayMessage;
 use stellar_axelar_std::address::AddressExt;
-use stellar_axelar_std::{assert_contract_err, events};
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::token::{StellarAssetClient, TokenClient};
+use stellar_axelar_std::{assert_contract_err, events, vec, Address, Bytes, BytesN, Env, String};
 use stellar_interchain_token::InterchainTokenClient;
 
 use super::utils::{setup_env, TokenMetadataExt};
