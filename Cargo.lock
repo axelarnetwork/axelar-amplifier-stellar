@@ -2015,7 +2015,6 @@ dependencies = [
  "cfg-if",
  "goldie",
  "paste",
- "soroban-sdk",
  "stellar-axelar-std",
 ]
 
