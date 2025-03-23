@@ -15,6 +15,16 @@ impl Contract {
             panic!("contract migration in progress");
         }
     }
+    pub fn should_panic_because_not_contract_error(
+        env: &Env,
+        arg: String,
+    ) -> Result<u32, OtherError> {
+        if stellar_axelar_std::interfaces::is_migrating(&env) {
+            panic!("contract migration in progress");
+        }
+        Ok(5)
+    }
     pub fn should_have_no_check_because_not_stateful() {}
     pub fn is_allowed_during_migration(env: &Env, arg: String) {}
+    fn should_have_no_check_because_private(env: &Env, arg: String) {}
 }
