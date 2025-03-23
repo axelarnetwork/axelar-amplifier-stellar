@@ -32,11 +32,11 @@ pub fn upgradable(input: &DeriveInput) -> TokenStream2 {
         #[stellar_axelar_std::contractimpl]
         impl stellar_axelar_std::interfaces::UpgradableInterface for #name {
             #[allow_during_migration]
-            fn version(env: &Env) -> soroban_sdk::String {
-                soroban_sdk::String::from_str(env, env!("CARGO_PKG_VERSION"))
+            fn version(env: &Env) -> stellar_axelar_std::String {
+                stellar_axelar_std::String::from_str(env, env!("CARGO_PKG_VERSION"))
             }
 
-            fn upgrade(env: &Env, new_wasm_hash: soroban_sdk::BytesN<32>) {
+            fn upgrade(env: &Env, new_wasm_hash: stellar_axelar_std::BytesN<32>) {
                 stellar_axelar_std::interfaces::upgrade::<Self>(env, new_wasm_hash);
             }
         }

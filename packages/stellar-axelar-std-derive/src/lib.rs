@@ -24,7 +24,7 @@ use syn::{parse_macro_input, Attribute, DeriveInput, ItemFn, ItemImpl, Path};
 /// # Example
 /// ```rust, ignore
 /// # mod test {
-/// # use soroban_sdk::{contract, contracterror};
+/// # use stellar_axelar_std::{contract, contracterror};
 /// use stellar_axelar_std_derive::{contractimpl, Upgradable};
 ///
 /// #[contract]
@@ -74,7 +74,7 @@ pub fn contractimpl(_attr: TokenStream, item: TokenStream) -> TokenStream {
 /// # Example
 /// ```rust,ignore
 /// # mod test {
-/// # use soroban_sdk::{contract, contractimpl, Address, Env};
+/// # use stellar_axelar_std::{contract, contractimpl, Address, Env};
 /// use stellar_axelar_std_derive::Operatable;
 ///
 /// #[contract]
@@ -102,7 +102,7 @@ pub fn derive_operatable(input: TokenStream) -> TokenStream {
 /// # Example
 /// ```rust,ignore
 /// # mod test {
-/// # use soroban_sdk::{contract, contractimpl, Address, Env};
+/// # use stellar_axelar_std::{contract, contractimpl, Address, Env};
 /// use stellar_axelar_std_derive::Ownable;
 ///
 /// #[contract]
@@ -130,7 +130,7 @@ pub fn derive_ownable(input: TokenStream) -> TokenStream {
 /// # Example
 /// ```rust,ignore
 /// # mod test {
-/// # use soroban_sdk::{contract, contractimpl, Address, Env};
+/// # use stellar_axelar_std::{contract, contractimpl, Address, Env};
 /// use stellar_axelar_std_derive::Pausable;
 ///
 /// #[contract]
@@ -153,7 +153,7 @@ pub fn derive_pausable(input: TokenStream) -> TokenStream {
 ///
 /// # Example
 /// ```rust,ignore
-/// # use soroban_sdk::{contract, contractimpl, contracttype, Address, Env};
+/// # use stellar_axelar_std::{contract, contractimpl, contracttype, Address, Env};
 /// use stellar_axelar_std::{Pausable, when_not_paused};
 ///
 /// #[contracttype]
@@ -194,7 +194,7 @@ pub fn when_not_paused(_attr: TokenStream, item: TokenStream) -> TokenStream {
 /// # Example
 /// ```rust,ignore
 /// # mod test {
-/// # use soroban_sdk::{contract, contractimpl, contracterror, Address, Env};
+/// # use stellar_axelar_std::{contract, contractimpl, contracterror, Address, Env};
 /// use stellar_axelar_std_derive::{Ownable, Upgradable};
 /// # #[contracterror]
 /// # #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -248,7 +248,7 @@ fn ensure_no_args(attr: &Attribute) -> syn::Result<&Path> {
 /// use core::fmt::Debug;
 /// use stellar_axelar_std::events::Event;
 /// use stellar_axelar_std::IntoEvent;
-/// use soroban_sdk::{Address, contract, contractimpl, Env, String};
+/// use stellar_axelar_std::{Address, contract, contractimpl, Env, String};
 ///
 /// #[derive(Debug, PartialEq, IntoEvent)]
 /// #[event_name("transfer")]
@@ -308,7 +308,7 @@ pub fn derive_axelar_executable(input: TokenStream) -> TokenStream {
 ///
 /// # Example
 /// ```rust,ignore
-/// # use soroban_sdk::{contract, contractimpl, Address, Env};
+/// # use stellar_axelar_std::{contract, contractimpl, Address, Env};
 /// use stellar_axelar_std::only_owner;
 ///
 /// #[contract]
@@ -337,7 +337,7 @@ pub fn only_owner(_attr: TokenStream, item: TokenStream) -> TokenStream {
 ///
 /// # Example
 /// ```rust,ignore
-/// # use soroban_sdk::{contract, contractimpl, Address, Env};
+/// # use stellar_axelar_std::{contract, contractimpl, Address, Env};
 /// use stellar_axelar_std::only_operator;
 ///
 /// #[contract]
@@ -369,7 +369,7 @@ pub fn only_operator(_attr: TokenStream, item: TokenStream) -> TokenStream {
 /// # Example
 /// ```rust,ignore
 /// # mod test {
-/// use soroban_sdk::{contract, contractimpl, contractype, Address, Env, String};
+/// use stellar_axelar_std::{contract, contractimpl, contractype, Address, Env, String};
 /// use stellar_axelar_std::contractstorage;
 ///
 /// #[contractstorage]
