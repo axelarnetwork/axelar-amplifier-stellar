@@ -6,7 +6,9 @@ impl stellar_axelar_std::interfaces::UpgradableInterface for Contract {
         stellar_axelar_std::String::from_str(env, env!("CARGO_PKG_VERSION"))
     }
     #[allow_during_migration]
-    fn required_auths(env: &Env) -> stellar_axelar_std::Vec<stellar_axelar_std::Address> {
+    fn required_auths(
+        env: &Env,
+    ) -> stellar_axelar_std::Vec<stellar_axelar_std::Address> {
         stellar_axelar_std::interfaces::required_auths::<Self>(env)
     }
     #[allow_during_migration]
