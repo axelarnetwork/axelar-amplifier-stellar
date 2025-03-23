@@ -35,6 +35,10 @@ pub fn upgradable(input: &DeriveInput) -> TokenStream2 {
                 soroban_sdk::String::from_str(env, env!("CARGO_PKG_VERSION"))
             }
 
+            fn required_auths(env: &Env) -> soroban_sdk::Vec<soroban_sdk::Address> {
+                stellar_axelar_std::interfaces::required_auths::<Self>(env)
+            }
+
             fn upgrade(env: &Env, new_wasm_hash: soroban_sdk::BytesN<32>) {
                 stellar_axelar_std::interfaces::upgrade::<Self>(env, new_wasm_hash);
             }

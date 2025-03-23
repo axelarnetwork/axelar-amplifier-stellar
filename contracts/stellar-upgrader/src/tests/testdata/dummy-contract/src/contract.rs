@@ -1,6 +1,6 @@
-//! Base for the dummy.wasm file. This is the dummy contract after upgrade.
+//! Dummy contract to test the [crate::Upgrader]
 
-use soroban_sdk::{contract, contracterror, contractimpl, Address, BytesN, Env};
+use soroban_sdk::{contract, contracterror, contractimpl, vec, Address, BytesN, Env};
 use stellar_axelar_std::interfaces::{OwnableInterface, UpgradableInterface};
 use stellar_axelar_std::{contractstorage, interfaces, only_owner};
 
@@ -10,11 +10,18 @@ pub struct DummyContract;
 #[contractimpl]
 impl UpgradableInterface for DummyContract {
     fn version(env: &Env) -> soroban_sdk::String {
-        soroban_sdk::String::from_str(env, "0.2.0")
+        soroban_sdk::String::from_str(env, "0.1.0")
+    }
+
+    fn required_auths(env: &Env) -> soroban_sdk::Vec<Address> {
+        vec![env, Self::owner(env)]
     }
 
     #[only_owner]
     fn upgrade(env: &Env, new_wasm_hash: BytesN<32>) {
+        Self::required_auths(env)
+            .iter()
+            .for_each(|addr| addr.require_auth());
         env.deployer().update_current_contract_wasm(new_wasm_hash);
     }
 }
@@ -35,13 +42,6 @@ impl DummyContract {
     pub fn __constructor(env: Env, owner: Address) {
         interfaces::set_owner(&env, &owner);
     }
-
-    #[only_owner]
-    pub fn migrate(env: Env, migration_data: soroban_sdk::String) -> Result<(), ContractError> {
-        storage::set_data(&env, &migration_data);
-
-        Ok(())
-    }
 }
 
 #[contracterror]
@@ -49,7 +49,7 @@ pub enum ContractError {
     SomeFailure = 1,
 }
 
-mod storage {
+pub mod storage {
     use super::*;
 
     #[contractstorage]

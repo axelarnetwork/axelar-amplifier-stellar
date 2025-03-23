@@ -238,10 +238,10 @@ pub fn extend_paused_ttl(env: &soroban_sdk::Env, threshold: u32, extend_to: u32)
 
 #[cfg(test)]
 mod data_key_storage_layout_tests {
-    use goldie;
+    use super::*;
     #[test]
     fn ensure_data_key_storage_schema_is_unchanged() {
-        goldie::assert!(
+        stellar_axelar_std::assert_storage_layout_is_sound!(
             "enum DataKey {\n\n    #[instance]\n    #[value(u32)]\n    Counter,\n\n    #[persistent]\n    #[value(String)]\n    Message { sender: Address },\n\n    #[temporary]\n    #[value(Address)]\n    LastCaller { timestamp: u64 },\n\n    #[persistent]\n    #[value(bool)]\n    Flag { key: String, owner: Address },\n\n    #[persistent]\n    #[value(Option<String>)]\n    OptionalMessage { id: u32 },\n\n    #[instance]\n    #[status]\n    Initialized,\n\n    #[persistent]\n    #[status]\n    Paused,\n}\n"
         );
     }

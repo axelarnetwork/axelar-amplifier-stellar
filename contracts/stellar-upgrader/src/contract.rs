@@ -28,6 +28,10 @@ impl UpgraderInterface for Upgrader {
     ) -> Result<(), ContractError> {
         let contract_client = UpgradableClient::new(&env, &contract_address);
 
+        contract_client.required_auths().iter().for_each(|addr| {
+            addr.require_auth();
+        });
+
         ensure!(
             contract_client.version() != new_version,
             ContractError::SameVersion

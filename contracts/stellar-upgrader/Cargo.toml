@@ -15,8 +15,8 @@ soroban-sdk = { workspace = true }
 stellar-axelar-std = { workspace = true }
 
 [dev-dependencies]
-goldie = { workspace = true }
 soroban-sdk = { workspace = true, features = ["testutils"] }
+dummy-contract = { path = "src/tests/testdata/dummy-contract" }
 
 [features]
 library = [] # Only export the contract interface

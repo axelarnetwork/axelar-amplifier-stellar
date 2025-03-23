@@ -2,7 +2,7 @@ use core::convert::Infallible;
 
 use soroban_sdk::testutils::arbitrary::std;
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, Address, BytesN, Env, String,
+    contract, contracterror, contractimpl, contracttype, vec, Address, BytesN, Env, String, Vec,
 };
 
 use crate::interfaces::{
@@ -81,6 +81,10 @@ impl OperatableInterface for Contract {
 impl UpgradableInterface for Contract {
     fn version(env: &Env) -> String {
         String::from_str(env, "0.1.0")
+    }
+
+    fn required_auths(env: &Env) -> Vec<Address> {
+        vec![env, Self::owner(env)]
     }
 
     fn upgrade(env: &Env, new_wasm_hash: BytesN<32>) {
