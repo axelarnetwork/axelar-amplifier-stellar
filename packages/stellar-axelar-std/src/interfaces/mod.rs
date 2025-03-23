@@ -33,9 +33,10 @@ mod storage {
     // because the key serialization is variant order dependent.
 
     pub mod operator {
-        use crate as stellar_axelar_std;
         use soroban_sdk::Address;
         use stellar_axelar_std::contractstorage;
+
+        use crate as stellar_axelar_std;
 
         #[contractstorage]
         enum OperatorDataKey {
@@ -47,9 +48,9 @@ mod storage {
 
     pub mod owner {
         use soroban_sdk::Address;
+        use stellar_axelar_std::contractstorage;
 
         use crate as stellar_axelar_std;
-        use stellar_axelar_std::contractstorage;
 
         #[contractstorage]
         enum OwnerDataKey {
@@ -60,8 +61,9 @@ mod storage {
     }
 
     pub mod pausable {
-        use crate as stellar_axelar_std;
         use stellar_axelar_std::contractstorage;
+
+        use crate as stellar_axelar_std;
 
         #[contractstorage]
         enum PausableDataKey {
@@ -72,8 +74,9 @@ mod storage {
     }
 
     pub mod migrating {
-        use crate as stellar_axelar_std;
         use stellar_axelar_std::contractstorage;
+
+        use crate as stellar_axelar_std;
 
         #[contractstorage]
         enum MigratingDataKey {
