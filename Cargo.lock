@@ -1976,7 +1976,6 @@ name = "stellar-axelar-example"
 version = "1.0.0"
 dependencies = [
  "goldie",
- "soroban-sdk",
  "soroban-token-sdk",
  "stellar-axelar-gas-service",
  "stellar-axelar-gateway",
