@@ -1,12 +1,11 @@
 #![cfg(test)]
 extern crate std;
 
-use soroban_sdk::testutils::{Address as _, BytesN as _, Ledger};
-use soroban_sdk::{Address, BytesN, Env, IntoVal as _};
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_std::events::{fmt_emitted_event_at_idx, fmt_last_emitted_event};
 use stellar_axelar_std::interfaces::OwnershipTransferredEvent;
-use stellar_axelar_std::{assert_auth, assert_auth_err};
+use stellar_axelar_std::testutils::{Address as _, BytesN as _, Ledger};
+use stellar_axelar_std::{assert_auth, assert_auth_err, Address, BytesN, Env, IntoVal as _};
 
 use crate::event::{
     ApprovedEvent, BurnedEvent, MintedEvent, MinterAddedEvent, MinterRemovedEvent, TransferredEvent,

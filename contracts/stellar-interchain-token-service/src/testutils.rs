@@ -1,8 +1,8 @@
-use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{Address, BytesN, Env, String};
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_gas_service::AxelarGasServiceClient;
 use stellar_axelar_gateway::AxelarGatewayClient;
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::{Address, BytesN, Env, String};
 
 use crate::{InterchainTokenService, InterchainTokenServiceClient};
 

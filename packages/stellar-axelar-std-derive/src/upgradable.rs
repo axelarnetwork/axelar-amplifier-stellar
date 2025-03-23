@@ -29,13 +29,14 @@ pub fn upgradable(input: &DeriveInput) -> TokenStream2 {
     quote! {
         use stellar_axelar_std::interfaces::{UpgradableInterface as _, MigratableInterface as _};
 
-        #[soroban_sdk::contractimpl]
+        #[stellar_axelar_std::contractimpl]
         impl stellar_axelar_std::interfaces::UpgradableInterface for #name {
-            fn version(env: &Env) -> soroban_sdk::String {
-                soroban_sdk::String::from_str(env, env!("CARGO_PKG_VERSION"))
+            #[allow_during_migration]
+            fn version(env: &Env) -> stellar_axelar_std::String {
+                stellar_axelar_std::String::from_str(env, env!("CARGO_PKG_VERSION"))
             }
 
-            fn upgrade(env: &Env, new_wasm_hash: soroban_sdk::BytesN<32>) {
+            fn upgrade(env: &Env, new_wasm_hash: stellar_axelar_std::BytesN<32>) {
                 stellar_axelar_std::interfaces::upgrade::<Self>(env, new_wasm_hash);
             }
         }
@@ -43,10 +44,11 @@ pub fn upgradable(input: &DeriveInput) -> TokenStream2 {
         #[allow(non_camel_case_types)]
         type #migration_data_alias = <#name as stellar_axelar_std::interfaces::CustomMigratableInterface>::MigrationData;
 
-        #[soroban_sdk::contractimpl]
+        #[stellar_axelar_std::contractimpl]
         impl stellar_axelar_std::interfaces::MigratableInterface for #name {
             type Error = ContractError;
 
+            #[allow_during_migration]
             fn migrate(env: &Env, migration_data: #migration_data_alias) -> Result<(), ContractError> {
                 stellar_axelar_std::interfaces::migrate::<Self>(env, migration_data)
                     .map_err(|err| match err {
@@ -100,6 +102,7 @@ mod tests {
         let formatted_upgradable_impl = prettyplease::unparse(&upgradable_impl_file)
             .replace("pub fn ", "\npub fn ")
             .replace("#[cfg(test)]", "\n#[cfg(test)]");
+
         goldie::assert!(formatted_upgradable_impl);
     }
 }

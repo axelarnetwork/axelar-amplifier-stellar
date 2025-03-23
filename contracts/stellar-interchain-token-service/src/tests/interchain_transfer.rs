@@ -1,10 +1,9 @@
-use soroban_sdk::testutils::Address as _;
-use soroban_sdk::token::{StellarAssetClient, TokenClient};
-use soroban_sdk::{Address, Bytes, BytesN, Env, String};
 use stellar_axelar_gas_service::testutils::setup_gas_token;
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::token::{StellarAssetClient, TokenClient};
 use stellar_axelar_std::traits::BytesExt;
 use stellar_axelar_std::types::Token;
-use stellar_axelar_std::{assert_contract_err, events};
+use stellar_axelar_std::{assert_contract_err, events, Address, Bytes, BytesN, Env, String};
 
 use super::utils::setup_env;
 use crate::error::ContractError;

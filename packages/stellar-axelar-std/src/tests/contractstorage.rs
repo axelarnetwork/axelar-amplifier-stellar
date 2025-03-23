@@ -1,5 +1,6 @@
-use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{contract, contractimpl, Address, Env, String};
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::{contract, Address, Env, String};
+use stellar_axelar_std_derive::contractimpl;
 
 use crate as stellar_axelar_std;
 use crate::contractstorage;
@@ -8,7 +9,6 @@ use crate::contractstorage;
 pub struct Contract;
 
 mod storage {
-
     use super::*;
 
     #[contractstorage]

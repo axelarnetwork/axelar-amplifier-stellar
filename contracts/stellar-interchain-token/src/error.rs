@@ -1,4 +1,4 @@
-use soroban_sdk::contracterror;
+use stellar_axelar_std::{contracterror, soroban_sdk};
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -10,4 +10,5 @@ pub enum ContractError {
     InvalidExpirationLedger = 4,
     InsufficientAllowance = 5,
     InsufficientBalance = 6,
+    MigrationInProgress = 7,
 }

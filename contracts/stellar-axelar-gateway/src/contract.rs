@@ -1,8 +1,8 @@
-use soroban_sdk::xdr::ToXdr;
-use soroban_sdk::{contract, contractimpl, Address, Bytes, BytesN, Env, String, Vec};
 use stellar_axelar_std::events::Event;
+use stellar_axelar_std::xdr::ToXdr;
 use stellar_axelar_std::{
-    ensure, interfaces, when_not_paused, Operatable, Ownable, Pausable, Upgradable,
+    contract, contractimpl, ensure, interfaces, soroban_sdk, when_not_paused, Address, Bytes,
+    BytesN, Env, Operatable, Ownable, Pausable, String, Upgradable, Vec,
 };
 
 use crate::error::ContractError;
@@ -164,13 +164,11 @@ impl AxelarGatewayInterface for AxelarGateway {
 
         for message in messages.into_iter() {
             // Prevent replay if message is already approved/executed
-            if storage::try_message_approval(
+            if storage::has_message_approval(
                 env,
                 message.source_chain.clone(),
                 message.message_id.clone(),
-            )
-            .is_some()
-            {
+            ) {
                 continue;
             }
 

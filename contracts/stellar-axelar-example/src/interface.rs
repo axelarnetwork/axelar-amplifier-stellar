@@ -1,6 +1,6 @@
-use soroban_sdk::{Address, Bytes, BytesN, Env, String};
 use stellar_axelar_gateway::executable::AxelarExecutableInterface;
 use stellar_axelar_std::types::Token;
+use stellar_axelar_std::{Address, Bytes, BytesN, Env, String};
 
 use crate::contract::AxelarExampleError;
 

@@ -1,10 +1,10 @@
-use soroban_sdk::{contractclient, Address, Bytes, BytesN, Env, String};
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_gateway::executable::AxelarExecutableInterface;
 use stellar_axelar_std::interfaces::{
     OperatableInterface, OwnableInterface, PausableInterface, UpgradableInterface,
 };
 use stellar_axelar_std::types::Token;
+use stellar_axelar_std::{contractclient, soroban_sdk, Address, Bytes, BytesN, Env, String};
 
 use crate::error::ContractError;
 use crate::types::TokenManagerType;

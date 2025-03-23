@@ -1,10 +1,10 @@
 use core::convert::Infallible;
 
-use soroban_sdk::testutils::arbitrary::std;
-use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, Address, BytesN, Env, String,
-};
+use stellar_axelar_std::testutils::arbitrary::std;
+use stellar_axelar_std::{contract, contracterror, contracttype, Address, BytesN, Env, String};
+use stellar_axelar_std_derive::contractimpl;
 
+use crate as stellar_axelar_std;
 use crate::interfaces::{
     operatable, ownable, upgradable, CustomMigratableInterface, MigratableInterface,
     OperatableInterface, OwnableInterface, UpgradableInterface,
@@ -15,16 +15,17 @@ pub struct Contract;
 
 #[contractimpl]
 impl Contract {
-    pub fn __constructor(_env: Env, owner: Option<Address>, operator: Option<Address>) {
+    pub fn __constructor(env: Env, owner: Option<Address>, operator: Option<Address>) {
         if let Some(owner) = owner {
-            ownable::set_owner(&_env, &owner);
+            ownable::set_owner(&env, &owner);
         }
 
         if let Some(operator) = operator {
-            operatable::set_operator(&_env, &operator);
+            operatable::set_operator(&env, &operator);
         }
     }
 
+    #[allow_during_migration]
     pub fn migration_data(env: &Env) -> Option<String> {
         env.storage().instance().get(&DataKey::Data)
     }
@@ -35,6 +36,7 @@ impl Contract {
 impl MigratableInterface for Contract {
     type Error = TrivialContractError;
 
+    #[allow_during_migration]
     fn migrate(env: &Env, migration_data: ()) -> Result<(), TrivialContractError> {
         upgradable::migrate::<Self>(env, migration_data)
             .map_err(|_| TrivialContractError::SomeFailure)
@@ -56,6 +58,7 @@ impl CustomMigratableInterface for Contract {
 
 #[contractimpl]
 impl OwnableInterface for Contract {
+    #[allow_during_migration]
     fn owner(env: &Env) -> Address {
         ownable::owner(env)
     }
@@ -67,6 +70,7 @@ impl OwnableInterface for Contract {
 
 #[contractimpl]
 impl OperatableInterface for Contract {
+    #[allow_during_migration]
     fn operator(env: &Env) -> Address {
         operatable::operator(env)
     }
@@ -79,6 +83,7 @@ impl OperatableInterface for Contract {
 // this should normally not be implemented manually, but is done here for testing purposes
 #[contractimpl]
 impl UpgradableInterface for Contract {
+    #[allow_during_migration]
     fn version(env: &Env) -> String {
         String::from_str(env, "0.1.0")
     }
@@ -101,9 +106,10 @@ pub enum TrivialContractError {
 }
 
 mod test {
-    use soroban_sdk::{contracttype, Address, Env};
+    use stellar_axelar_std::{contracttype, Address, Env};
 
     use super::{Contract, DataKey};
+    use crate as stellar_axelar_std;
 
     #[test]
     fn contracttype_enum_name_is_irrelevant_for_key_collision() {
