@@ -10,17 +10,17 @@ publish = true
 crate-type = ["rlib"]
 
 [dependencies]
-hex = { workspace = true, optional = true }
-soroban-sdk = { workspace = true }
-serde = { workspace = true, optional = true }
-stellar-axelar-std-derive = { workspace = true, optional = true }
 goldie = { workspace = true, optional = true }
+hex = { workspace = true, optional = true }
+serde = { workspace = true, optional = true }
+soroban-sdk = { workspace = true }
+stellar-axelar-std-derive = { workspace = true, optional = true }
 
 [dev-dependencies]
+goldie = { workspace = true }
 hex = { workspace = true }
 paste = { workspace = true }
 soroban-sdk = { workspace = true, features = ["testutils"] }
-goldie = { workspace = true }
 stellar-axelar-std-derive = { workspace = true }
 
 [features]
