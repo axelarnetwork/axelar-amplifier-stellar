@@ -1,7 +1,6 @@
-use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{vec, Address};
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
-use stellar_axelar_std::{assert_auth, assert_err};
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::{assert_auth, assert_err, vec, Address};
 
 use crate::error::ContractError;
 use crate::tests::testutils::{setup_env, TestConfig};
