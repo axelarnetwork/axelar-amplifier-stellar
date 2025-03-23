@@ -1,8 +1,3 @@
-use soroban_sdk::testutils::{
-    Address as _, AuthorizedFunction, AuthorizedInvocation, StellarAssetContract,
-};
-use soroban_sdk::token::{self, StellarAssetClient};
-use soroban_sdk::{vec, Address, Bytes, BytesN, Env, IntoVal, String, Symbol};
 use stellar_axelar_gas_service::testutils::{setup_gas_service, setup_gas_token};
 use stellar_axelar_gas_service::AxelarGasServiceClient;
 use stellar_axelar_gateway::event::{ContractCalledEvent, MessageApprovedEvent};
@@ -12,9 +7,16 @@ use stellar_axelar_gateway::testutils::{
 use stellar_axelar_gateway::types::Message;
 use stellar_axelar_gateway::AxelarGatewayClient;
 use stellar_axelar_std::address::AddressExt;
+use stellar_axelar_std::testutils::{
+    Address as _, AuthorizedFunction, AuthorizedInvocation, StellarAssetContract,
+};
+use stellar_axelar_std::token::{self, StellarAssetClient};
 use stellar_axelar_std::traits::BytesExt;
 use stellar_axelar_std::types::Token;
-use stellar_axelar_std::{assert_contract_err, assert_ok, auth_invocation, events};
+use stellar_axelar_std::{
+    assert_contract_err, assert_ok, auth_invocation, events, vec, Address, Bytes, BytesN, Env,
+    IntoVal, String, Symbol,
+};
 use stellar_interchain_token_service::testutils::setup_its;
 use stellar_interchain_token_service::InterchainTokenServiceClient;
 
