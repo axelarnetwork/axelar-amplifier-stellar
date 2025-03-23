@@ -1,5 +1,5 @@
-use soroban_sdk::{contractclient, Address, Env, Symbol, Val, Vec};
 use stellar_axelar_std::interfaces::{OwnableInterface, UpgradableInterface};
+use stellar_axelar_std::{contractclient, soroban_sdk, Address, Env, Symbol, Val, Vec};
 
 use crate::error::ContractError;
 
