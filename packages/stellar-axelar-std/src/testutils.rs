@@ -75,10 +75,12 @@ macro_rules! auth_invocation {
 #[macro_export]
 macro_rules! assert_storage_layout_is_sound {
     ($actual:expr) => {{
-        fn f() {}
+        const fn f() {}
         fn type_name_of_val<T>(_: T) -> &'static str {
             ::std::any::type_name::<T>()
         }
+
+        // because f() will be defined inside the parent function, we can strip away the suffic to get the parent function name
         let mut function_path = type_name_of_val(f).strip_suffix("::f").unwrap_or("");
         while let Some(rest) = function_path.strip_suffix("::{{closure}}") {
             function_path = rest;
