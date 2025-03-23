@@ -7,4 +7,5 @@ pub enum ContractError {
     MigrationNotAllowed = 1,
     OperatorAlreadyAdded = 2,
     NotAnOperator = 3,
+    MigrationInProgress = 4,
 }

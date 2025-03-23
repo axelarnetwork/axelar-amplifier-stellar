@@ -13,11 +13,9 @@ use crate::types::{HubMessage, InterchainTransfer, Message};
 mod test {
     use core::fmt::Debug;
 
-    use soroban_sdk::{
-        contract, contracterror, contractimpl, contracttype, Address, Bytes, BytesN, Env, String,
-    };
+    use soroban_sdk::{contract, contracterror, contracttype, Address, Bytes, BytesN, Env, String};
     use stellar_axelar_std::events::Event;
-    use stellar_axelar_std::{ensure, InterchainTokenExecutable, IntoEvent};
+    use stellar_axelar_std::{contractimpl, ensure, InterchainTokenExecutable, IntoEvent};
 
     use crate as stellar_interchain_token_service;
     use crate::executable::CustomInterchainTokenExecutable;
