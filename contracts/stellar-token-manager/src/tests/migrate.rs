@@ -1,10 +1,8 @@
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
 use stellar_axelar_std::{assert_auth, assert_ok};
 
-use crate::{
-    tests::testutils::{setup_env, TestConfig},
-    TokenManager,
-};
+use crate::tests::testutils::{setup_env, TestConfig};
+use crate::TokenManager;
 
 const NEW_WASM: &[u8] = include_bytes!("testdata/stellar_token_manager.optimized.wasm");
 
