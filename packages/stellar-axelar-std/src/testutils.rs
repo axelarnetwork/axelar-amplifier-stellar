@@ -111,10 +111,10 @@ pub fn __source_file(file: &str) -> PathBuf {
 
 #[cfg(test)]
 mod tests {
+    use crate::testutils::__source_file;
     use std::borrow::ToOwned;
     use std::fs;
-
-    use crate::testutils::__source_file;
+    use std::path::PathBuf;
 
     #[test]
     #[should_panic]
@@ -124,6 +124,18 @@ mod tests {
         }
 
         let function_path = type_name_of(panics_when_golden_file_does_not_exist);
+
+        let golden_file = golden_file_name(function_path);
+
+        let mut golden_file_temp = golden_file.clone();
+        golden_file_temp.set_extension("temp");
+
+        let _ = fs::rename(&golden_file, &golden_file_temp);
+        assert_matches_golden_file!("something");
+        let _ = fs::rename(golden_file_temp, golden_file);
+    }
+
+    fn golden_file_name(function_path: &str) -> PathBuf {
         let (_, fn_name) = function_path.rsplit_once("::").unwrap();
         let source_file = __source_file(file!());
 
@@ -134,8 +146,6 @@ mod tests {
             p.set_extension("golden");
             p
         };
-
-        let _ = fs::remove_file(golden_file);
-        assert_matches_golden_file!("something");
+        golden_file
     }
 }
