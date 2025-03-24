@@ -89,7 +89,7 @@ macro_rules! assert_valid_storage_layout {
         }
 
         let source_file = $crate::testutils::__source_file(file!());
-        $crate::testutils::__assert_storage_layout_is_sound($actual, source_file, function_path);
+        $crate::testutils::__assert_valid_storage_layout($actual, source_file, function_path);
     }};
 }
 

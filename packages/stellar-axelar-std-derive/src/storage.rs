@@ -447,7 +447,7 @@ fn contract_storage_tests(r#enum: &Ident, enum_input: &DeriveInput) -> TokenStre
 
             #[test]
             fn #test() {
-                stellar_axelar_std::assert_storage_layout_is_sound!(#formatted_enum);
+                stellar_axelar_std::assert_valid_storage_layout!(#formatted_enum);
             }
         }
     }

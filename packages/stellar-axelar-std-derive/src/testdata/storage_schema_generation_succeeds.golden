@@ -293,7 +293,7 @@ mod data_key_storage_layout_tests {
     use super::*;
     #[test]
     fn ensure_data_key_storage_schema_is_unchanged() {
-        stellar_axelar_std::assert_storage_layout_is_sound!(
+        stellar_axelar_std::assert_valid_storage_layout!(
             "enum DataKey {\n\n    #[instance]\n    #[value(u32)]\n    Counter,\n\n    #[persistent]\n    #[value(String)]\n    Message { sender: Address },\n\n    #[temporary]\n    #[value(Address)]\n    LastCaller { timestamp: u64 },\n\n    #[persistent]\n    #[value(bool)]\n    Flag { key: String, owner: Address },\n\n    #[persistent]\n    #[value(Option<String>)]\n    OptionalMessage { id: u32 },\n\n    #[instance]\n    #[status]\n    Initialized,\n\n    #[persistent]\n    #[status]\n    Paused,\n}\n"
         );
     }
