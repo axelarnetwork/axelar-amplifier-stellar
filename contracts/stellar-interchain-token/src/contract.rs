@@ -1,4 +1,3 @@
-use soroban_token_sdk::event::Events as TokenEvents;
 use soroban_token_sdk::metadata::TokenMetadata;
 use soroban_token_sdk::TokenUtils;
 use stellar_axelar_std::events::Event;
@@ -6,7 +5,7 @@ use stellar_axelar_std::interfaces::OwnableInterface;
 use stellar_axelar_std::token::{StellarAssetInterface, TokenInterface};
 use stellar_axelar_std::{
     assert_with_error, contract, contractimpl, ensure, interfaces, only_owner, soroban_sdk, token,
-    Address, BytesN, Env, String, Upgradable,
+    Address, BytesN, Env, Ownable, String, Upgradable,
 };
 
 use crate::error::ContractError;
@@ -15,7 +14,7 @@ use crate::interface::InterchainTokenInterface;
 use crate::storage::{self, AllowanceDataKey, AllowanceValue};
 
 #[contract]
-#[derive(Upgradable)]
+#[derive(Ownable, Upgradable)]
 #[migratable]
 pub struct InterchainToken;
 
@@ -39,21 +38,6 @@ impl InterchainToken {
 
             MinterAddedEvent { minter }.emit(&env);
         }
-    }
-}
-
-#[contractimpl]
-impl OwnableInterface for InterchainToken {
-    fn owner(env: &Env) -> Address {
-        interfaces::owner(env)
-    }
-
-    fn transfer_ownership(env: &Env, new_owner: Address) {
-        let old_owner = Self::owner(env);
-
-        interfaces::transfer_ownership::<Self>(env, new_owner.clone());
-
-        TokenEvents::new(env).set_admin(old_owner, new_owner);
     }
 }
 

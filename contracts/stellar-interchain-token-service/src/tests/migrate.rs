@@ -1,7 +1,6 @@
-use soroban_sdk::testutils::BytesN as _;
-use soroban_sdk::{vec, Address, BytesN, String};
 use soroban_token_sdk::metadata::TokenMetadata;
-use stellar_axelar_std::{assert_auth, assert_contract_err};
+use stellar_axelar_std::testutils::BytesN as _;
+use stellar_axelar_std::{assert_auth, assert_contract_err, vec, Address, BytesN, String};
 
 use crate::error::ContractError;
 use crate::flow_limit::current_epoch;
@@ -11,8 +10,7 @@ use crate::tests::utils::setup_env;
 use crate::testutils::{setup_its_token, setup_upgrader};
 use crate::types::TokenManagerType;
 
-const ITS_WASM_V110: &[u8] =
-    include_bytes!("testdata/stellar_interchain_token_service_v110.optimized.wasm");
+const ITS_WASM: &[u8] = include_bytes!("testdata/stellar_interchain_token_service.optimized.wasm");
 const TOKEN_MANAGER_WASM_V110: &[u8] =
     include_bytes!("testdata/stellar_token_manager_v110.optimized.wasm");
 const INTERCHAIN_TOKEN_WASM_V110: &[u8] =
@@ -21,13 +19,94 @@ const INTERCHAIN_TOKEN_WASM_V110: &[u8] =
 const VERSION_V110: &str = "1.1.0";
 
 #[test]
-fn migrate_succeeds() {
+fn migrate_native_interchain_token_succeeds() {
     let (env, its_client, _, _, _) = setup_env();
     let upgrader_client = setup_upgrader(&env);
     let owner: Address = its_client.owner();
     let (token_id, _) = setup_its_token(&env, &its_client, &owner, 100);
 
-    let its_wasm_hash_v110 = env.deployer().upload_contract_wasm(ITS_WASM_V110);
+    let its_wasm_hash = env.deployer().upload_contract_wasm(ITS_WASM);
+    let token_manager_wasm_hash_v110 = env.deployer().upload_contract_wasm(TOKEN_MANAGER_WASM_V110);
+    let interchain_token_wasm_hash_v110 = env
+        .deployer()
+        .upload_contract_wasm(INTERCHAIN_TOKEN_WASM_V110);
+
+    let current_epoch = current_epoch(&env);
+
+    let token_manager_v100 = its_client.token_manager_address(&token_id);
+    let interchain_token_v100 = its_client.interchain_token_address(&token_id);
+
+    let token_config = TokenIdConfigValue {
+        token_address: interchain_token_v100.clone(),
+        token_manager: token_manager_v100.clone(),
+        token_manager_type: TokenManagerType::NativeInterchainToken,
+    };
+
+    let flow_in_amount = 100i128;
+    let flow_out_amount = 50i128;
+
+    env.as_contract(&its_client.address, || {
+        let flow_key = legacy_storage::FlowKey {
+            token_id: token_id.clone(),
+            epoch: current_epoch,
+        };
+
+        legacy_storage::set_flow_in(&env, flow_key.clone(), &flow_in_amount);
+        legacy_storage::set_flow_out(&env, flow_key, &flow_out_amount);
+
+        storage::set_token_id_config(&env, token_id.clone(), &token_config);
+    });
+
+    assert_auth!(owner, its_client.upgrade(&its_wasm_hash));
+
+    let migration_data = CustomMigrationData {
+        new_token_manager_wasm_hash: token_manager_wasm_hash_v110.clone(),
+        new_interchain_token_wasm_hash: interchain_token_wasm_hash_v110.clone(),
+        token_ids: vec![&env, token_id.clone()],
+        upgrader_client: upgrader_client.address,
+        new_version: String::from_str(&env, VERSION_V110),
+    };
+
+    its_client
+        .mock_all_auths_allowing_non_root_auth()
+        .migrate(&migration_data);
+
+    assert_eq!(
+        env.as_contract(&its_client.address, || {
+            storage::token_manager_wasm_hash(&env)
+        }),
+        token_manager_wasm_hash_v110,
+        "token manager WASM hash should be updated"
+    );
+    assert_eq!(
+        env.as_contract(&its_client.address, || {
+            storage::interchain_token_wasm_hash(&env)
+        }),
+        interchain_token_wasm_hash_v110,
+        "interchain token WASM hash should be updated"
+    );
+    assert_eq!(
+        env.as_contract(&its_client.address, || {
+            storage::flow_in(&env, token_id.clone(), current_epoch)
+        }),
+        flow_in_amount
+    );
+    assert_eq!(
+        env.as_contract(&its_client.address, || {
+            storage::flow_out(&env, token_id, current_epoch)
+        }),
+        flow_out_amount
+    );
+}
+
+#[test]
+fn migrate_lock_unlock_succeeds() {
+    let (env, its_client, _, _, _) = setup_env();
+    let upgrader_client = setup_upgrader(&env);
+    let owner: Address = its_client.owner();
+    let (token_id, _) = setup_its_token(&env, &its_client, &owner, 100);
+
+    let its_wasm_hash = env.deployer().upload_contract_wasm(ITS_WASM);
     let token_manager_wasm_hash_v110 = env.deployer().upload_contract_wasm(TOKEN_MANAGER_WASM_V110);
     let interchain_token_wasm_hash_v110 = env
         .deployer()
@@ -59,7 +138,7 @@ fn migrate_succeeds() {
         storage::set_token_id_config(&env, token_id.clone(), &token_config);
     });
 
-    assert_auth!(owner, its_client.upgrade(&its_wasm_hash_v110));
+    assert_auth!(owner, its_client.upgrade(&its_wasm_hash));
 
     let migration_data = CustomMigrationData {
         new_token_manager_wasm_hash: token_manager_wasm_hash_v110.clone(),
@@ -108,13 +187,13 @@ fn migrate_fails_with_invalid_token_id() {
     let owner = its_client.owner();
     let non_existent_token_id = BytesN::random(&env);
 
-    let its_wasm_hash_v110 = env.deployer().upload_contract_wasm(ITS_WASM_V110);
+    let its_wasm_hash = env.deployer().upload_contract_wasm(ITS_WASM);
     let token_manager_wasm_hash_v110 = env.deployer().upload_contract_wasm(TOKEN_MANAGER_WASM_V110);
     let interchain_token_wasm_hash_v110 = env
         .deployer()
         .upload_contract_wasm(INTERCHAIN_TOKEN_WASM_V110);
 
-    assert_auth!(owner, its_client.upgrade(&its_wasm_hash_v110));
+    assert_auth!(owner, its_client.upgrade(&its_wasm_hash));
 
     let migration_data = CustomMigrationData {
         new_token_manager_wasm_hash: token_manager_wasm_hash_v110,
@@ -150,7 +229,7 @@ fn migrate_succeeds_with_multiple_token_ids() {
         &None,
     );
 
-    let its_wasm_hash_v110 = env.deployer().upload_contract_wasm(ITS_WASM_V110);
+    let its_wasm_hash = env.deployer().upload_contract_wasm(ITS_WASM);
     let token_manager_wasm_hash_v110 = env.deployer().upload_contract_wasm(TOKEN_MANAGER_WASM_V110);
     let interchain_token_wasm_hash_v110 = env
         .deployer()
@@ -158,8 +237,9 @@ fn migrate_succeeds_with_multiple_token_ids() {
 
     let current_epoch = current_epoch(&env);
 
-    let token_manager_v100_1 = its_client.token_manager_address(&token_id_1);
-    let token_manager_v100_2 = its_client.token_manager_address(&token_id_2);
+    let token_manager_v100_1 = its_client.deployed_token_manager(&token_id_1);
+    let token_manager_v100_2 = its_client.deployed_token_manager(&token_id_2);
+
     let interchain_token_v100_1 = its_client.interchain_token_address(&token_id_1);
     let interchain_token_v100_2 = its_client.interchain_token_address(&token_id_2);
 
@@ -199,11 +279,11 @@ fn migrate_succeeds_with_multiple_token_ids() {
         storage::set_token_id_config(&env, token_id_2.clone(), &token_config_2);
     });
 
-    assert_auth!(owner, its_client.upgrade(&its_wasm_hash_v110));
+    assert_auth!(owner, its_client.upgrade(&its_wasm_hash));
 
     let migration_data = CustomMigrationData {
-        new_token_manager_wasm_hash: token_manager_wasm_hash_v110,
-        new_interchain_token_wasm_hash: interchain_token_wasm_hash_v110,
+        new_token_manager_wasm_hash: token_manager_wasm_hash_v110.clone(),
+        new_interchain_token_wasm_hash: interchain_token_wasm_hash_v110.clone(),
         token_ids: vec![&env, token_id_1.clone(), token_id_2.clone()],
         upgrader_client: upgrader_client.address,
         new_version: String::from_str(&env, VERSION_V110),
@@ -213,6 +293,20 @@ fn migrate_succeeds_with_multiple_token_ids() {
         .mock_all_auths_allowing_non_root_auth()
         .migrate(&migration_data);
 
+    assert_eq!(
+        env.as_contract(&its_client.address, || {
+            storage::token_manager_wasm_hash(&env)
+        }),
+        token_manager_wasm_hash_v110,
+        "token manager WASM hash should be updated"
+    );
+    assert_eq!(
+        env.as_contract(&its_client.address, || {
+            storage::interchain_token_wasm_hash(&env)
+        }),
+        interchain_token_wasm_hash_v110,
+        "interchain token WASM hash should be updated"
+    );
     assert_eq!(
         env.as_contract(&its_client.address, || {
             storage::flow_in(&env, token_id_1.clone(), current_epoch)
@@ -245,13 +339,13 @@ fn migrate_succeeds_with_empty_migration_data() {
     let upgrader_client = setup_upgrader(&env);
     let owner = its_client.owner();
 
-    let its_wasm_hash_v110 = env.deployer().upload_contract_wasm(ITS_WASM_V110);
+    let its_wasm_hash = env.deployer().upload_contract_wasm(ITS_WASM);
     let token_manager_wasm_hash_v110 = env.deployer().upload_contract_wasm(TOKEN_MANAGER_WASM_V110);
     let interchain_token_wasm_hash_v110 = env
         .deployer()
         .upload_contract_wasm(INTERCHAIN_TOKEN_WASM_V110);
 
-    assert_auth!(owner, its_client.upgrade(&its_wasm_hash_v110));
+    assert_auth!(owner, its_client.upgrade(&its_wasm_hash));
 
     let migration_data = CustomMigrationData {
         new_token_manager_wasm_hash: token_manager_wasm_hash_v110,
@@ -267,13 +361,99 @@ fn migrate_succeeds_with_empty_migration_data() {
 }
 
 #[test]
-fn migrate_with_legacy_flow_data() {
+fn migrate_with_native_interchain_token_legacy_flow_data() {
     let (env, its_client, _, _, _) = setup_env();
     let upgrader_client = setup_upgrader(&env);
     let owner = its_client.owner();
     let (token_id, _) = setup_its_token(&env, &its_client, &owner, 100);
 
-    let its_wasm_hash_v110 = env.deployer().upload_contract_wasm(ITS_WASM_V110);
+    let its_wasm_hash = env.deployer().upload_contract_wasm(ITS_WASM);
+    let token_manager_wasm_hash_v110 = env.deployer().upload_contract_wasm(TOKEN_MANAGER_WASM_V110);
+    let interchain_token_wasm_hash_v110 = env
+        .deployer()
+        .upload_contract_wasm(INTERCHAIN_TOKEN_WASM_V110);
+
+    let current_epoch = current_epoch(&env);
+
+    let token_manager_v100 = its_client.token_manager_address(&token_id);
+    let interchain_token_v100 = its_client.interchain_token_address(&token_id);
+
+    let token_config = TokenIdConfigValue {
+        token_address: interchain_token_v100,
+        token_manager: token_manager_v100,
+        token_manager_type: TokenManagerType::NativeInterchainToken,
+    };
+
+    let flow_in_amount = 100i128;
+    let flow_out_amount = 50i128;
+
+    env.as_contract(&its_client.address, || {
+        let flow_key = legacy_storage::FlowKey {
+            token_id: token_id.clone(),
+            epoch: current_epoch,
+        };
+
+        legacy_storage::set_flow_in(&env, flow_key.clone(), &flow_in_amount);
+        legacy_storage::set_flow_out(&env, flow_key, &flow_out_amount);
+
+        storage::set_token_id_config(&env, token_id.clone(), &token_config);
+    });
+
+    assert_auth!(owner, its_client.upgrade(&its_wasm_hash));
+
+    let migration_data = CustomMigrationData {
+        new_token_manager_wasm_hash: token_manager_wasm_hash_v110.clone(),
+        new_interchain_token_wasm_hash: interchain_token_wasm_hash_v110.clone(),
+        token_ids: vec![&env, token_id.clone()],
+        upgrader_client: upgrader_client.address,
+        new_version: String::from_str(&env, VERSION_V110),
+    };
+
+    its_client
+        .mock_all_auths_allowing_non_root_auth()
+        .migrate(&migration_data);
+
+    assert_eq!(
+        env.as_contract(&its_client.address, || {
+            storage::flow_in(&env, token_id.clone(), current_epoch)
+        }),
+        flow_in_amount,
+        "flow in value should be migrated correctly"
+    );
+
+    assert_eq!(
+        env.as_contract(&its_client.address, || {
+            storage::flow_out(&env, token_id, current_epoch)
+        }),
+        flow_out_amount,
+        "flow out value should be migrated correctly"
+    );
+
+    assert_eq!(
+        env.as_contract(&its_client.address, || {
+            storage::token_manager_wasm_hash(&env)
+        }),
+        token_manager_wasm_hash_v110,
+        "token manager WASM hash should be updated"
+    );
+
+    assert_eq!(
+        env.as_contract(&its_client.address, || {
+            storage::interchain_token_wasm_hash(&env)
+        }),
+        interchain_token_wasm_hash_v110,
+        "interchain token WASM hash should be updated"
+    );
+}
+
+#[test]
+fn migrate_with_lock_unlock_legacy_flow_data() {
+    let (env, its_client, _, _, _) = setup_env();
+    let upgrader_client = setup_upgrader(&env);
+    let owner = its_client.owner();
+    let (token_id, _) = setup_its_token(&env, &its_client, &owner, 100);
+
+    let its_wasm_hash = env.deployer().upload_contract_wasm(ITS_WASM);
     let token_manager_wasm_hash_v110 = env.deployer().upload_contract_wasm(TOKEN_MANAGER_WASM_V110);
     let interchain_token_wasm_hash_v110 = env
         .deployer()
@@ -305,7 +485,7 @@ fn migrate_with_legacy_flow_data() {
         storage::set_token_id_config(&env, token_id.clone(), &token_config);
     });
 
-    assert_auth!(owner, its_client.upgrade(&its_wasm_hash_v110));
+    assert_auth!(owner, its_client.upgrade(&its_wasm_hash));
 
     let migration_data = CustomMigrationData {
         new_token_manager_wasm_hash: token_manager_wasm_hash_v110.clone(),

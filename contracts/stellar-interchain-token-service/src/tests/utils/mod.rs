@@ -4,8 +4,6 @@ use stellar_axelar_gas_service::AxelarGasServiceClient;
 use stellar_axelar_gateway::testutils::{setup_gateway, TestSignerSet};
 use stellar_axelar_gateway::AxelarGatewayClient;
 use stellar_axelar_std::{Env, IntoVal};
-use stellar_upgrader::interface::UpgraderClient;
-use stellar_upgrader::Upgrader;
 
 use crate::testutils::setup_its;
 use crate::InterchainTokenServiceClient;

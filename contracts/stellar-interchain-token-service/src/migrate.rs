@@ -1,5 +1,5 @@
-use soroban_sdk::{contracttype, Address, BytesN, Env, String, Vec};
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
+use stellar_axelar_std::{contracttype, soroban_sdk, Address, BytesN, Env, String, Vec};
 use stellar_upgrader::UpgraderClient;
 
 use crate::error::ContractError;
@@ -19,8 +19,7 @@ pub struct CustomMigrationData {
 }
 
 pub mod legacy_storage {
-    use soroban_sdk::{contracttype, BytesN};
-    use stellar_axelar_std::contractstorage;
+    use stellar_axelar_std::{contractstorage, contracttype, soroban_sdk, BytesN};
 
     #[contractstorage]
     enum LegacyDataKey {
@@ -72,7 +71,7 @@ impl CustomMigratableInterface for InterchainTokenService {
                 &token_manager,
                 &new_version,
                 &new_token_manager_wasm_hash,
-                &soroban_sdk::vec![&env, ().into()],
+                &soroban_sdk::vec![env, ().into()],
             );
 
             if token_manager_type != TokenManagerType::LockUnlock {
@@ -80,7 +79,7 @@ impl CustomMigratableInterface for InterchainTokenService {
                     &interchain_token,
                     &new_version,
                     &new_interchain_token_wasm_hash,
-                    &soroban_sdk::vec![&env, ().into()],
+                    &soroban_sdk::vec![env, ().into()],
                 );
             }
 

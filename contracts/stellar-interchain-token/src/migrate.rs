@@ -1,5 +1,4 @@
-use soroban_sdk::Env;
-use stellar_axelar_std::interfaces::CustomMigratableInterface;
+use stellar_axelar_std::{interfaces::CustomMigratableInterface, Env};
 
 use crate::{error::ContractError, InterchainToken};
 
