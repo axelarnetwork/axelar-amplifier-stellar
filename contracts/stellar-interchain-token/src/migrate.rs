@@ -1,6 +1,8 @@
-use stellar_axelar_std::{interfaces::CustomMigratableInterface, Env};
+use stellar_axelar_std::interfaces::CustomMigratableInterface;
+use stellar_axelar_std::Env;
 
-use crate::{error::ContractError, InterchainToken};
+use crate::error::ContractError;
+use crate::InterchainToken;
 
 impl CustomMigratableInterface for InterchainToken {
     type MigrationData = ();

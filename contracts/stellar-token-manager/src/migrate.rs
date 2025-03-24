@@ -1,7 +1,8 @@
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
 use stellar_axelar_std::Env;
 
-use crate::{error::ContractError, TokenManager};
+use crate::error::ContractError;
+use crate::TokenManager;
 
 impl CustomMigratableInterface for TokenManager {
     type MigrationData = ();
