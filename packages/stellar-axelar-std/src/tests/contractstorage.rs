@@ -2,7 +2,7 @@ use stellar_axelar_std::testutils::Address as _;
 use stellar_axelar_std::{contract, contractstorage, Address, Env, String};
 use stellar_axelar_std_derive::contractimpl;
 
-// this is needed because the contractstorage macro generates code namespaced to stellar_axelar_std
+// Note: Required since the contractstorage macro generates code namespaced to stellar_axelar_std
 use crate as stellar_axelar_std;
 
 #[contract]

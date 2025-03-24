@@ -75,7 +75,7 @@ macro_rules! auth_invocation {
 }
 
 #[macro_export]
-macro_rules! assert_storage_layout_is_sound {
+macro_rules! assert_valid_storage_layout {
     ($actual:expr) => {{
         const fn f() {}
         fn type_name_of_val<T>(_: T) -> &'static str {
@@ -94,7 +94,7 @@ macro_rules! assert_storage_layout_is_sound {
 }
 
 #[doc(hidden)]
-pub fn __assert_storage_layout_is_sound(
+pub fn __assert_valid_storage_layout(
     actual: impl AsRef<str>,
     source_file: impl AsRef<Path>,
     function_path: impl AsRef<str>,
