@@ -37,8 +37,8 @@ fn migrate_native_interchain_token_succeeds() {
     let interchain_token_v100 = its_client.interchain_token_address(&token_id);
 
     let token_config = TokenIdConfigValue {
-        token_address: interchain_token_v100.clone(),
-        token_manager: token_manager_v100.clone(),
+        token_address: interchain_token_v100,
+        token_manager: token_manager_v100,
         token_manager_type: TokenManagerType::NativeInterchainToken,
     };
 
@@ -118,8 +118,8 @@ fn migrate_lock_unlock_succeeds() {
     let interchain_token_v100 = its_client.interchain_token_address(&token_id);
 
     let token_config = TokenIdConfigValue {
-        token_address: interchain_token_v100.clone(),
-        token_manager: token_manager_v100.clone(),
+        token_address: interchain_token_v100,
+        token_manager: token_manager_v100,
         token_manager_type: TokenManagerType::LockUnlock,
     };
 
