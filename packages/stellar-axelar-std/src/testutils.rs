@@ -75,7 +75,7 @@ macro_rules! auth_invocation {
 }
 
 #[macro_export]
-macro_rules! assert_valid_storage_layout {
+macro_rules! assert_matches_golden_file {
     ($actual:expr) => {{
         const fn f() {}
         fn type_name_of_val<T>(_: T) -> &'static str {
@@ -89,12 +89,12 @@ macro_rules! assert_valid_storage_layout {
         }
 
         let source_file = $crate::testutils::__source_file(file!());
-        $crate::testutils::__assert_valid_storage_layout($actual, source_file, function_path);
+        $crate::testutils::__assert_matches_golden_file($actual, source_file, function_path);
     }};
 }
 
 #[doc(hidden)]
-pub fn __assert_valid_storage_layout(
+pub fn __assert_matches_golden_file(
     actual: impl AsRef<str>,
     source_file: impl AsRef<Path>,
     function_path: impl AsRef<str>,
@@ -113,7 +113,7 @@ pub fn __source_file(file: &str) -> PathBuf {
 mod tests {
     #[test]
     #[should_panic]
-    fn panic_when_golden_file_does_not_exist() {
-        assert_valid_storage_layout!("something")
+    fn panics_when_golden_file_does_not_exist() {
+        assert_matches_golden_file!("something")
     }
 }
