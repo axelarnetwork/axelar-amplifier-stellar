@@ -3,7 +3,7 @@ set -euo pipefail
 
 main() {
     # Get all changed files in the PR
-    if ! CHANGED_FILES=$(git diff --name-only "$1" "$2" | grep "ensure_.*_storage_schema_is_unchanged.golden"); then
+    if ! CHANGED_FILES=$(git diff --name-only "$1" "$2" | grep "contracts/[^/]*/src/testdata/ensure_.*_storage_schema_is_unchanged.golden"); then
         echo "No storage schema changes detected"
         exit 0
     fi
