@@ -45,7 +45,7 @@ pub fn setup_its<'a>(
         ),
     );
 
-    InterchainTokenServiceClient::new(env, &contract_id)
+    InterchainTokenServiceClient::<'a>::new(env, &contract_id)
 }
 
 pub fn setup_its_token(
