@@ -1,6 +1,6 @@
 enum DataKey {
 
     #[instance]
-    #[value(soroban_sdk::String)]
+    #[value(stellar_axelar_std::String)]
     Data,
 }
