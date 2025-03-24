@@ -1,11 +1,1 @@
-BurnedEvent {
-    from: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM),
-    amount: 100,
-}
-
-Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM)
-
-burned {
-    #[topic] from: Address,
-    #[topic] amount: i128,
-}
+Vec(Ok((Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM), Vec(Ok(Symbol(burn)), Ok(Address(obj#425))), I128(100))))

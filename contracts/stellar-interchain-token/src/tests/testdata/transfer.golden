@@ -1,13 +1,1 @@
-TransferredEvent {
-    from: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM),
-    to: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4),
-    amount: 600,
-}
-
-Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM)
-
-transferred {
-    #[topic] from: Address,
-    #[topic] to: Address,
-    #[topic] amount: i128,
-}
+Vec(Ok((Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM), Vec(Ok(Symbol(transfer)), Ok(Address(obj#279)), Ok(Address(obj#281))), I128(600))))

@@ -1,15 +1,1 @@
-ApprovedEvent {
-    from: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM),
-    spender: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4),
-    amount: 1000,
-    expiration_ledger: 200,
-}
-
-Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM)
-
-approved {
-    #[topic] from: Address,
-    #[topic] spender: Address,
-    #[topic] amount: i128,
-    #[topic] expiration_ledger: u32,
-}
+Vec(Ok((Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM), Vec(Ok(Symbol(approve)), Ok(Address(obj#153)), Ok(Address(obj#155))), Vec(obj#159))))

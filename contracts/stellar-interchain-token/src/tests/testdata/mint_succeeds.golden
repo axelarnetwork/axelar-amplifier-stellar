@@ -1,11 +1,1 @@
-MintedEvent {
-    to: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM),
-    amount: 1000,
-}
-
-Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4)
-
-minted {
-    #[topic] to: Address,
-    #[topic] amount: i128,
-}
+Vec(Ok((Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4), Vec(Ok(Symbol(mint)), Ok(Address(obj#175)), Ok(Address(obj#177))), I128(1000))))
