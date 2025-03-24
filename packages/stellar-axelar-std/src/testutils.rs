@@ -112,8 +112,8 @@ pub fn __source_file(file: &str) -> PathBuf {
 #[cfg(test)]
 mod tests {
     use std::borrow::ToOwned;
-    use std::fs;
     use std::path::PathBuf;
+    use std::{env, fs};
 
     use crate::testutils::__source_file;
 
@@ -134,6 +134,13 @@ mod tests {
         let _ = fs::rename(&golden_file, &golden_file_temp);
         assert_matches_golden_file!("something");
         let _ = fs::rename(golden_file_temp, golden_file);
+
+        if matches!(
+            env::var("GOLDIE_UPDATE").ok().as_deref(),
+            Some("1" | "true")
+        ) {
+            panic!("goldie regenerated golden file");
+        }
     }
 
     fn golden_file_name(function_path: &str) -> PathBuf {
