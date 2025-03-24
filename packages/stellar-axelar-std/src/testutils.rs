@@ -108,3 +108,12 @@ pub fn __assert_valid_storage_layout(
 pub fn __source_file(file: &str) -> PathBuf {
     goldie::cargo_workspace_dir(env!("CARGO_MANIFEST_DIR")).join(file)
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    #[should_panic]
+    fn panic_when_golden_file_does_not_exist() {
+        assert_valid_storage_layout!("something")
+    }
+}
