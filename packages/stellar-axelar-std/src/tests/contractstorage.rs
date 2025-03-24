@@ -1,9 +1,9 @@
 use stellar_axelar_std::testutils::Address as _;
-use stellar_axelar_std::{contract, Address, Env, String};
+use stellar_axelar_std::{contract, contractstorage, Address, Env, String};
 use stellar_axelar_std_derive::contractimpl;
 
+// Note: Required since the contractstorage macro generates code namespaced to stellar_axelar_std
 use crate as stellar_axelar_std;
-use crate::contractstorage;
 
 #[contract]
 pub struct Contract;

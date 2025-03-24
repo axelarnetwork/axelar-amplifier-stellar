@@ -443,11 +443,11 @@ fn contract_storage_tests(r#enum: &Ident, enum_input: &DeriveInput) -> TokenStre
     quote! {
         #[cfg(test)]
         mod #test_module {
-            use goldie;
+            use super::*;
 
             #[test]
             fn #test() {
-                goldie::assert!(#formatted_enum);
+                stellar_axelar_std::assert_matches_golden_file!(#formatted_enum);
             }
         }
     }

@@ -1,8 +1,8 @@
-//! Base for the dummy.wasm file. This is the dummy contract after upgrade.
+//! Base for the dummy_contract_after_upgrade.wasm file. This is the dummy contract after upgrade.
 
-use soroban_sdk::{contract, contracterror, Address, BytesN, Env};
+use soroban_sdk::{contract, contracterror, vec, Address, BytesN, Env};
 use stellar_axelar_std::interfaces::{OwnableInterface, UpgradableInterface};
-use stellar_axelar_std::{contractimpl, contractstorage, interfaces, only_owner};
+use stellar_axelar_std::{contractimpl, contractstorage, interfaces};
 
 #[contract]
 pub struct DummyContract;
@@ -13,8 +13,14 @@ impl UpgradableInterface for DummyContract {
         soroban_sdk::String::from_str(env, "0.2.0")
     }
 
-    #[only_owner]
+    fn required_auths(env: &Env) -> soroban_sdk::Vec<Address> {
+        vec![env, Self::owner(env)]
+    }
+
     fn upgrade(env: &Env, new_wasm_hash: BytesN<32>) {
+        Self::required_auths(env)
+            .iter()
+            .for_each(|addr| addr.require_auth());
         env.deployer().update_current_contract_wasm(new_wasm_hash);
     }
 }
@@ -36,8 +42,11 @@ impl DummyContract {
         interfaces::set_owner(&env, &owner);
     }
 
-    #[only_owner]
     pub fn migrate(env: Env, migration_data: soroban_sdk::String) -> Result<(), ContractError> {
+        Self::required_auths(&env)
+            .iter()
+            .for_each(|addr| addr.require_auth());
+
         storage::set_data(&env, &migration_data);
 
         Ok(())
