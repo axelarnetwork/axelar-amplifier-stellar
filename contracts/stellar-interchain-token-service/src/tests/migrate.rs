@@ -1,6 +1,8 @@
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_std::testutils::BytesN as _;
-use stellar_axelar_std::{assert_auth, assert_contract_err, vec, Address, BytesN, String};
+use stellar_axelar_std::{
+    assert_auth, assert_contract_err, vec, Address, BytesN, String,
+};
 use stellar_upgrader::testutils::setup_upgrader;
 
 use crate::error::ContractError;
