@@ -1,13 +1,14 @@
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_std::testutils::BytesN as _;
 use stellar_axelar_std::{assert_auth, assert_contract_err, vec, Address, BytesN, String};
+use stellar_upgrader::testutils::setup_upgrader;
 
 use crate::error::ContractError;
 use crate::flow_limit::current_epoch;
 use crate::migrate::{legacy_storage, CustomMigrationData};
 use crate::storage::{self, TokenIdConfigValue};
 use crate::tests::utils::setup_env;
-use crate::testutils::{setup_its_token, setup_upgrader};
+use crate::testutils::setup_its_token;
 use crate::types::TokenManagerType;
 
 const ITS_WASM: &[u8] = include_bytes!("testdata/stellar_interchain_token_service.optimized.wasm");
