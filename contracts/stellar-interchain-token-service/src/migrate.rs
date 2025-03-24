@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, Address, BytesN, Env, String, Val, Vec};
+use soroban_sdk::{contracttype, Address, BytesN, Env, String, Vec};
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
 use stellar_upgrader::UpgraderClient;
 
@@ -72,7 +72,7 @@ impl CustomMigratableInterface for InterchainTokenService {
                 &token_manager,
                 &new_version,
                 &new_token_manager_wasm_hash,
-                &soroban_sdk::Vec::<Val>::new(env),
+                &soroban_sdk::vec![&env, ().into()],
             );
 
             if token_manager_type != TokenManagerType::LockUnlock {
@@ -80,7 +80,7 @@ impl CustomMigratableInterface for InterchainTokenService {
                     &interchain_token,
                     &new_version,
                     &new_interchain_token_wasm_hash,
-                    &soroban_sdk::Vec::new(env),
+                    &soroban_sdk::vec![&env, ().into()],
                 );
             }
 
