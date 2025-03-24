@@ -1,7 +1,9 @@
 use core::convert::Infallible;
 
 use stellar_axelar_std::testutils::arbitrary::std;
-use stellar_axelar_std::{contract, contracterror, contracttype, Address, BytesN, Env, String};
+use stellar_axelar_std::{
+    contract, contracterror, contracttype, vec, Address, BytesN, Env, String, Vec,
+};
 use stellar_axelar_std_derive::contractimpl;
 
 use crate as stellar_axelar_std;
@@ -86,6 +88,11 @@ impl UpgradableInterface for Contract {
     #[allow_during_migration]
     fn version(env: &Env) -> String {
         String::from_str(env, "0.1.0")
+    }
+
+    #[allow_during_migration]
+    fn required_auths(env: &Env) -> Vec<Address> {
+        vec![env, Self::owner(env)]
     }
 
     fn upgrade(env: &Env, new_wasm_hash: BytesN<32>) {

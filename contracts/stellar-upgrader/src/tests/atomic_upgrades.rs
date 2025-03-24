@@ -1,13 +1,12 @@
+use dummy_contract::contract::{DummyContract, DummyContractClient};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{Address, BytesN, Env, String};
 use stellar_axelar_std::{assert_contract_err, mock_auth};
 
-use super::utils::{DummyContract, DummyContractClient};
 use crate::error::ContractError;
-use crate::tests::utils;
 use crate::{Upgrader, UpgraderClient};
 
-const WASM_AFTER_UPGRADE: &[u8] = include_bytes!("testdata/dummy.wasm");
+const WASM_AFTER_UPGRADE: &[u8] = include_bytes!("testdata/dummy_contract_after_upgrade.wasm");
 
 #[test]
 fn upgrade_and_migrate_are_atomic() {
@@ -29,8 +28,18 @@ fn upgrade_and_migrate_are_atomic() {
 
     let upgrade_auth = mock_auth!(owner, dummy_client.upgrade(hash_after_upgrade));
     let migrate_auth = mock_auth!(owner, dummy_client.migrate(expected_data));
+    let root_upgrade = mock_auth!(
+        owner,
+        upgrader.upgrade(
+            &contract_address,
+            &expected_version,
+            &hash_after_upgrade,
+            &soroban_sdk::vec![&env, expected_data.to_val()],
+        ),
+        &[upgrade_auth.invoke.clone(), migrate_auth.invoke.clone()]
+    );
 
-    upgrader.mock_auths(&[upgrade_auth, migrate_auth]).upgrade(
+    upgrader.mock_auths(&[root_upgrade]).upgrade(
         &contract_address,
         &expected_version,
         &hash_after_upgrade,
@@ -43,7 +52,7 @@ fn upgrade_and_migrate_are_atomic() {
 
     // ensure migration was successful
     env.as_contract(&contract_address, || {
-        let data = utils::storage::data(&env);
+        let data = dummy_contract::contract::storage::data(&env);
         assert_eq!(data, expected_data);
     });
 }

@@ -1,6 +1,9 @@
 #![cfg(any(test, feature = "testutils"))]
 extern crate std;
 
+use std::env;
+use std::path::{Path, PathBuf};
+
 pub use soroban_sdk::testutils::*;
 
 /// Helper macro for building and verifying authorization chains in Soroban contract tests.
@@ -69,4 +72,88 @@ macro_rules! auth_invocation {
             }
         )]
     }};
+}
+
+#[macro_export]
+macro_rules! assert_matches_golden_file {
+    ($actual:expr) => {{
+        const fn f() {}
+        fn type_name_of<T>(_: T) -> &'static str {
+            ::std::any::type_name::<T>()
+        }
+
+        // because f() will be defined inside the parent function, we can strip away the suffic to get the parent function name
+        let mut function_path = type_name_of(f).strip_suffix("::f").unwrap_or("");
+        while let Some(rest) = function_path.strip_suffix("::{{closure}}") {
+            function_path = rest;
+        }
+
+        let source_file = $crate::testutils::__source_file(file!());
+        $crate::testutils::__assert_matches_golden_file($actual, source_file, function_path);
+    }};
+}
+
+#[doc(hidden)]
+pub fn __assert_matches_golden_file(
+    actual: impl AsRef<str>,
+    source_file: impl AsRef<Path>,
+    function_path: impl AsRef<str>,
+) {
+    if let Err(err) = goldie::Goldie::new(source_file, function_path).assert(actual) {
+        ::std::panic!("{}", err);
+    }
+}
+
+#[doc(hidden)]
+pub fn __source_file(file: &str) -> PathBuf {
+    goldie::cargo_workspace_dir(env!("CARGO_MANIFEST_DIR")).join(file)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::borrow::ToOwned;
+    use std::path::PathBuf;
+    use std::{env, fs};
+
+    use crate::testutils::__source_file;
+
+    #[test]
+    #[should_panic]
+    fn panics_when_golden_file_does_not_exist() {
+        fn type_name_of<T>(_: T) -> &'static str {
+            std::any::type_name::<T>()
+        }
+
+        let function_path = type_name_of(panics_when_golden_file_does_not_exist);
+
+        let golden_file = golden_file_name(function_path);
+
+        let mut golden_file_temp = golden_file.clone();
+        golden_file_temp.set_extension("temp");
+
+        let _ = fs::rename(&golden_file, &golden_file_temp);
+        assert_matches_golden_file!("something");
+        let _ = fs::rename(golden_file_temp, golden_file);
+
+        if matches!(
+            env::var("GOLDIE_UPDATE").ok().as_deref(),
+            Some("1" | "true")
+        ) {
+            panic!("goldie regenerated golden file");
+        }
+    }
+
+    fn golden_file_name(function_path: &str) -> PathBuf {
+        let (_, fn_name) = function_path.rsplit_once("::").unwrap();
+        let source_file = __source_file(file!());
+
+        let golden_file = {
+            let mut p = source_file.parent().unwrap().to_owned();
+            p.push("testdata");
+            p.push(fn_name);
+            p.set_extension("golden");
+            p
+        };
+        golden_file
+    }
 }

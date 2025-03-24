@@ -15,7 +15,7 @@ soroban-sdk = { workspace = true }
 stellar-axelar-std = { workspace = true }
 
 [dev-dependencies]
-goldie = { workspace = true }
+dummy-contract = { path = "src/tests/testdata/dummy-contract" }
 soroban-sdk = { workspace = true, features = ["testutils"] }
 
 [features]

@@ -745,6 +745,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
 
 [[package]]
+name = "dummy-contract"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk",
+ "stellar-axelar-std",
+]
+
+[[package]]
+name = "dummy-contract-after-upgrade"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk",
+ "stellar-axelar-std",
+]
+
+[[package]]
 name = "dunce"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2025,6 +2041,7 @@ dependencies = [
  "goldie",
  "hex",
  "paste",
+ "serde",
  "soroban-sdk",
  "stellar-axelar-std-derive",
 ]
@@ -2097,7 +2114,7 @@ name = "stellar-upgrader"
 version = "1.0.0"
 dependencies = [
  "cfg-if",
- "goldie",
+ "dummy-contract",
  "soroban-sdk",
  "stellar-axelar-std",
 ]
