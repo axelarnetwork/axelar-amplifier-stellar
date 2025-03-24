@@ -71,7 +71,7 @@ impl CustomMigratableInterface for InterchainTokenService {
                 &token_manager,
                 &new_version,
                 &new_token_manager_wasm_hash,
-                &soroban_sdk::vec![env, ().into()],
+                &stellar_axelar_std::vec![env, ().into()],
             );
 
             if token_manager_type != TokenManagerType::LockUnlock {
@@ -79,7 +79,7 @@ impl CustomMigratableInterface for InterchainTokenService {
                     &interchain_token,
                     &new_version,
                     &new_interchain_token_wasm_hash,
-                    &soroban_sdk::vec![env, ().into()],
+                    &stellar_axelar_std::vec![env, ().into()],
                 );
             }
 
