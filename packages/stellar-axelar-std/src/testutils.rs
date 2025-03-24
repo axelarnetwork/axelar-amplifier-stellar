@@ -111,10 +111,11 @@ pub fn __source_file(file: &str) -> PathBuf {
 
 #[cfg(test)]
 mod tests {
-    use crate::testutils::__source_file;
     use std::borrow::ToOwned;
     use std::fs;
     use std::path::PathBuf;
+
+    use crate::testutils::__source_file;
 
     #[test]
     #[should_panic]
