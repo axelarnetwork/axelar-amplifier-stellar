@@ -78,12 +78,12 @@ macro_rules! auth_invocation {
 macro_rules! assert_matches_golden_file {
     ($actual:expr) => {{
         const fn f() {}
-        fn type_name_of_val<T>(_: T) -> &'static str {
+        fn type_name_of<T>(_: T) -> &'static str {
             ::std::any::type_name::<T>()
         }
 
         // because f() will be defined inside the parent function, we can strip away the suffic to get the parent function name
-        let mut function_path = type_name_of_val(f).strip_suffix("::f").unwrap_or("");
+        let mut function_path = type_name_of(f).strip_suffix("::f").unwrap_or("");
         while let Some(rest) = function_path.strip_suffix("::{{closure}}") {
             function_path = rest;
         }
@@ -111,17 +111,31 @@ pub fn __source_file(file: &str) -> PathBuf {
 
 #[cfg(test)]
 mod tests {
-    use std::env;
+    use crate::testutils::__source_file;
+    use std::borrow::ToOwned;
     use std::string::ToString;
+    use std::{env, fs, println};
 
     #[test]
     #[should_panic]
     fn panics_when_golden_file_does_not_exist() {
-        let update = env::var("GOLDIE_UPDATE").unwrap_or("0".to_string());
+        fn type_name_of<T>(_: T) -> &'static str {
+            std::any::type_name::<T>()
+        }
 
-        env::set_var("GOLDIE_UPDATE", "0");
+        let function_path = type_name_of(panics_when_golden_file_does_not_exist);
+        let (_, fn_name) = function_path.rsplit_once("::").unwrap();
+        let source_file = __source_file(file!());
+
+        let golden_file = {
+            let mut p = source_file.parent().unwrap().to_owned();
+            p.push("testdata");
+            p.push(fn_name);
+            p.set_extension("golden");
+            p
+        };
+
+        let _ = fs::remove_file(golden_file);
         assert_matches_golden_file!("something");
-
-        env::set_var("GOLDIE_UPDATE", update);
     }
 }
