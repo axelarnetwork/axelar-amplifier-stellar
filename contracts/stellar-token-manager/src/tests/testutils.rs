@@ -14,7 +14,7 @@ pub fn setup_env<'a>() -> TestConfig<'a> {
 
     let owner = Address::generate(&env);
     let contract_id = env.register(TokenManager, (owner.clone(),));
-    let client = TokenManagerClient::<'a>::new(&env, &contract_id);
+    let client = TokenManagerClient::new(&env, &contract_id);
 
     TestConfig { env, owner, client }
 }
