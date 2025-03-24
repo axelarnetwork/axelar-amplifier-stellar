@@ -27,7 +27,7 @@ pub fn setup_env<'a>() -> TestConfig<'a> {
             },
         ),
     );
-    let client = InterchainTokenClient::new(&env, &contract_id);
+    let client = InterchainTokenClient::<'a>::new(&env, &contract_id);
 
     TestConfig { env, owner, client }
 }
