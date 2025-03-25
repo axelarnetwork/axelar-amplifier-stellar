@@ -1,6 +1,6 @@
 enum DataKey {
 
     #[instance]
-    #[value(stellar_axelar_std::String)]
+    #[value(String)]
     Data,
 }
