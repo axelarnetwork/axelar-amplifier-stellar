@@ -1,6 +1,9 @@
 use soroban_token_sdk::metadata::TokenMetadata;
+use stellar_axelar_std::interfaces::CustomMigratableInterface;
 use stellar_axelar_std::testutils::BytesN as _;
-use stellar_axelar_std::{assert_auth, assert_contract_err, vec, Address, BytesN, String};
+use stellar_axelar_std::{
+    assert_auth, assert_contract_err, assert_ok, vec, Address, BytesN, String,
+};
 use stellar_upgrader::testutils::setup_upgrader;
 
 use crate::error::ContractError;
@@ -10,6 +13,7 @@ use crate::storage::{self, TokenIdConfigValue};
 use crate::tests::utils::setup_env;
 use crate::testutils::setup_its_token;
 use crate::types::TokenManagerType;
+use crate::InterchainTokenService;
 
 const ITS_WASM: &[u8] = include_bytes!("testdata/stellar_interchain_token_service.optimized.wasm");
 const TOKEN_MANAGER_WASM_V110: &[u8] =
@@ -68,9 +72,11 @@ fn migrate_native_interchain_token_succeeds() {
         new_version: String::from_str(&env, VERSION_V110),
     };
 
-    its_client
-        .mock_all_auths_allowing_non_root_auth()
-        .migrate(&migration_data);
+    env.mock_all_auths_allowing_non_root_auth();
+
+    env.as_contract(&its_client.address, || {
+        assert_ok!(InterchainTokenService::__migrate(&env, migration_data));
+    });
 
     assert_eq!(
         env.as_contract(&its_client.address, || {
@@ -149,9 +155,11 @@ fn migrate_lock_unlock_succeeds() {
         new_version: String::from_str(&env, VERSION_V110),
     };
 
-    its_client
-        .mock_all_auths_allowing_non_root_auth()
-        .migrate(&migration_data);
+    env.mock_all_auths_allowing_non_root_auth();
+
+    env.as_contract(&its_client.address, || {
+        assert_ok!(InterchainTokenService::__migrate(&env, migration_data));
+    });
 
     assert_eq!(
         env.as_contract(&its_client.address, || {
@@ -290,9 +298,11 @@ fn migrate_succeeds_with_multiple_token_ids() {
         new_version: String::from_str(&env, VERSION_V110),
     };
 
-    its_client
-        .mock_all_auths_allowing_non_root_auth()
-        .migrate(&migration_data);
+    env.mock_all_auths_allowing_non_root_auth();
+
+    env.as_contract(&its_client.address, || {
+        assert_ok!(InterchainTokenService::__migrate(&env, migration_data));
+    });
 
     assert_eq!(
         env.as_contract(&its_client.address, || {
@@ -356,9 +366,11 @@ fn migrate_succeeds_with_empty_migration_data() {
         new_version: String::from_str(&env, VERSION_V110),
     };
 
-    its_client
-        .mock_all_auths_allowing_non_root_auth()
-        .migrate(&migration_data)
+    env.mock_all_auths_allowing_non_root_auth();
+
+    env.as_contract(&its_client.address, || {
+        assert_ok!(InterchainTokenService::__migrate(&env, migration_data));
+    });
 }
 
 #[test]
@@ -410,9 +422,11 @@ fn migrate_with_native_interchain_token_legacy_flow_data() {
         new_version: String::from_str(&env, VERSION_V110),
     };
 
-    its_client
-        .mock_all_auths_allowing_non_root_auth()
-        .migrate(&migration_data);
+    env.mock_all_auths_allowing_non_root_auth();
+
+    env.as_contract(&its_client.address, || {
+        assert_ok!(InterchainTokenService::__migrate(&env, migration_data));
+    });
 
     assert_eq!(
         env.as_contract(&its_client.address, || {
@@ -496,9 +510,11 @@ fn migrate_with_lock_unlock_legacy_flow_data() {
         new_version: String::from_str(&env, VERSION_V110),
     };
 
-    its_client
-        .mock_all_auths_allowing_non_root_auth()
-        .migrate(&migration_data);
+    env.mock_all_auths_allowing_non_root_auth();
+
+    env.as_contract(&its_client.address, || {
+        assert_ok!(InterchainTokenService::__migrate(&env, migration_data));
+    });
 
     assert_eq!(
         env.as_contract(&its_client.address, || {
