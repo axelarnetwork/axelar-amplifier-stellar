@@ -1,6 +1,8 @@
-use soroban_sdk::{contract, symbol_short, Address, BytesN, Env, String, Symbol, Val};
 use stellar_axelar_std::interfaces::UpgradableClient;
-use stellar_axelar_std::{contractimpl, ensure};
+use stellar_axelar_std::{
+    contract, contractimpl, ensure, soroban_sdk, symbol_short, Address, BytesN, Env, String,
+    Symbol, Val,
+};
 
 use crate::error::ContractError;
 use crate::interface::UpgraderInterface;
@@ -22,7 +24,7 @@ impl UpgraderInterface for Upgrader {
         contract_address: Address,
         new_version: String,
         new_wasm_hash: BytesN<32>,
-        migration_data: soroban_sdk::Vec<Val>,
+        migration_data: stellar_axelar_std::Vec<Val>,
     ) -> Result<(), ContractError> {
         let contract_client = UpgradableClient::new(&env, &contract_address);
 
