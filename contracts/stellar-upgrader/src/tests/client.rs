@@ -1,4 +1,5 @@
-use stellar_axelar_std::{testutils::Address as _, Address, BytesN, Env, String, Val, Vec};
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::{Address, BytesN, Env, String, Val, Vec};
 
 use crate::testutils::setup_upgrader;
 
