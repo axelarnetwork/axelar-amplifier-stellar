@@ -1,5 +1,5 @@
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
-use stellar_axelar_std::{assert_auth, assert_contract_err, assert_ok, vec, BytesN, String};
+use stellar_axelar_std::{assert_auth, assert_err, assert_ok, vec, BytesN, String};
 
 use crate::contract::AxelarGateway;
 use crate::error::ContractError;
@@ -140,8 +140,10 @@ fn migrate_fails_when_invalid_message_approval() {
         (source_chain_2, message_id_2),
     ];
 
-    assert_contract_err!(
-        client.mock_all_auths().try_migrate(&migration_data),
+    assert_err!(
+        env.as_contract(&client.address, || {
+            <AxelarGateway as CustomMigratableInterface>::__migrate(&env, migration_data)
+        }),
         ContractError::InvalidMessageApproval
     );
 }
@@ -223,8 +225,10 @@ fn migrate_fails_with_not_approved_message() {
 
     let migration_data = vec![&env, (source_chain, message_id)];
 
-    assert_contract_err!(
-        client.mock_all_auths().try_migrate(&migration_data),
+    assert_err!(
+        env.as_contract(&client.address, || {
+            <AxelarGateway as CustomMigratableInterface>::__migrate(&env, migration_data)
+        }),
         ContractError::InvalidMessageApproval
     );
 }
