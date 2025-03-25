@@ -60,7 +60,6 @@ pub fn migrate_token(
     upgrader_client: Address,
     new_version: String,
 ) -> Result<(), ContractError> {
-    let current_epoch = current_epoch(env);
     let upgrader_client = UpgraderClient::new(env, &upgrader_client);
 
     let TokenIdConfigValue {
@@ -85,6 +84,8 @@ pub fn migrate_token(
             &vec![env, ().into()],
         );
     }
+
+    let current_epoch = current_epoch(env);
 
     let flow_key = legacy_storage::FlowKey {
         token_id: token_id.clone(),
