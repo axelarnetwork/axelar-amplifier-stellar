@@ -201,7 +201,7 @@ fn migrate_token_fails_with_invalid_token_id() {
 
     assert_contract_err!(
         its_client
-            .mock_all_auths_allowing_non_root_auth()
+            .mock_all_auths()
             .try_migrate_token(
                 &non_existent_token_id,
                 &upgrader_client.address,
