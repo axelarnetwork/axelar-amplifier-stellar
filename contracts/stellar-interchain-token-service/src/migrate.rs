@@ -1,5 +1,5 @@
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
-use stellar_axelar_std::{contracttype, soroban_sdk, Address, BytesN, Env, String, Vec};
+use stellar_axelar_std::{contracttype, soroban_sdk, vec, Address, BytesN, Env, String, Vec};
 use stellar_upgrader::UpgraderClient;
 
 use crate::error::ContractError;
@@ -71,15 +71,16 @@ impl CustomMigratableInterface for InterchainTokenService {
                 &token_manager,
                 &new_version,
                 &new_token_manager_wasm_hash,
-                &stellar_axelar_std::vec![env, ().into()],
+                &vec![env, ().into()],
             );
 
-            if token_manager_type != TokenManagerType::LockUnlock {
+            /* Only tokens deployed via ITS may be upgraded. */
+            if token_manager_type == TokenManagerType::NativeInterchainToken {
                 upgrader_client.upgrade(
                     &interchain_token,
                     &new_version,
                     &new_interchain_token_wasm_hash,
-                    &stellar_axelar_std::vec![env, ().into()],
+                    &vec![env, ().into()],
                 );
             }
 

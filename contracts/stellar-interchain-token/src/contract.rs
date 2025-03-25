@@ -1,3 +1,4 @@
+use soroban_token_sdk::event::Events as TokenEvents;
 use soroban_token_sdk::metadata::TokenMetadata;
 use soroban_token_sdk::TokenUtils;
 use stellar_axelar_std::events::Event;
@@ -40,6 +41,21 @@ impl InterchainToken {
         }
     }
 }
+
+// #[contractimpl]
+// impl OwnableInterface for InterchainToken {
+//     fn owner(env: &Env) -> Address {
+//         interfaces::owner(env)
+//     }
+
+//     fn transfer_ownership(env: &Env, new_owner: Address) {
+//         let old_owner = Self::owner(env);
+
+//         interfaces::transfer_ownership::<Self>(env, new_owner.clone());
+
+//         TokenEvents::new(env).set_admin(old_owner, new_owner);
+//     }
+// }
 
 // Note: Some methods below are intentionally unimplemented as they are not supported by this token
 #[contractimpl]

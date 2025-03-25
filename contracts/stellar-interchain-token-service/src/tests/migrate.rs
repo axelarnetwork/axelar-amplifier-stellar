@@ -17,9 +17,9 @@ use crate::InterchainTokenService;
 
 const ITS_WASM: &[u8] = include_bytes!("testdata/stellar_interchain_token_service.optimized.wasm");
 const TOKEN_MANAGER_WASM_V110: &[u8] =
-    include_bytes!("testdata/stellar_token_manager_v110.optimized.wasm");
+    include_bytes!("testdata/stellar_token_manager_v1_1_0.optimized.wasm");
 const INTERCHAIN_TOKEN_WASM_V110: &[u8] =
-    include_bytes!("testdata/stellar_interchain_token_v110.optimized.wasm");
+    include_bytes!("testdata/stellar_interchain_token_v1_1_0.optimized.wasm");
 
 const VERSION_V110: &str = "1.1.0";
 
