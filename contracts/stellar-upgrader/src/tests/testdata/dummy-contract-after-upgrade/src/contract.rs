@@ -3,6 +3,7 @@
 use stellar_axelar_std::interfaces::{OwnableInterface, UpgradableInterface};
 use stellar_axelar_std::{
     contract, contracterror, contractimpl, interfaces, soroban_sdk, vec, Address, BytesN, Env,
+    String, Vec,
 };
 
 #[contract]
@@ -10,11 +11,11 @@ pub struct DummyContract;
 
 #[contractimpl]
 impl UpgradableInterface for DummyContract {
-    fn version(env: &Env) -> stellar_axelar_std::String {
-        stellar_axelar_std::String::from_str(env, "0.2.0")
+    fn version(env: &Env) -> String {
+        String::from_str(env, "0.2.0")
     }
 
-    fn required_auths(env: &Env) -> stellar_axelar_std::Vec<Address> {
+    fn required_auths(env: &Env) -> Vec<Address> {
         vec![env, Self::owner(env)]
     }
 
@@ -43,10 +44,7 @@ impl DummyContract {
         interfaces::set_owner(&env, &owner);
     }
 
-    pub fn migrate(
-        env: Env,
-        migration_data: stellar_axelar_std::String,
-    ) -> Result<(), ContractError> {
+    pub fn migrate(env: Env, migration_data: String) -> Result<(), ContractError> {
         Self::required_auths(&env)
             .iter()
             .for_each(|addr| addr.require_auth());
@@ -64,12 +62,12 @@ pub enum ContractError {
 }
 
 mod storage {
-    use stellar_axelar_std::{contractstorage, soroban_sdk};
+    use stellar_axelar_std::{contractstorage, soroban_sdk, String};
 
     #[contractstorage]
     enum DataKey {
         #[instance]
-        #[value(stellar_axelar_std::String)]
+        #[value(String)]
         Data,
     }
 }
