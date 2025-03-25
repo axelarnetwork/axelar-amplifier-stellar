@@ -8,9 +8,10 @@ use stellar_upgrader::testutils::setup_upgrader;
 use stellar_upgrader::UpgraderClient;
 
 use crate::flow_limit::current_epoch;
-use crate::migrate::CustomMigrationData;
+use crate::migrate::{legacy_storage, CustomMigrationData};
+use crate::storage::TokenIdConfigValue;
 use crate::testutils::{setup_its, setup_its_token};
-use crate::InterchainTokenServiceClient;
+use crate::{storage, InterchainTokenServiceClient};
 
 const ITS_WASM: &[u8] =
     include_bytes!("../testdata/stellar_interchain_token_service.optimized.wasm");
@@ -101,4 +102,26 @@ pub fn setup_migrate_env<'a>() -> MigrateTestConfig<'a> {
             new_interchain_token_wasm_hash: interchain_token_wasm_hash_v110,
         },
     }
+}
+
+pub fn setup_migrate_storage<'a>(
+    env: &Env,
+    token_config: TokenIdConfigValue,
+    its_client: &InterchainTokenServiceClient<'a>,
+    token_id: BytesN<32>,
+    current_epoch: u64,
+    flow_in_amount: i128,
+    flow_out_amount: i128,
+) {
+    env.as_contract(&its_client.address, || {
+        let flow_key = legacy_storage::FlowKey {
+            token_id: token_id.clone(),
+            epoch: current_epoch,
+        };
+
+        legacy_storage::set_flow_in(&env, flow_key.clone(), &flow_in_amount);
+        legacy_storage::set_flow_out(&env, flow_key, &flow_out_amount);
+
+        storage::set_token_id_config(&env, token_id.clone(), &token_config);
+    });
 }

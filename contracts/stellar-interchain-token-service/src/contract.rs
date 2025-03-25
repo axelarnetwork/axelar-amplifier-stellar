@@ -317,10 +317,10 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
     fn migrate_token(
         env: &Env,
         token_id: BytesN<32>,
-        upgrader_client: Address,
+        upgrader: Address,
         new_version: String,
     ) -> Result<(), ContractError> {
-        migrate::migrate_token(env, token_id, upgrader_client, new_version)
+        migrate::migrate_token(env, token_id, upgrader, new_version)
     }
 }
 

@@ -6,7 +6,7 @@ use stellar_axelar_std::{assert_auth, assert_contract_err, assert_ok, BytesN, St
 use crate::error::ContractError;
 use crate::migrate::legacy_storage;
 use crate::storage::{self, TokenIdConfigValue};
-use crate::tests::utils::{setup_migrate_env, MigrateTestConfig};
+use crate::tests::utils::{setup_migrate_env, setup_migrate_storage, MigrateTestConfig};
 use crate::types::TokenManagerType;
 use crate::InterchainTokenService;
 
@@ -122,17 +122,15 @@ fn migrate_lock_unlock_succeeds() {
     let flow_in_amount = 100i128;
     let flow_out_amount = 50i128;
 
-    env.as_contract(&its_client.address, || {
-        let flow_key = legacy_storage::FlowKey {
-            token_id: token_id.clone(),
-            epoch: current_epoch,
-        };
-
-        legacy_storage::set_flow_in(&env, flow_key.clone(), &flow_in_amount);
-        legacy_storage::set_flow_out(&env, flow_key, &flow_out_amount);
-
-        storage::set_token_id_config(&env, token_id.clone(), &token_config);
-    });
+    setup_migrate_storage(
+        &env,
+        token_config,
+        &its_client,
+        token_id.clone(),
+        current_epoch,
+        flow_in_amount,
+        flow_out_amount,
+    );
 
     assert_auth!(owner, its_client.upgrade(&its_wasm_hash));
 
@@ -259,24 +257,25 @@ fn migrate_succeeds_with_multiple_token_ids() {
     let flow_in_amount_2 = 200i128;
     let flow_out_amount_2 = 150i128;
 
-    env.as_contract(&its_client.address, || {
-        let flow_key_1 = legacy_storage::FlowKey {
-            token_id: token_id_1.clone(),
-            epoch: current_epoch,
-        };
-        let flow_key_2 = legacy_storage::FlowKey {
-            token_id: token_id_2.clone(),
-            epoch: current_epoch,
-        };
+    setup_migrate_storage(
+        &env,
+        token_config_1,
+        &its_client,
+        token_id_1.clone(),
+        current_epoch,
+        flow_in_amount_1,
+        flow_out_amount_1,
+    );
 
-        legacy_storage::set_flow_in(&env, flow_key_1.clone(), &flow_in_amount_1);
-        legacy_storage::set_flow_out(&env, flow_key_1, &flow_out_amount_1);
-        legacy_storage::set_flow_in(&env, flow_key_2.clone(), &flow_in_amount_2);
-        legacy_storage::set_flow_out(&env, flow_key_2, &flow_out_amount_2);
-
-        storage::set_token_id_config(&env, token_id_1.clone(), &token_config_1);
-        storage::set_token_id_config(&env, token_id_2.clone(), &token_config_2);
-    });
+    setup_migrate_storage(
+        &env,
+        token_config_2,
+        &its_client,
+        token_id_2.clone(),
+        current_epoch,
+        flow_in_amount_2,
+        flow_out_amount_2,
+    );
 
     assert_auth!(owner, its_client.upgrade(&its_wasm_hash));
 
@@ -386,17 +385,15 @@ fn migrate_with_native_interchain_token_legacy_flow_data() {
     let flow_in_amount = 100i128;
     let flow_out_amount = 50i128;
 
-    env.as_contract(&its_client.address, || {
-        let flow_key = legacy_storage::FlowKey {
-            token_id: token_id.clone(),
-            epoch: current_epoch,
-        };
-
-        legacy_storage::set_flow_in(&env, flow_key.clone(), &flow_in_amount);
-        legacy_storage::set_flow_out(&env, flow_key, &flow_out_amount);
-
-        storage::set_token_id_config(&env, token_id.clone(), &token_config);
-    });
+    setup_migrate_storage(
+        &env,
+        token_config,
+        &its_client,
+        token_id.clone(),
+        current_epoch,
+        flow_in_amount,
+        flow_out_amount,
+    );
 
     assert_auth!(owner, its_client.upgrade(&its_wasm_hash));
 
@@ -473,17 +470,15 @@ fn migrate_with_lock_unlock_legacy_flow_data() {
     let flow_in_amount = 100i128;
     let flow_out_amount = 50i128;
 
-    env.as_contract(&its_client.address, || {
-        let flow_key = legacy_storage::FlowKey {
-            token_id: token_id.clone(),
-            epoch: current_epoch,
-        };
-
-        legacy_storage::set_flow_in(&env, flow_key.clone(), &flow_in_amount);
-        legacy_storage::set_flow_out(&env, flow_key, &flow_out_amount);
-
-        storage::set_token_id_config(&env, token_id.clone(), &token_config);
-    });
+    setup_migrate_storage(
+        &env,
+        token_config,
+        &its_client,
+        token_id.clone(),
+        current_epoch,
+        flow_in_amount,
+        flow_out_amount,
+    );
 
     assert_auth!(owner, its_client.upgrade(&its_wasm_hash));
 
