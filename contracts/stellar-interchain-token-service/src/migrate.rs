@@ -57,10 +57,10 @@ impl CustomMigratableInterface for InterchainTokenService {
 pub fn migrate_token(
     env: &Env,
     token_id: BytesN<32>,
-    upgrader_client: Address,
+    upgrader: Address,
     new_version: String,
 ) -> Result<(), ContractError> {
-    let upgrader_client = UpgraderClient::new(env, &upgrader_client);
+    let upgrader_client = UpgraderClient::new(env, &upgrader);
 
     let TokenIdConfigValue {
         token_address: interchain_token,

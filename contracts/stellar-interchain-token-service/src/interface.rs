@@ -268,6 +268,7 @@ pub trait InterchainTokenServiceInterface:
     ) -> Result<(), ContractError>;
 
     /// Migrates a token to a new version.
+    /// This is a separate function so tokens can be migrated in isolation, instead of within one atomic migrate call.
     ///
     /// # Arguments
     /// - `token_id`: The unique identifier of the token to be migrated.
