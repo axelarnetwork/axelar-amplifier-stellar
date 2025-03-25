@@ -17,6 +17,7 @@ use proc_macro::TokenStream;
 use syn::{parse_macro_input, Attribute, DeriveInput, ItemFn, ItemImpl, Path};
 
 /// Designates functions in an `impl` block as contract entrypoints.
+///
 /// This is a wrapper around the soroban-sdk's `#[contractimpl]` attribute.
 /// It adds additional checks to ensure entrypoints don't get accidentally, or maliciously, called
 /// after a contract upgrade, but before the data migration is complete.
