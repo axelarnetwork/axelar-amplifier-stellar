@@ -95,7 +95,7 @@ pub fn migrate_token(
         storage::set_flow_out(env, token_id.clone(), current_epoch, &flow_out);
     }
     if let Some(flow_in) = legacy_storage::try_flow_in(env, flow_key) {
-        storage::set_flow_in(env, token_id.clone(), current_epoch, &flow_in);
+        storage::set_flow_in(env, token_id, current_epoch, &flow_in);
     }
 
     Ok(())
