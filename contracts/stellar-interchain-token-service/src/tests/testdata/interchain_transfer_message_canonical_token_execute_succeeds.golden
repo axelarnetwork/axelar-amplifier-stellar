@@ -4,7 +4,7 @@ InterchainTransferReceivedEvent {
     source_address: Bytes(67, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 88, 73, 55, 78),
     destination_address: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYRE5),
     amount: 1000,
-    data: None,
+    data_hash: None,
 }
 
 Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVAX5)
@@ -15,5 +15,5 @@ interchain_transfer_received {
     #[topic] source_address: Bytes,
     #[topic] destination_address: Address,
     #[topic] amount: i128,
-    #[data]  data: Option < Bytes >,
+    #[data]  data_hash: Option < BytesN < 32 > >,
 }

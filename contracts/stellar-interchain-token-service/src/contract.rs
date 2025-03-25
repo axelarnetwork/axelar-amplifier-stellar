@@ -527,7 +527,7 @@ impl InterchainTokenService {
             source_address: source_address.clone(),
             destination_address: destination_address.clone(),
             amount,
-            data: data.clone(),
+            data_hash: data.as_ref().map(|d| env.crypto().keccak256(d).into()),
         }
         .emit(env);
 
