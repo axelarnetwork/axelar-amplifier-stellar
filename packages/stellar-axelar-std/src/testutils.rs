@@ -113,7 +113,7 @@ pub fn __source_file(file: &str) -> PathBuf {
 mod tests {
     use std::borrow::ToOwned;
     use std::path::PathBuf;
-    use std::{env, fs, println};
+    use std::{env, fs};
 
     use crate::testutils::__source_file;
 
