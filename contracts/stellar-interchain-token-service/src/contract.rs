@@ -282,7 +282,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         token_handler::take_token(
             env,
             &caller,
-            Self::token_id_config_with_extended_ttl(env, token_id.clone())?,
+            Self::token_id_config(env, token_id.clone())?,
             amount,
         )?;
 
@@ -411,25 +411,6 @@ impl InterchainTokenService {
         storage::try_token_id_config(env, token_id).ok_or(ContractError::InvalidTokenId)
     }
 
-    /// Retrieves the configuration value for the specified token ID and extends its TTL.
-    ///
-    /// # Arguments
-    /// - `token_id`: A 32-byte unique identifier for the token.
-    ///
-    /// # Returns
-    /// - `Ok(TokenIdConfigValue)`: The configuration value if it exists.
-    ///
-    /// # Errors
-    /// - `ContractError::InvalidTokenId`: If the token ID does not exist in storage.
-    fn token_id_config_with_extended_ttl(
-        env: &Env,
-        token_id: BytesN<32>,
-    ) -> Result<TokenIdConfigValue, ContractError> {
-        let config = Self::token_id_config(env, token_id)?;
-
-        Ok(config)
-    }
-
     fn chain_name_hash(env: &Env) -> BytesN<32> {
         let chain_name = Self::chain_name(env);
         env.crypto().keccak256(&chain_name.to_xdr(env)).into()
@@ -514,7 +495,7 @@ impl InterchainTokenService {
 
         let destination_address = Address::from_string_bytes(&destination_address);
 
-        let token_config_value = Self::token_id_config_with_extended_ttl(env, token_id.clone())?;
+        let token_config_value = Self::token_id_config(env, token_id.clone())?;
         let token_address = token_config_value.token_address.clone();
 
         FlowDirection::In.add_flow(env, token_id.clone(), amount)?;
