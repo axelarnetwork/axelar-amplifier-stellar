@@ -266,4 +266,19 @@ pub trait InterchainTokenServiceInterface:
         metadata: Option<Bytes>,
         gas_token: Option<Token>,
     ) -> Result<(), ContractError>;
+
+    /// Migrates a token to a new version.
+    ///
+    /// # Arguments
+    /// - `token_id`: The unique identifier of the token to be migrated.
+    /// - `upgrader_client`: The address of the upgrader client.
+    /// - `new_version`: The new version of the token.
+    ///
+    /// # Returns
+    fn migrate_token(
+        env: &Env,
+        token_id: BytesN<32>,
+        upgrader_client: Address,
+        new_version: String,
+    ) -> Result<(), ContractError>;
 }
