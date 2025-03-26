@@ -14,8 +14,4 @@ enum DataKey {
     #[instance]
     #[value(Address)]
     InterchainTokenService,
-
-    #[instance]
-    #[status]
-    Paused,
 }
