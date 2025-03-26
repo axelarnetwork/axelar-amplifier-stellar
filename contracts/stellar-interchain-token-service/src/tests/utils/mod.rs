@@ -127,3 +127,40 @@ pub fn setup_migrate_storage<'a>(
         storage::set_token_id_config(&env, token_id.clone(), &token_config);
     });
 }
+
+pub fn assert_migrate_storage<'a>(
+    env: &Env,
+    its_client: &InterchainTokenServiceClient<'a>,
+    migration_data: CustomMigrationData,
+    token_id: BytesN<32>,
+    current_epoch: u64,
+    flow_in_amount: i128,
+    flow_out_amount: i128,
+) {
+    assert_eq!(
+        env.as_contract(&its_client.address, || {
+            storage::token_manager_wasm_hash(&env)
+        }),
+        migration_data.new_token_manager_wasm_hash,
+        "token manager WASM hash should be updated"
+    );
+    assert_eq!(
+        env.as_contract(&its_client.address, || {
+            storage::interchain_token_wasm_hash(&env)
+        }),
+        migration_data.new_interchain_token_wasm_hash,
+        "interchain token WASM hash should be updated"
+    );
+    assert_eq!(
+        env.as_contract(&its_client.address, || {
+            storage::flow_in(&env, token_id.clone(), current_epoch)
+        }),
+        flow_in_amount
+    );
+    assert_eq!(
+        env.as_contract(&its_client.address, || {
+            storage::flow_out(&env, token_id, current_epoch)
+        }),
+        flow_out_amount
+    );
+}
