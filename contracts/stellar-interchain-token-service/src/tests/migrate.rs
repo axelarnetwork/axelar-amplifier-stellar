@@ -6,7 +6,6 @@ use testutils::{
 };
 
 use crate::error::ContractError;
-use crate::storage::TokenIdConfigValue;
 use crate::tests::utils::format_auths;
 use crate::types::TokenManagerType;
 
@@ -22,24 +21,15 @@ fn migrate_native_interchain_token_succeeds() {
         token_id,
         current_epoch,
         its_wasm_hash,
-        token_manager,
-        interchain_token,
         migration_data,
         ..
-    } = setup_migrate_env();
-
-    let token_config = TokenIdConfigValue {
-        token_address: interchain_token,
-        token_manager,
-        token_manager_type: TokenManagerType::NativeInterchainToken,
-    };
+    } = setup_migrate_env(TokenManagerType::NativeInterchainToken);
 
     let flow_in_amount = 100i128;
     let flow_out_amount = 50i128;
 
     setup_migrate_storage(
         &env,
-        token_config,
         &its_client,
         token_id.clone(),
         current_epoch,
@@ -82,24 +72,15 @@ fn migrate_lock_unlock_succeeds() {
         token_id,
         current_epoch,
         its_wasm_hash,
-        token_manager,
-        interchain_token,
         migration_data,
         ..
-    } = setup_migrate_env();
-
-    let token_config = TokenIdConfigValue {
-        token_address: interchain_token,
-        token_manager,
-        token_manager_type: TokenManagerType::LockUnlock,
-    };
+    } = setup_migrate_env(TokenManagerType::LockUnlock);
 
     let flow_in_amount = 100i128;
     let flow_out_amount = 50i128;
 
     setup_migrate_storage(
         &env,
-        token_config,
         &its_client,
         token_id.clone(),
         current_epoch,
@@ -142,7 +123,7 @@ fn migrate_token_fails_with_invalid_token_id() {
         its_wasm_hash,
         migration_data,
         ..
-    } = setup_migrate_env();
+    } = setup_migrate_env(TokenManagerType::NativeInterchainToken);
 
     let non_existent_token_id = BytesN::random(&env);
 
@@ -179,7 +160,7 @@ fn migrate_succeeds_with_empty_migration_data() {
         its_wasm_hash,
         migration_data,
         ..
-    } = setup_migrate_env();
+    } = setup_migrate_env(TokenManagerType::NativeInterchainToken);
 
     let upgrader_upgrade_auths = upgrade(
         &env,
@@ -205,24 +186,15 @@ fn migrate_native_interchain_token_with_flow_amount_succeeds() {
         token_id,
         current_epoch,
         its_wasm_hash,
-        token_manager,
-        interchain_token,
         migration_data,
         ..
-    } = setup_migrate_env();
-
-    let token_config = TokenIdConfigValue {
-        token_address: interchain_token,
-        token_manager,
-        token_manager_type: TokenManagerType::NativeInterchainToken,
-    };
+    } = setup_migrate_env(TokenManagerType::NativeInterchainToken);
 
     let flow_in_amount = 100i128;
     let flow_out_amount = 50i128;
 
     setup_migrate_storage(
         &env,
-        token_config,
         &its_client,
         token_id.clone(),
         current_epoch,
@@ -265,24 +237,15 @@ fn migrate_with_lock_unlock_with_flow_amount_succeeds() {
         token_id,
         current_epoch,
         its_wasm_hash,
-        token_manager,
-        interchain_token,
         migration_data,
         ..
-    } = setup_migrate_env();
-
-    let token_config = TokenIdConfigValue {
-        token_address: interchain_token,
-        token_manager,
-        token_manager_type: TokenManagerType::LockUnlock,
-    };
+    } = setup_migrate_env(TokenManagerType::LockUnlock);
 
     let flow_in_amount = 100i128;
     let flow_out_amount = 50i128;
 
     setup_migrate_storage(
         &env,
-        token_config,
         &its_client,
         token_id.clone(),
         current_epoch,
@@ -322,9 +285,9 @@ mod testutils {
 
     use crate::flow_limit::current_epoch;
     use crate::migrate::{legacy_storage, CustomMigrationData};
-    use crate::storage::{self, TokenIdConfigValue};
     use crate::tests::utils::{format_auths, setup_env};
     use crate::testutils::setup_its_token;
+    use crate::types::TokenManagerType;
     use crate::InterchainTokenServiceClient;
 
     const NEW_INTERCHAIN_TOKEN_SERVICE_WASM: &[u8] =
@@ -344,8 +307,6 @@ mod testutils {
         pub token_id: BytesN<32>,
         pub current_epoch: u64,
         pub its_wasm_hash: BytesN<32>,
-        pub token_manager: Address,
-        pub interchain_token: Address,
         pub migration_data: CustomMigrationData,
     }
 
@@ -355,11 +316,21 @@ mod testutils {
         pub flow_out_amount: i128,
     }
 
-    pub fn setup_migrate_env<'a>() -> MigrateTestConfig<'a> {
+    pub fn setup_migrate_env<'a>(token_manager_type: TokenManagerType) -> MigrateTestConfig<'a> {
         let (env, its_client, ..) = setup_env();
         let upgrader_client = setup_upgrader(&env);
         let owner: Address = its_client.owner();
-        let (token_id, _) = setup_its_token(&env, &its_client, &owner, 100);
+        let token_id;
+
+        match token_manager_type {
+            TokenManagerType::NativeInterchainToken => {
+                (token_id, _) = setup_its_token(&env, &its_client, &owner, 100);
+            }
+            TokenManagerType::LockUnlock => {
+                let token = env.register_stellar_asset_contract_v2(owner.clone());
+                token_id = its_client.register_canonical_token(&token.address());
+            }
+        }
 
         let its_wasm_hash = env
             .deployer()
@@ -372,9 +343,6 @@ mod testutils {
 
         let current_epoch = current_epoch(&env);
 
-        let token_manager = its_client.token_manager_address(&token_id);
-        let interchain_token = its_client.interchain_token_address(&token_id);
-
         MigrateTestConfig {
             env,
             owner,
@@ -383,8 +351,6 @@ mod testutils {
             token_id,
             current_epoch,
             its_wasm_hash,
-            token_manager,
-            interchain_token,
             migration_data: CustomMigrationData {
                 new_token_manager_wasm_hash,
                 new_interchain_token_wasm_hash,
@@ -394,7 +360,6 @@ mod testutils {
 
     pub fn setup_migrate_storage(
         env: &Env,
-        token_config: TokenIdConfigValue,
         its_client: &InterchainTokenServiceClient<'_>,
         token_id: BytesN<32>,
         current_epoch: u64,
@@ -409,9 +374,6 @@ mod testutils {
 
             legacy_storage::set_flow_in(env, flow_key.clone(), &flow_in_amount);
             legacy_storage::set_flow_out(env, flow_key, &flow_out_amount);
-
-            // TODO: Remove via branch to use setup_its_token(NativeInterchainToken) || call register_canonical_token(LockUnlock)
-            storage::set_token_id_config(env, token_id.clone(), &token_config);
         });
     }
 

@@ -1,12 +1,12 @@
 "upgrader.upgrade(...)":
     caller: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOLZM)
-        invocation: String(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAXI7N)."upgrade"(Vec(Ok(Address(obj#1219)), Ok(String(obj#1223)), Ok(Bytes(obj#1227)), Ok(Vec(obj#1241))))
+        invocation: String(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAXI7N)."upgrade"(Vec(Ok(Address(obj#1071)), Ok(String(obj#1075)), Ok(Bytes(obj#1079)), Ok(Vec(obj#1093))))
 "sub_invocation":
     caller: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOLZM)
-        invocation: String(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVAX5)."upgrade"(Vec(Ok(Bytes(obj#1249))))
+        invocation: String(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVAX5)."upgrade"(Vec(Ok(Bytes(obj#1101))))
 "sub_invocation":
     caller: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOLZM)
-        invocation: String(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVAX5)."migrate"(Vec(Ok(Map(obj#1265))))
+        invocation: String(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVAX5)."migrate"(Vec(Ok(Map(obj#1117))))
 
 
 "its.migrate_token(...)":
