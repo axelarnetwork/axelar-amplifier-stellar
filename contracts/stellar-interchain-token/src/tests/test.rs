@@ -329,7 +329,9 @@ fn mint_succeeds() {
     assert_auth!(token.owner(), token.mint(&user, &amount));
     assert_eq!(token.balance(&user), amount);
 
-    token.mock_all_auths().remove_minter(&token.owner());
+    if token.is_minter(&token.owner()) {
+        token.mock_all_auths().remove_minter(&token.owner());
+    }
 
     // Owner can mint without being a minter
     assert_auth!(token.owner(), token.mint(&user, &amount));
@@ -407,6 +409,7 @@ fn remove_minter_succeeds() {
 
     let (token, _) = setup_token(&env);
 
+    assert_auth!(token.owner(), token.add_minter(&minter1));
     assert_auth!(token.owner(), token.remove_minter(&minter1));
 
     goldie::assert!(fmt_last_emitted_event::<MinterRemovedEvent>(&env));

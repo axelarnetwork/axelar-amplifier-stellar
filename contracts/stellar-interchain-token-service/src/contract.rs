@@ -655,7 +655,10 @@ impl InterchainTokenService {
         );
 
         // Give minter role to the token manager
-        interchain_token_client.add_minter(&token_manager);
+        // Check if token_manager is already a minter before adding to avoid MinterAlreadyExists error
+        if !interchain_token_client.is_minter(&token_manager) {
+            interchain_token_client.add_minter(&token_manager);
+        }
 
         Ok(token_address)
     }
