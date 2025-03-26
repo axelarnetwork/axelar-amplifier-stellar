@@ -60,7 +60,6 @@ pub fn token_metadata(
         .map_err(|_| ContractError::InvalidTokenAddress)?
         .map_err(|_| ContractError::TokenInvocationError)?;
 
-    // Handle native token case early
     if token_address == native_token_address {
         // Stellar's native token sets the name and symbol to 'native'. Override it to make it more readable
         let name = String::from_str(env, NATIVE_TOKEN_NAME);
@@ -68,7 +67,6 @@ pub fn token_metadata(
         return TokenMetadata::new(name, symbol, decimals);
     }
 
-    // Handle regular token case
     let name = token
         .try_name()
         .map_err(|_| ContractError::InvalidTokenAddress)?
