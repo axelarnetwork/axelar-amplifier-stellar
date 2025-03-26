@@ -8,8 +8,7 @@ use testutils::{
 };
 
 use crate::error::ContractError;
-use crate::migrate::legacy_storage;
-use crate::storage::{self, TokenIdConfigValue};
+use crate::storage::TokenIdConfigValue;
 use crate::types::TokenManagerType;
 
 const NEW_VERSION: &str = "1.1.0";
@@ -39,17 +38,15 @@ fn migrate_native_interchain_token_succeeds() {
     let flow_in_amount = 100i128;
     let flow_out_amount = 50i128;
 
-    env.as_contract(&its_client.address, || {
-        let flow_key = legacy_storage::FlowKey {
-            token_id: token_id.clone(),
-            epoch: current_epoch,
-        };
-
-        legacy_storage::set_flow_in(&env, flow_key.clone(), &flow_in_amount);
-        legacy_storage::set_flow_out(&env, flow_key, &flow_out_amount);
-
-        storage::set_token_id_config(&env, token_id.clone(), &token_config);
-    });
+    setup_migrate_storage(
+        &env,
+        token_config,
+        &its_client,
+        token_id.clone(),
+        current_epoch,
+        flow_in_amount,
+        flow_out_amount,
+    );
 
     let its_upgrade_auth = mock_auth!(owner, its_client.upgrade(&its_wasm_hash));
     let its_migrate_auth = mock_auth!(owner, its_client.migrate(migration_data.clone()));
