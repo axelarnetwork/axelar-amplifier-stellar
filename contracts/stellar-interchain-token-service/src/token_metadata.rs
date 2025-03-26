@@ -64,6 +64,7 @@ pub fn token_metadata(
         // Stellar's native token sets the name and symbol to 'native'. Override it to make it more readable
         let name = String::from_str(env, NATIVE_TOKEN_NAME);
         let symbol = String::from_str(env, NATIVE_TOKEN_SYMBOL);
+
         return TokenMetadata::new(name, symbol, decimals);
     }
 
