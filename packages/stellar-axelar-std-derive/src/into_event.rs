@@ -55,9 +55,12 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
             // Parse data from Val to the corresponding types,
             // and assign them to a variable with the same name as the struct field
             // E.g. let message = Message::try_from_val(env, &data.get(0));
-            // `data` is required to be a `Vec<Val>`
             let data = Vec::<Val>::try_from_val(env, &data)
-                .expect("invalid data format");
+                .unwrap_or_else(|_| {
+                    let mut vec = Vec::<Val>::new(env);
+                    vec.push_back(data);
+                    vec
+                });
 
             let mut data_idx = 0;
             #(

@@ -9,7 +9,8 @@ use stellar_axelar_std::interfaces::OwnershipTransferredEvent;
 use stellar_axelar_std::testutils::{Address as _, BytesN as _, Events, Ledger};
 use stellar_axelar_std::{assert_auth, assert_auth_err, Address, BytesN, Env, IntoVal as _};
 
-use crate::event::{MinterAddedEvent, MinterRemovedEvent};
+
+use crate::event::{MinterAddedEvent, MinterRemovedEvent, TransferEvent};
 use crate::{InterchainToken, InterchainTokenClient};
 
 fn setup_token_metadata(env: &Env, name: &str, symbol: &str, decimal: u32) -> TokenMetadata {
@@ -184,8 +185,7 @@ fn transfer() {
 
     assert_auth!(user1, token.transfer(&user1, &user2, &600_i128));
 
-    let events = env.events().all();
-    goldie::assert!(format!("{:#?}", events));
+    goldie::assert!(fmt_emitted_event_at_idx::<TransferEvent>(&env, -1));
 
     assert_eq!(token.balance(&user1), 400_i128);
     assert_eq!(token.balance(&user2), 600_i128);
