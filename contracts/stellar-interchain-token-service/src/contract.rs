@@ -313,7 +313,6 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
     }
 
     #[only_owner]
-    #[allow_during_migration]
     fn migrate_token(
         env: &Env,
         token_id: BytesN<32>,
