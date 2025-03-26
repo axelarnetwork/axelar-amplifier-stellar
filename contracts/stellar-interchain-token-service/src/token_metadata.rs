@@ -60,28 +60,29 @@ pub fn token_metadata(
         .map_err(|_| ContractError::InvalidTokenAddress)?
         .map_err(|_| ContractError::TokenInvocationError)?;
 
-    let (name, symbol) = if token_address == native_token_address {
+    // Handle native token case early
+    if token_address == native_token_address {
         // Stellar's native token sets the name and symbol to 'native'. Override it to make it more readable
-        (
-            String::from_str(env, NATIVE_TOKEN_NAME),
-            String::from_str(env, NATIVE_TOKEN_SYMBOL),
-        )
-    } else {
-        let name = token
-            .try_name()
-            .map_err(|_| ContractError::InvalidTokenAddress)?
-            .map_err(|_| ContractError::TokenInvocationError)?;
-        let symbol = token
-            .try_symbol()
-            .map_err(|_| ContractError::InvalidTokenAddress)?
-            .map_err(|_| ContractError::TokenInvocationError)?;
+        let name = String::from_str(env, NATIVE_TOKEN_NAME);
+        let symbol = String::from_str(env, NATIVE_TOKEN_SYMBOL);
+        return TokenMetadata::new(name, symbol, decimals);
+    }
 
-        // If the name is longer than 32 characters, use the symbol as the name to avoid a deployment error on the destination chain
-        if name.len() > MAX_NAME_LENGTH {
-            (symbol.clone(), symbol)
-        } else {
-            (name, symbol)
-        }
+    // Handle regular token case
+    let name = token
+        .try_name()
+        .map_err(|_| ContractError::InvalidTokenAddress)?
+        .map_err(|_| ContractError::TokenInvocationError)?;
+    let symbol = token
+        .try_symbol()
+        .map_err(|_| ContractError::InvalidTokenAddress)?
+        .map_err(|_| ContractError::TokenInvocationError)?;
+
+    // If the name is longer than 32 characters, use the symbol as the name to avoid a deployment error on the destination chain
+    let (name, symbol) = if name.len() > MAX_NAME_LENGTH {
+        (symbol.clone(), symbol)
+    } else {
+        (name, symbol)
     };
 
     TokenMetadata::new(name, symbol, decimals)
