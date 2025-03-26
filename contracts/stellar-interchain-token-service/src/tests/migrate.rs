@@ -325,7 +325,8 @@ fn migrate_with_lock_unlock_with_flow_amount_succeeds() {
 
 mod testutils {
     use stellar_axelar_std::{mock_auth, vec, Address, BytesN, Env, IntoVal, String};
-    use stellar_upgrader::{testutils::setup_upgrader, UpgraderClient};
+    use stellar_upgrader::testutils::setup_upgrader;
+    use stellar_upgrader::UpgraderClient;
 
     use crate::flow_limit::current_epoch;
     use crate::migrate::{legacy_storage, CustomMigrationData};
