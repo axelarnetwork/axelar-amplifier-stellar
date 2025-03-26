@@ -1,4 +1,4 @@
-use stellar_axelar_std::{contractclient, soroban_sdk,Address, BytesN, Env, String, Val};
+use stellar_axelar_std::{contractclient, soroban_sdk, Address, BytesN, Env, String, Val};
 
 use crate::error::ContractError;
 

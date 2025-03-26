@@ -72,18 +72,21 @@ fn migrate_native_interchain_token_succeeds() {
     log!(&env, "UPGRADE_CLIENT ADDRESS", upgrader_client.address); // TODO: Remove
     log!(&env, "TOKEN_MANAGER", token_manager); // TODO: Remove
     log!(&env, "INTERCHAIN_TOKEN", interchain_token); // TODO: Remove
-    log!( // TODO: Remove
+    log!(
+        // TODO: Remove
         &env,
         "MIGRATION_DATA.NEW_TOKEN_MANAGER_WASM_HASH",
         migration_data.new_token_manager_wasm_hash
     );
-    log!( // TODO: Remove
+    log!(
+        // TODO: Remove
         &env,
         "MIGRATION_DATA.NEW_INTERCHAIN_TOKEN_WASM_HASH",
         migration_data.new_interchain_token_wasm_hash
     );
 
-    log!( // TODO: Remove
+    log!(
+        // TODO: Remove
         &env,
         "----------CALLING: UPGRADER.UPGRADE----------",
         upgrader_client.address
@@ -96,7 +99,8 @@ fn migrate_native_interchain_token_succeeds() {
             &its_wasm_hash,
             &vec![&env, migration_data.into_val(&env)],
         );
-    log!( // TODO: Remove
+    log!(
+        // TODO: Remove
         &env,
         "----------CALLED: UPGRADER.UPGRADE----------",
         upgrader_client.address
