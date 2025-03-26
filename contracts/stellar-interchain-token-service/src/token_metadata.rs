@@ -77,7 +77,6 @@ pub fn token_metadata(
         .map_err(|_| ContractError::InvalidTokenAddress)?
         .map_err(|_| ContractError::TokenInvocationError)?;
 
-    // If the name is longer than 32 characters, use the symbol as the name to avoid a deployment error on the destination chain
     let (name, symbol) = if name.len() > MAX_NAME_LENGTH {
         (symbol.clone(), symbol)
     } else {
