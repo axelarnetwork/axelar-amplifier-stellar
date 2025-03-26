@@ -382,6 +382,22 @@ fn add_minter_fails_without_owner_auth() {
 }
 
 #[test]
+#[should_panic(expected = "HostError: Error(Contract, #8)")] // MinterAlreadyExists
+fn add_minter_fails_minter_already_exists() {
+    let env = Env::default();
+
+    let minter = Address::generate(&env);
+
+    let (token, _) = setup_token(&env);
+
+    assert_auth!(token.owner(), token.add_minter(&minter));
+
+    goldie::assert!(fmt_last_emitted_event::<MinterAddedEvent>(&env));
+
+    token.mock_all_auths().add_minter(&minter);
+}
+
+#[test]
 fn add_minter_succeeds() {
     let env = Env::default();
 
@@ -427,6 +443,23 @@ fn remove_minter_fails_without_minter_auth() {
     let (token, _) = setup_token(&env);
 
     assert_auth_err!(user, token.remove_minter(&minter1));
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Contract, #2)")] // NotMinter
+fn remove_minter_fails_not_minter() {
+    let env = Env::default();
+
+    let minter = Address::generate(&env);
+
+    let (token, _) = setup_token(&env);
+
+    assert_auth!(token.owner(), token.add_minter(&minter));
+    assert_auth!(token.owner(), token.remove_minter(&minter));
+
+    goldie::assert!(fmt_last_emitted_event::<MinterRemovedEvent>(&env));
+
+    token.mock_all_auths().remove_minter(&minter);
 }
 
 #[test]
