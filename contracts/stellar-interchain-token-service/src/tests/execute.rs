@@ -29,7 +29,7 @@ fn interchain_transfer_message_execute_succeeds() {
 
     let amount = 1000;
     let deployer = Address::generate(&env);
-    let (token_id, _) = setup_its_token(&env, &client, &deployer, amount, &None);
+    let (token_id, _) = setup_its_token(&env, &client, &deployer, amount);
     client
         .mock_all_auths()
         .set_trusted_chain(&original_source_chain);
@@ -305,7 +305,7 @@ fn execute_fails_with_invalid_message_type() {
 
     let amount = 1000;
     let deployer = Address::generate(&env);
-    let (token_id, _) = setup_its_token(&env, &client, &deployer, amount, &None);
+    let (token_id, _) = setup_its_token(&env, &client, &deployer, amount);
     client
         .mock_all_auths()
         .set_trusted_chain(&original_source_chain);
@@ -454,14 +454,9 @@ fn execute_fails_with_invalid_amount() {
     let original_source_chain = String::from_str(&env, "ethereum");
 
     let invalid_amount = 0;
+    let initial_supply = 1000;
     let deployer = Address::generate(&env);
-    let (token_id, _) = setup_its_token(
-        &env,
-        &client,
-        &deployer,
-        invalid_amount,
-        &Some(Address::generate(&env)),
-    );
+    let (token_id, _) = setup_its_token(&env, &client, &deployer, initial_supply);
     client
         .mock_all_auths()
         .set_trusted_chain(&original_source_chain);

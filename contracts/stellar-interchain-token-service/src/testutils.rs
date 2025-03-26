@@ -53,7 +53,6 @@ pub fn setup_its_token(
     client: &InterchainTokenServiceClient,
     sender: &Address,
     supply: i128,
-    minter: &Option<Address>,
 ) -> (BytesN<32>, TokenMetadata) {
     let salt: BytesN<32> = BytesN::from_array(env, &[1u8; 32]);
     let token_metadata = TokenMetadata {
@@ -62,12 +61,13 @@ pub fn setup_its_token(
         decimal: 18,
     };
 
+    let minter: Option<Address> = None;
     let token_id = client.mock_all_auths().deploy_interchain_token(
         sender,
         &salt,
         &token_metadata,
         &supply,
-        minter,
+        &minter,
     );
 
     (token_id, token_metadata)
