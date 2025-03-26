@@ -59,26 +59,29 @@ pub fn token_metadata(
         .try_decimals()
         .map_err(|_| ContractError::InvalidTokenAddress)?
         .map_err(|_| ContractError::TokenInvocationError)?;
-    let name = token
-        .try_name()
-        .map_err(|_| ContractError::InvalidTokenAddress)?
-        .map_err(|_| ContractError::TokenInvocationError)?;
-    let symbol = token
-        .try_symbol()
-        .map_err(|_| ContractError::InvalidTokenAddress)?
-        .map_err(|_| ContractError::TokenInvocationError)?;
 
-    // Stellar's native token sets the name and symbol to 'native'. Override it to make it more readable
     let (name, symbol) = if token_address == native_token_address {
+        // Stellar's native token sets the name and symbol to 'native'. Override it to make it more readable
         (
             String::from_str(env, NATIVE_TOKEN_NAME),
             String::from_str(env, NATIVE_TOKEN_SYMBOL),
         )
-    // If the name is longer than 32 characters, use the symbol as the name to avoid a deployment error on the destination chain
-    } else if name.len() > MAX_NAME_LENGTH {
-        (symbol.clone(), symbol)
     } else {
-        (name, symbol)
+        let name = token
+            .try_name()
+            .map_err(|_| ContractError::InvalidTokenAddress)?
+            .map_err(|_| ContractError::TokenInvocationError)?;
+        let symbol = token
+            .try_symbol()
+            .map_err(|_| ContractError::InvalidTokenAddress)?
+            .map_err(|_| ContractError::TokenInvocationError)?;
+
+        // If the name is longer than 32 characters, use the symbol as the name to avoid a deployment error on the destination chain
+        if name.len() > MAX_NAME_LENGTH {
+            (symbol.clone(), symbol)
+        } else {
+            (name, symbol)
+        }
     };
 
     TokenMetadata::new(name, symbol, decimals)
@@ -125,5 +128,78 @@ mod tests {
         let result = TokenMetadata::new(name, symbol, decimals);
         // TODO: use assert_err! once TokenMetadata implements Debug trait in new release
         assert!(matches!(result, Err(ContractError::InvalidTokenSymbol)));
+    }
+
+    #[test]
+    fn token_metadata_new_fails_with_empty_name() {
+        let env = Env::default();
+
+        let name = String::from_str(&env, "");
+        let symbol = String::from_str(&env, "Test");
+        let decimals = 18;
+
+        let result = TokenMetadata::new(name, symbol, decimals);
+        assert!(matches!(result, Err(ContractError::InvalidTokenName)));
+    }
+
+    #[test]
+    fn token_metadata_new_fails_with_empty_symbol() {
+        let env = Env::default();
+
+        let name = String::from_str(&env, "Test");
+        let symbol = String::from_str(&env, "");
+        let decimals = 18;
+
+        let result = TokenMetadata::new(name, symbol, decimals);
+        assert!(matches!(result, Err(ContractError::InvalidTokenSymbol)));
+    }
+
+    #[test]
+    fn token_metadata_new_fails_with_too_long_name() {
+        let env = Env::default();
+
+        let long_name = "A".repeat(MAX_NAME_LENGTH as usize + 1);
+        let name = String::from_str(&env, &long_name);
+        let symbol = String::from_str(&env, "Test");
+        let decimals = 18;
+
+        let result = TokenMetadata::new(name, symbol, decimals);
+        assert!(matches!(result, Err(ContractError::InvalidTokenName)));
+    }
+
+    #[test]
+    fn token_metadata_new_fails_with_too_long_symbol() {
+        let env = Env::default();
+
+        let long_symbol = "A".repeat(MAX_SYMBOL_LENGTH as usize + 1);
+        let name = String::from_str(&env, "Test");
+        let symbol = String::from_str(&env, &long_symbol);
+        let decimals = 18;
+
+        let result = TokenMetadata::new(name, symbol, decimals);
+        assert!(matches!(result, Err(ContractError::InvalidTokenSymbol)));
+    }
+
+    #[test]
+    fn token_metadata_new_fails_with_invalid_decimals() {
+        let env = Env::default();
+
+        let name = String::from_str(&env, "Test");
+        let symbol = String::from_str(&env, "Test");
+        let decimals = MAX_DECIMALS + 1;
+
+        let result = TokenMetadata::new(name, symbol, decimals);
+        assert!(matches!(result, Err(ContractError::InvalidTokenDecimals)));
+    }
+
+    #[test]
+    fn token_metadata_new_succeeds_with_max_values() {
+        let env = Env::default();
+
+        let name = String::from_str(&env, &"A".repeat(MAX_NAME_LENGTH as usize));
+        let symbol = String::from_str(&env, &"A".repeat(MAX_SYMBOL_LENGTH as usize));
+        let decimals = MAX_DECIMALS;
+
+        assert_ok!(TokenMetadata::new(name, symbol, decimals));
     }
 }
