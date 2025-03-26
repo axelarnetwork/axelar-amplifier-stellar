@@ -2,7 +2,7 @@ use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_std::testutils::BytesN as _;
 use stellar_axelar_std::{assert_contract_err, mock_auth, vec, BytesN, IntoVal, String};
 use testutils::{
-    assert_migrate_storage, setup_migrate_env, setup_migrate_storage, MigrateTestConfig,
+    assert_migrate_storage, setup_migrate_env, setup_migrate_storage, FlowData, MigrateTestConfig,
 };
 
 use crate::error::ContractError;
@@ -90,10 +90,12 @@ fn migrate_native_interchain_token_succeeds() {
         &env,
         &its_client,
         migration_data,
-        token_id,
-        current_epoch,
-        flow_in_amount,
-        flow_out_amount,
+        Some(FlowData {
+            token_id,
+            current_epoch,
+            flow_in_amount,
+            flow_out_amount,
+        }),
     );
 }
 
@@ -175,10 +177,12 @@ fn migrate_lock_unlock_succeeds() {
         &env,
         &its_client,
         migration_data,
-        token_id,
-        current_epoch,
-        flow_in_amount,
-        flow_out_amount,
+        Some(FlowData {
+            token_id,
+            current_epoch,
+            flow_in_amount,
+            flow_out_amount,
+        }),
     );
 }
 
@@ -255,7 +259,7 @@ fn migrate_succeeds_with_multiple_token_ids() {
 
     let token_id_2 = its_client.mock_all_auths().deploy_interchain_token(
         &owner,
-        &BytesN::random(&env),
+        &BytesN::from_array(&env, &[2; 32]),
         &TokenMetadata {
             name: String::from_str(&env, "Token2"),
             symbol: String::from_str(&env, "TOKEN2"),
@@ -340,7 +344,7 @@ fn migrate_succeeds_with_multiple_token_ids() {
             &String::from_str(&env, NEW_VERSION),
         );
 
-    let its_migrate_token_auths_1 = format_auths(env.auths(), "its.migrate_token(...)");
+    let its_migrate_token_auths_1 = format_auths(env.auths(), "its.migrate_token(token_id_1)");
 
     its_client
         .mock_all_auths_allowing_non_root_auth()
@@ -350,7 +354,7 @@ fn migrate_succeeds_with_multiple_token_ids() {
             &String::from_str(&env, NEW_VERSION),
         );
 
-    let its_migrate_token_auths_2 = format_auths(env.auths(), "its.migrate_token(...)");
+    let its_migrate_token_auths_2 = format_auths(env.auths(), "its.migrate_token(token_id_2)");
 
     goldie::assert!([
         upgrader_upgrade_auths,
@@ -363,19 +367,23 @@ fn migrate_succeeds_with_multiple_token_ids() {
         &env,
         &its_client,
         migration_data.clone(),
-        token_id_1,
-        current_epoch,
-        flow_in_amount_1,
-        flow_out_amount_1,
+        Some(FlowData {
+            token_id: token_id_1,
+            current_epoch,
+            flow_in_amount: flow_in_amount_1,
+            flow_out_amount: flow_out_amount_1,
+        }),
     );
     assert_migrate_storage(
         &env,
         &its_client,
         migration_data,
-        token_id_2,
-        current_epoch,
-        flow_in_amount_2,
-        flow_out_amount_2,
+        Some(FlowData {
+            token_id: token_id_2,
+            current_epoch,
+            flow_in_amount: flow_in_amount_2,
+            flow_out_amount: flow_out_amount_2,
+        }),
     );
 }
 
@@ -419,7 +427,10 @@ fn migrate_succeeds_with_empty_migration_data() {
     let upgrader_upgrade_auths = format_auths(env.auths(), "upgrader.upgrade(...)");
 
     goldie::assert!(upgrader_upgrade_auths);
+
+    assert_migrate_storage(&env, &its_client, migration_data.clone(), None);
 }
+
 #[test]
 fn migrate_with_native_interchain_token_legacy_flow_data() {
     let MigrateTestConfig {
@@ -498,10 +509,12 @@ fn migrate_with_native_interchain_token_legacy_flow_data() {
         &env,
         &its_client,
         migration_data,
-        token_id,
-        current_epoch,
-        flow_in_amount,
-        flow_out_amount,
+        Some(FlowData {
+            token_id,
+            current_epoch,
+            flow_in_amount,
+            flow_out_amount,
+        }),
     );
 }
 
@@ -583,10 +596,12 @@ fn migrate_with_lock_unlock_legacy_flow_data() {
         &env,
         &its_client,
         migration_data,
-        token_id,
-        current_epoch,
-        flow_in_amount,
-        flow_out_amount,
+        Some(FlowData {
+            token_id,
+            current_epoch,
+            flow_in_amount,
+            flow_out_amount,
+        }),
     );
 }
 
@@ -619,6 +634,13 @@ mod testutils {
         pub token_manager: Address,
         pub interchain_token: Address,
         pub migration_data: CustomMigrationData,
+    }
+
+    pub struct FlowData {
+        pub token_id: BytesN<32>,
+        pub current_epoch: u64,
+        pub flow_in_amount: i128,
+        pub flow_out_amount: i128,
     }
 
     pub fn setup_migrate_env<'a>() -> MigrateTestConfig<'a> {
@@ -684,10 +706,7 @@ mod testutils {
         env: &Env,
         its_client: &InterchainTokenServiceClient<'a>,
         migration_data: CustomMigrationData,
-        token_id: BytesN<32>,
-        current_epoch: u64,
-        flow_in_amount: i128,
-        flow_out_amount: i128,
+        flow_data: Option<FlowData>,
     ) {
         assert_eq!(
             env.as_contract(&its_client.address, || {
@@ -703,17 +722,19 @@ mod testutils {
             migration_data.new_interchain_token_wasm_hash,
             "interchain token WASM hash should be updated"
         );
-        assert_eq!(
-            env.as_contract(&its_client.address, || {
-                storage::flow_in(&env, token_id.clone(), current_epoch)
-            }),
-            flow_in_amount
-        );
-        assert_eq!(
-            env.as_contract(&its_client.address, || {
-                storage::flow_out(&env, token_id, current_epoch)
-            }),
-            flow_out_amount
-        );
+        if let Some(flow_data) = flow_data {
+            assert_eq!(
+                env.as_contract(&its_client.address, || {
+                    storage::flow_in(&env, flow_data.token_id.clone(), flow_data.current_epoch)
+                }),
+                flow_data.flow_in_amount
+            );
+            assert_eq!(
+                env.as_contract(&its_client.address, || {
+                    storage::flow_out(&env, flow_data.token_id, flow_data.current_epoch)
+                }),
+                flow_data.flow_out_amount
+            );
+        }
     }
 }
