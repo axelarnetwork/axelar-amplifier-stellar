@@ -128,18 +128,14 @@ mod tests {
 
         let golden_file = golden_file_name(function_path);
 
-        let mut golden_file_temp = golden_file.clone();
-        golden_file_temp.set_extension("temp");
-
-        let _ = fs::rename(&golden_file, &golden_file_temp);
         assert_matches_golden_file!("something");
-        let _ = fs::rename(golden_file_temp, golden_file);
 
         if matches!(
             env::var("GOLDIE_UPDATE").ok().as_deref(),
             Some("1" | "true")
         ) {
-            panic!("goldie regenerated golden file");
+            let _ = fs::remove_file(golden_file);
+            panic!("goldie set to regenerate golden file");
         }
     }
 
