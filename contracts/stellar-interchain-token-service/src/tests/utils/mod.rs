@@ -13,7 +13,7 @@ use crate::storage::TokenIdConfigValue;
 use crate::testutils::{setup_its, setup_its_token};
 use crate::{storage, InterchainTokenServiceClient};
 
-const ITS_WASM: &[u8] =
+const NEW_INTERCHAIN_TOKEN_SERVICE_WASM: &[u8] =
     include_bytes!("../testdata/stellar_interchain_token_service.optimized.wasm");
 const TOKEN_MANAGER_WASM_V110: &[u8] =
     include_bytes!("../testdata/stellar_token_manager_v1_1_0.optimized.wasm");
@@ -49,7 +49,7 @@ pub struct MigrateTestConfig<'a> {
     pub current_epoch: u64,
     pub its_wasm_hash: BytesN<32>,
     pub token_manager: Address,
-    pub token_address: Address,
+    pub interchain_token: Address,
     pub migration_data: CustomMigrationData,
 }
 
@@ -76,16 +76,18 @@ pub fn setup_migrate_env<'a>() -> MigrateTestConfig<'a> {
     let owner: Address = its_client.owner();
     let (token_id, _) = setup_its_token(&env, &its_client, &owner, 100);
 
-    let its_wasm_hash = env.deployer().upload_contract_wasm(ITS_WASM);
-    let token_manager_wasm_hash_v110 = env.deployer().upload_contract_wasm(TOKEN_MANAGER_WASM_V110);
-    let interchain_token_wasm_hash_v110 = env
+    let its_wasm_hash = env
+        .deployer()
+        .upload_contract_wasm(NEW_INTERCHAIN_TOKEN_SERVICE_WASM);
+    let new_token_manager_wasm_hash = env.deployer().upload_contract_wasm(TOKEN_MANAGER_WASM_V110);
+    let new_interchain_token_wasm_hash = env
         .deployer()
         .upload_contract_wasm(INTERCHAIN_TOKEN_WASM_V110);
 
     let current_epoch = current_epoch(&env);
 
-    let token_manager_v100 = its_client.token_manager_address(&token_id);
-    let interchain_token_v100 = its_client.interchain_token_address(&token_id);
+    let token_manager = its_client.token_manager_address(&token_id);
+    let interchain_token = its_client.interchain_token_address(&token_id);
 
     MigrateTestConfig {
         env,
@@ -95,11 +97,11 @@ pub fn setup_migrate_env<'a>() -> MigrateTestConfig<'a> {
         token_id,
         current_epoch,
         its_wasm_hash,
-        token_manager: token_manager_v100,
-        token_address: interchain_token_v100,
+        token_manager,
+        interchain_token,
         migration_data: CustomMigrationData {
-            new_token_manager_wasm_hash: token_manager_wasm_hash_v110,
-            new_interchain_token_wasm_hash: interchain_token_wasm_hash_v110,
+            new_token_manager_wasm_hash,
+            new_interchain_token_wasm_hash,
         },
     }
 }
