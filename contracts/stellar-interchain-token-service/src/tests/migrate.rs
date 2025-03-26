@@ -29,8 +29,8 @@ fn migrate_native_interchain_token_succeeds() {
     } = setup_migrate_env();
 
     let token_config = TokenIdConfigValue {
-        token_address: interchain_token.clone(),
-        token_manager: token_manager.clone(),
+        token_address: interchain_token,
+        token_manager,
         token_manager_type: TokenManagerType::NativeInterchainToken,
     };
 
@@ -192,7 +192,7 @@ fn migrate_succeeds_with_empty_migration_data() {
 
     goldie::assert!(upgrader_upgrade_auths);
 
-    assert_migrate_storage(&its_client, migration_data.clone(), None);
+    assert_migrate_storage(&its_client, migration_data, None);
 }
 
 #[test]
@@ -392,26 +392,26 @@ mod testutils {
         }
     }
 
-    pub fn setup_migrate_storage<'a>(
+    pub fn setup_migrate_storage(
         env: &Env,
         token_config: TokenIdConfigValue,
-        its_client: &InterchainTokenServiceClient<'a>,
+        its_client: &InterchainTokenServiceClient<'_>,
         token_id: BytesN<32>,
         current_epoch: u64,
         flow_in_amount: i128,
         flow_out_amount: i128,
     ) {
-        /* necessary to call legacy_storage/storage directly */
         env.as_contract(&its_client.address, || {
             let flow_key = legacy_storage::FlowKey {
                 token_id: token_id.clone(),
                 epoch: current_epoch,
             };
 
-            legacy_storage::set_flow_in(&env, flow_key.clone(), &flow_in_amount);
-            legacy_storage::set_flow_out(&env, flow_key, &flow_out_amount);
+            legacy_storage::set_flow_in(env, flow_key.clone(), &flow_in_amount);
+            legacy_storage::set_flow_out(env, flow_key, &flow_out_amount);
 
-            storage::set_token_id_config(&env, token_id.clone(), &token_config);
+            // TODO: Remove via branch to use setup_its_token(NativeInterchainToken) || call register_canonical_token(LockUnlock)
+            storage::set_token_id_config(env, token_id.clone(), &token_config);
         });
     }
 
@@ -424,12 +424,12 @@ mod testutils {
         migration_data: CustomMigrationData,
     ) -> std::string::String {
         let its_upgrade_auth = mock_auth!(owner, its_client.upgrade(&its_wasm_hash));
-        let its_migrate_auth = mock_auth!(owner, its_client.migrate(migration_data.clone()));
+        let its_migrate_auth = mock_auth!(owner, its_client.migrate(migration_data));
         let upgrader_upgrade_auth = mock_auth!(
             owner,
             upgrader_client.upgrade(
                 &its_client.address,
-                &String::from_str(&env, NEW_VERSION),
+                &String::from_str(env, NEW_VERSION),
                 &its_wasm_hash,
                 &vec![&env, migration_data.clone()],
             ),
@@ -443,7 +443,7 @@ mod testutils {
             .mock_auths(&[upgrader_upgrade_auth])
             .upgrade(
                 &its_client.address,
-                &String::from_str(&env, NEW_VERSION),
+                &String::from_str(env, NEW_VERSION),
                 &its_wasm_hash,
                 &vec![&env, migration_data.into_val(env)],
             );
@@ -462,14 +462,14 @@ mod testutils {
             .migrate_token(
                 &token_id,
                 &upgrader_client.address,
-                &String::from_str(&env, NEW_VERSION),
+                &String::from_str(env, NEW_VERSION),
             );
 
         format_auths(env.auths(), "its.migrate_token(...)")
     }
 
-    pub fn assert_migrate_storage<'a>(
-        its_client: &InterchainTokenServiceClient<'a>,
+    pub fn assert_migrate_storage(
+        its_client: &InterchainTokenServiceClient<'_>,
         migration_data: CustomMigrationData,
         flow_data: Option<FlowData>,
     ) {
