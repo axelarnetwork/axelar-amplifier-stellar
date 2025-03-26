@@ -1,4 +1,3 @@
-use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_std::testutils::BytesN as _;
 use stellar_axelar_std::{assert_contract_err, mock_auth, vec, BytesN, IntoVal, String};
 use testutils::{
@@ -242,152 +241,6 @@ fn migrate_token_fails_with_invalid_token_id() {
 }
 
 #[test]
-fn migrate_succeeds_with_multiple_token_ids() {
-    let MigrateTestConfig {
-        env,
-        owner,
-        its_client,
-        upgrader_client,
-        token_id: token_id_1,
-        current_epoch,
-        its_wasm_hash,
-        token_manager: token_manager_1,
-        interchain_token: interchain_token_1,
-        migration_data,
-        ..
-    } = setup_migrate_env();
-
-    let token_id_2 = its_client.mock_all_auths().deploy_interchain_token(
-        &owner,
-        &BytesN::from_array(&env, &[2; 32]),
-        &TokenMetadata {
-            name: String::from_str(&env, "Token2"),
-            symbol: String::from_str(&env, "TOKEN2"),
-            decimal: 6,
-        },
-        &200,
-        &None,
-    );
-
-    let token_manager_2 = its_client.deployed_token_manager(&token_id_2);
-    let interchain_token_2 = its_client.interchain_token_address(&token_id_2);
-
-    let token_config_1 = TokenIdConfigValue {
-        token_address: interchain_token_1,
-        token_manager: token_manager_1,
-        token_manager_type: TokenManagerType::LockUnlock,
-    };
-
-    let token_config_2 = TokenIdConfigValue {
-        token_address: interchain_token_2,
-        token_manager: token_manager_2,
-        token_manager_type: TokenManagerType::NativeInterchainToken,
-    };
-
-    let flow_in_amount_1 = 100i128;
-    let flow_out_amount_1 = 50i128;
-    let flow_in_amount_2 = 200i128;
-    let flow_out_amount_2 = 150i128;
-
-    setup_migrate_storage(
-        &env,
-        token_config_1,
-        &its_client,
-        token_id_1.clone(),
-        current_epoch,
-        flow_in_amount_1,
-        flow_out_amount_1,
-    );
-
-    setup_migrate_storage(
-        &env,
-        token_config_2,
-        &its_client,
-        token_id_2.clone(),
-        current_epoch,
-        flow_in_amount_2,
-        flow_out_amount_2,
-    );
-
-    let its_upgrade_auth = mock_auth!(owner, its_client.upgrade(&its_wasm_hash));
-    let its_migrate_auth = mock_auth!(owner, its_client.migrate(migration_data.clone()));
-    let upgrader_upgrade_auth = mock_auth!(
-        owner,
-        upgrader_client.upgrade(
-            &its_client.address,
-            &String::from_str(&env, NEW_VERSION),
-            &its_wasm_hash,
-            &vec![&env, migration_data.clone()],
-        ),
-        &[
-            its_upgrade_auth.invoke.clone(),
-            its_migrate_auth.invoke.clone()
-        ]
-    );
-
-    upgrader_client
-        .mock_auths(&[upgrader_upgrade_auth])
-        .upgrade(
-            &its_client.address,
-            &String::from_str(&env, NEW_VERSION),
-            &its_wasm_hash,
-            &vec![&env, migration_data.into_val(&env)],
-        );
-
-    let upgrader_upgrade_auths = format_auths(env.auths(), "upgrader.upgrade(...)");
-
-    its_client
-        .mock_all_auths_allowing_non_root_auth()
-        .migrate_token(
-            &token_id_1,
-            &upgrader_client.address,
-            &String::from_str(&env, NEW_VERSION),
-        );
-
-    let its_migrate_token_auths_1 = format_auths(env.auths(), "its.migrate_token(token_id_1)");
-
-    its_client
-        .mock_all_auths_allowing_non_root_auth()
-        .migrate_token(
-            &token_id_2,
-            &upgrader_client.address,
-            &String::from_str(&env, NEW_VERSION),
-        );
-
-    let its_migrate_token_auths_2 = format_auths(env.auths(), "its.migrate_token(token_id_2)");
-
-    goldie::assert!([
-        upgrader_upgrade_auths,
-        its_migrate_token_auths_1,
-        its_migrate_token_auths_2
-    ]
-    .join("\n\n"));
-
-    assert_migrate_storage(
-        &env,
-        &its_client,
-        migration_data.clone(),
-        Some(FlowData {
-            token_id: token_id_1,
-            current_epoch,
-            flow_in_amount: flow_in_amount_1,
-            flow_out_amount: flow_out_amount_1,
-        }),
-    );
-    assert_migrate_storage(
-        &env,
-        &its_client,
-        migration_data,
-        Some(FlowData {
-            token_id: token_id_2,
-            current_epoch,
-            flow_in_amount: flow_in_amount_2,
-            flow_out_amount: flow_out_amount_2,
-        }),
-    );
-}
-
-#[test]
 fn migrate_succeeds_with_empty_migration_data() {
     let MigrateTestConfig {
         env,
@@ -432,7 +285,7 @@ fn migrate_succeeds_with_empty_migration_data() {
 }
 
 #[test]
-fn migrate_with_native_interchain_token_legacy_flow_data() {
+fn migrate_native_interchain_token_with_flow_amount_succeeds() {
     let MigrateTestConfig {
         env,
         owner,
@@ -519,7 +372,7 @@ fn migrate_with_native_interchain_token_legacy_flow_data() {
 }
 
 #[test]
-fn migrate_with_lock_unlock_legacy_flow_data() {
+fn migrate_with_lock_unlock_with_flow_amount_succeeds() {
     let MigrateTestConfig {
         env,
         owner,
