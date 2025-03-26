@@ -152,7 +152,7 @@ fn migrate_token_fails_with_invalid_token_id() {
         &its_client,
         &upgrader_client,
         its_wasm_hash,
-        migration_data.clone(),
+        migration_data,
     );
 
     assert_contract_err!(
