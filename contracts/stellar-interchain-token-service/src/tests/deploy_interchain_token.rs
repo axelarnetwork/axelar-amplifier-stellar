@@ -233,7 +233,7 @@ fn deploy_interchain_token_fails_with_zero_initial_supply_and_no_minter() {
             &initial_supply,
             &minter
         ),
-        ContractError::UnusableToken
+        ContractError::InvalidTokenConfig
     );
 }
 

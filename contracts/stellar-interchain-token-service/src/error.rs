@@ -35,5 +35,5 @@ pub enum ContractError {
     InvalidInitialSupply = 29,
     TokenInvocationError = 30,
     MigrationInProgress = 31,
-    UnusableToken = 32,
+    InvalidTokenConfig = 32,
 }

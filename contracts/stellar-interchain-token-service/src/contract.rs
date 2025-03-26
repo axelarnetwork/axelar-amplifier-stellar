@@ -186,7 +186,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         ensure!(initial_supply >= 0, ContractError::InvalidInitialSupply);
         ensure!(
             initial_supply > 0 || minter.is_some(),
-            ContractError::UnusableToken
+            ContractError::InvalidTokenConfig
         );
 
         let token_id = Self::interchain_token_id(env, caller.clone(), salt);
