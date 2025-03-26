@@ -9,7 +9,6 @@ use stellar_axelar_std::interfaces::OwnershipTransferredEvent;
 use stellar_axelar_std::testutils::{Address as _, BytesN as _, Events, Ledger};
 use stellar_axelar_std::{assert_auth, assert_auth_err, Address, BytesN, Env, IntoVal as _};
 
-
 use crate::event::{MinterAddedEvent, MinterRemovedEvent, TransferEvent};
 use crate::{InterchainToken, InterchainTokenClient};
 
