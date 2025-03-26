@@ -185,6 +185,10 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
 
         ensure!(initial_supply >= 0, ContractError::InvalidInitialSupply);
 
+        if initial_supply == 0 && minter.is_none() {
+            return Err(ContractError::InvalidMinter);
+        }
+
         let token_id = Self::interchain_token_id(env, caller.clone(), salt);
 
         token_metadata.validate()?;

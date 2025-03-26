@@ -225,26 +225,16 @@ fn deploy_interchain_token_fails_with_zero_initial_supply_and_no_minter() {
     let minter: Option<Address> = None;
     let initial_supply = 0;
 
-    let token_id = client.mock_all_auths().deploy_interchain_token(
-        &sender,
-        &salt,
-        &token_metadata,
-        &initial_supply,
-        &minter,
+    assert_contract_err!(
+        client.mock_all_auths().try_deploy_interchain_token(
+            &sender,
+            &salt,
+            &token_metadata,
+            &initial_supply,
+            &minter
+        ),
+        ContractError::InvalidMinter
     );
-
-    goldie::assert!(events::fmt_emitted_event_at_idx::<
-        InterchainTokenDeployedEvent,
-    >(&env, INTERCHAIN_TOKEN_DEPLOYED_NO_SUPPLY_EVENT_IDX));
-
-    let token_address = client.registered_token_address(&token_id);
-    let token_manager = client.deployed_token_manager(&token_id);
-    let token = InterchainTokenClient::new(&env, &token_address);
-
-    assert_eq!(token.owner(), client.address);
-    assert!(token.is_minter(&token_manager));
-    assert!(!token.is_minter(&sender));
-    assert_eq!(token.balance(&sender), initial_supply);
 }
 
 #[test]

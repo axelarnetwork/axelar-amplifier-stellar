@@ -26,7 +26,7 @@ fn setup_sender(
 ) -> (Address, Token, BytesN<32>) {
     let sender: Address = Address::generate(env);
     let gas_token = setup_gas_token(env, &sender);
-    let (token_id, _) = setup_its_token(env, client, &sender, amount);
+    let (token_id, _) = setup_its_token(env, client, &sender, amount, &None);
 
     (sender, gas_token, token_id)
 }
