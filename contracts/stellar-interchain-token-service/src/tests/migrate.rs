@@ -62,12 +62,10 @@ fn migrate_native_interchain_token_succeeds() {
     goldie::assert!([upgrader_upgrade_auths, its_migrate_token_auths].join("\n\n"));
 
     assert_migrate_storage(
-        &env,
         &its_client,
         migration_data,
         Some(FlowData {
             token_id,
-            current_epoch,
             flow_in_amount,
             flow_out_amount,
         }),
@@ -124,12 +122,10 @@ fn migrate_lock_unlock_succeeds() {
     goldie::assert!([upgrader_upgrade_auths, its_migrate_token_auths].join("\n\n"));
 
     assert_migrate_storage(
-        &env,
         &its_client,
         migration_data,
         Some(FlowData {
             token_id,
-            current_epoch,
             flow_in_amount,
             flow_out_amount,
         }),
@@ -196,7 +192,7 @@ fn migrate_succeeds_with_empty_migration_data() {
 
     goldie::assert!(upgrader_upgrade_auths);
 
-    assert_migrate_storage(&env, &its_client, migration_data.clone(), None);
+    assert_migrate_storage(&its_client, migration_data.clone(), None);
 }
 
 #[test]
@@ -249,12 +245,10 @@ fn migrate_native_interchain_token_with_flow_amount_succeeds() {
     goldie::assert!([upgrader_upgrade_auths, its_migrate_token_auths].join("\n\n"));
 
     assert_migrate_storage(
-        &env,
         &its_client,
         migration_data,
         Some(FlowData {
             token_id,
-            current_epoch,
             flow_in_amount,
             flow_out_amount,
         }),
@@ -311,12 +305,10 @@ fn migrate_with_lock_unlock_with_flow_amount_succeeds() {
     goldie::assert!([upgrader_upgrade_auths, its_migrate_token_auths].join("\n\n"));
 
     assert_migrate_storage(
-        &env,
         &its_client,
         migration_data,
         Some(FlowData {
             token_id,
-            current_epoch,
             flow_in_amount,
             flow_out_amount,
         }),
@@ -359,7 +351,6 @@ mod testutils {
 
     pub struct FlowData {
         pub token_id: BytesN<32>,
-        pub current_epoch: u64,
         pub flow_in_amount: i128,
         pub flow_out_amount: i128,
     }
@@ -410,6 +401,7 @@ mod testutils {
         flow_in_amount: i128,
         flow_out_amount: i128,
     ) {
+        /* necessary to call legacy_storage/storage directly */
         env.as_contract(&its_client.address, || {
             let flow_key = legacy_storage::FlowKey {
                 token_id: token_id.clone(),
@@ -477,36 +469,28 @@ mod testutils {
     }
 
     pub fn assert_migrate_storage<'a>(
-        env: &Env,
         its_client: &InterchainTokenServiceClient<'a>,
         migration_data: CustomMigrationData,
         flow_data: Option<FlowData>,
     ) {
         assert_eq!(
-            env.as_contract(&its_client.address, || {
-                storage::token_manager_wasm_hash(&env)
-            }),
+            its_client.token_manager_wasm_hash(),
             migration_data.new_token_manager_wasm_hash,
             "token manager WASM hash should be updated"
         );
         assert_eq!(
-            env.as_contract(&its_client.address, || {
-                storage::interchain_token_wasm_hash(&env)
-            }),
+            its_client.interchain_token_wasm_hash(),
             migration_data.new_interchain_token_wasm_hash,
             "interchain token WASM hash should be updated"
         );
+
         if let Some(flow_data) = flow_data {
             assert_eq!(
-                env.as_contract(&its_client.address, || {
-                    storage::flow_in(&env, flow_data.token_id.clone(), flow_data.current_epoch)
-                }),
+                its_client.flow_in_amount(&flow_data.token_id),
                 flow_data.flow_in_amount
             );
             assert_eq!(
-                env.as_contract(&its_client.address, || {
-                    storage::flow_out(&env, flow_data.token_id, flow_data.current_epoch)
-                }),
+                its_client.flow_out_amount(&flow_data.token_id),
                 flow_data.flow_out_amount
             );
         }

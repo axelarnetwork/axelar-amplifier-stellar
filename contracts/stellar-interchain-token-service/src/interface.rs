@@ -272,7 +272,7 @@ pub trait InterchainTokenServiceInterface:
     /// Note: This is a separate function so each token's migration is within its own transaction,
     ///       instead of within one atomic migrate call, to accommodate Stellar's resource constraints.
     ///
-    /// More on Stellar resource limits: https://developers.stellar.org/docs/networks/resource-limits-fees
+    /// More on Stellar resource limits: <https://developers.stellar.org/docs/networks/resource-limits-fees>
     ///
     /// # Arguments
     /// - `token_id`: The unique identifier of the token to be migrated.
