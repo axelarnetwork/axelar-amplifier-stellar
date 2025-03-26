@@ -1,9 +1,13 @@
+use std::string::{String, ToString};
+use std::{format, vec};
+
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_gas_service::testutils::setup_gas_service;
 use stellar_axelar_gas_service::AxelarGasServiceClient;
 use stellar_axelar_gateway::testutils::{setup_gateway, TestSignerSet};
 use stellar_axelar_gateway::AxelarGatewayClient;
-use stellar_axelar_std::{Env, IntoVal};
+use stellar_axelar_std::testutils::{AuthorizedFunction, AuthorizedInvocation};
+use stellar_axelar_std::{Address, Env, IntoVal};
 
 use crate::testutils::setup_its;
 use crate::InterchainTokenServiceClient;
@@ -43,4 +47,34 @@ pub fn setup_env<'a>() -> (
     let client = setup_its(&env, &gateway_client, &gas_service_client, None);
 
     (env, client, gateway_client, gas_service_client, signers)
+}
+
+pub fn format_auths(
+    auths: std::vec::Vec<(Address, AuthorizedInvocation)>,
+    description: &str,
+) -> String {
+    let mut formatted_auths = format!("{:?}:\n", description.to_string());
+
+    for (caller, invocation) in auths {
+        let (client, method, args) = match invocation.function {
+            AuthorizedFunction::Contract((client, method, args)) => (client, method, args),
+            _ => panic!("Expected a contract function"),
+        };
+        formatted_auths.push_str(&format!("    caller: {:?}\n", caller));
+        formatted_auths.push_str(&format!(
+            "        invocation: {:?}.{:?}({:?})\n",
+            client.to_string(),
+            method.to_string(),
+            args
+        ));
+
+        for sub_invocation in invocation.sub_invocations {
+            formatted_auths.push_str(&format_auths(
+                vec![(caller.clone(), sub_invocation)],
+                "sub_invocation",
+            ));
+        }
+    }
+
+    formatted_auths
 }
