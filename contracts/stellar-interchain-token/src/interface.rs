@@ -11,7 +11,7 @@ pub trait InterchainTokenInterface:
     /// Returns the total supply of the token on this chain.
     fn total_supply(env: &Env) -> i128;
 
-    /// Returns the Interchain Token ID
+    /// Returns the InterchainToken tokenId.
     fn token_id(env: &Env) -> BytesN<32>;
 
     /// Returns if the specified address is a minter.
