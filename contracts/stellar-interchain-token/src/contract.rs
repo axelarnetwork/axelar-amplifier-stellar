@@ -34,6 +34,8 @@ impl InterchainToken {
 
         storage::set_token_id(&env, &token_id);
 
+        storage::set_total_supply(&env, &0);
+
         if let Some(minter) = minter {
             storage::set_minter_status(&env, minter.clone());
 
@@ -82,8 +84,8 @@ impl StellarAssetInterface for InterchainToken {
         owner.require_auth();
 
         Self::validate_amount(&env, amount);
-
         Self::receive_balance(&env, to.clone(), amount);
+        Self::update_total_supply(&env, amount);
 
         TokenUtils::new(&env).events().mint(owner, to, amount);
     }
@@ -95,6 +97,10 @@ impl StellarAssetInterface for InterchainToken {
 
 #[contractimpl]
 impl InterchainTokenInterface for InterchainToken {
+    fn total_supply(env: &Env) -> i128 {
+        storage::total_supply(env)
+    }
+
     fn token_id(env: &Env) -> BytesN<32> {
         storage::token_id(env)
     }
@@ -117,8 +123,8 @@ impl InterchainTokenInterface for InterchainToken {
         );
 
         Self::validate_amount(env, amount);
-
         Self::receive_balance(env, to.clone(), amount);
+        Self::update_total_supply(env, amount);
 
         TokenUtils::new(env).events().mint(minter, to, amount);
 
@@ -194,6 +200,7 @@ impl token::Interface for InterchainToken {
 
         Self::validate_amount(&env, amount);
         Self::spend_balance(&env, from.clone(), amount);
+        Self::update_total_supply(&env, -amount);
 
         TokenUtils::new(&env).events().burn(from, amount);
     }
@@ -204,6 +211,7 @@ impl token::Interface for InterchainToken {
         Self::validate_amount(&env, amount);
         Self::spend_allowance(&env, from.clone(), spender, amount);
         Self::spend_balance(&env, from.clone(), amount);
+        Self::update_total_supply(&env, -amount);
 
         TokenUtils::new(&env).events().burn(from, amount)
     }
@@ -224,6 +232,11 @@ impl token::Interface for InterchainToken {
 impl InterchainToken {
     fn validate_amount(env: &Env, amount: i128) {
         assert_with_error!(env, amount >= 0, ContractError::InvalidAmount);
+    }
+
+    fn update_total_supply(env: &Env, delta: i128) {
+        let total_supply = storage::total_supply(env);
+        storage::set_total_supply(env, &(total_supply + delta));
     }
 
     fn read_allowance(env: &Env, from: Address, spender: Address) -> AllowanceValue {

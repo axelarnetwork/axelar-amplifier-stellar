@@ -653,3 +653,27 @@ fn allowance_preserves_expiration_when_expired() {
         .mock_all_auths()
         .approve(&user1, &user2, &amount, &expiration_ledger);
 }
+
+#[test]
+fn update_total_supply_succeeds() {
+    let env = Env::default();
+    let (token, minter) = setup_token(&env);
+    let user = Address::generate(&env);
+
+    // Initial supply should be 0
+    assert_eq!(token.total_supply(), 0);
+
+    // Mint some tokens (increases supply)
+    let amount = 1000;
+    assert_auth!(minter, token.mint_from(&minter, &user, &amount));
+    assert_eq!(token.total_supply(), amount);
+
+    // Burn some tokens (decreases supply)
+    let burn_amount = 400;
+    assert_auth!(user, token.burn(&user, &burn_amount));
+    assert_eq!(token.total_supply(), amount - burn_amount);
+
+    // Mint more tokens
+    assert_auth!(minter, token.mint_from(&minter, &user, &amount));
+    assert_eq!(token.total_supply(), (amount - burn_amount) + amount);
+}
