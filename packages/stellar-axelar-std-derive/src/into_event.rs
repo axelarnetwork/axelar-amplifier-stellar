@@ -6,8 +6,10 @@ use syn::{DeriveInput, LitStr, Type};
 pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
     let name = &input.ident;
     let event_name = event_name_snake_case(input);
-    let ((topic_field_idents, topic_types), (data_field_idents, data_types), singleton_data) =
-        event_struct_fields(input);
+    let fields = event_struct_fields(input);
+    let (topic_field_idents, topic_types) = fields.topics;
+    let (data_field_idents, data_types) = fields.data;
+    let datum = fields.is_datum;
 
     let topic_type_tokens = topic_types.iter().map(|ty| quote!(#ty));
     let data_type_tokens = data_types.iter().map(|ty| quote!(#ty));
@@ -55,13 +57,10 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
             // Parse data from Val to the corresponding types,
             // and assign them to a variable with the same name as the struct field
             // E.g. let message = Message::try_from_val(env, &data.get(0));
-            let data = if #singleton_data {
-                Vec::<Val>::try_from_val(env, &data)
-                    .unwrap_or_else(|_| {
-                        let mut vec = Vec::<Val>::new(env);
-                        vec.push_back(data);
-                        vec
-                    })
+            let data = if #datum {
+                let mut vec = Vec::<Val>::new(env);
+                vec.push_back(data);
+                vec
             } else {
                 Vec::<Val>::try_from_val(env, &data)
                     .expect("invalid data format")
@@ -138,9 +137,14 @@ fn event_name_snake_case(input: &DeriveInput) -> String {
 type EventIdent<'a> = Vec<&'a Ident>;
 type EventType<'a> = Vec<&'a Type>;
 type EventStructFields<'a> = (EventIdent<'a>, EventType<'a>);
-type EventFieldsInfo<'a> = (EventStructFields<'a>, EventStructFields<'a>, bool);
 
-fn event_struct_fields(input: &DeriveInput) -> EventFieldsInfo {
+struct EventFields<'a> {
+    topics: EventStructFields<'a>,
+    data: EventStructFields<'a>,
+    is_datum: bool,
+}
+
+fn event_struct_fields(input: &DeriveInput) -> EventFields {
     let syn::Data::Struct(data_struct) = &input.data else {
         panic!("IntoEvent can only be derived for structs");
     };
@@ -149,25 +153,21 @@ fn event_struct_fields(input: &DeriveInput) -> EventFieldsInfo {
     let mut topic_types = Vec::new();
     let mut data_idents = Vec::new();
     let mut data_types = Vec::new();
-    let mut singleton_data = false;
+    let mut datum_count = 0;
 
     for field in data_struct.fields.iter() {
         if let Some(ident) = field.ident.as_ref() {
-            if field.attrs.iter().any(|attr| attr.path().is_ident("data"))
-                || field
-                    .attrs
-                    .iter()
-                    .any(|attr| attr.path().is_ident("singleton_data"))
-            {
+            if field.attrs.iter().any(|attr| attr.path().is_ident("data")) {
                 data_idents.push(ident);
                 data_types.push(&field.ty);
-                if field
-                    .attrs
-                    .iter()
-                    .any(|attr| attr.path().is_ident("singleton_data"))
-                {
-                    singleton_data = true;
+            } else if field.attrs.iter().any(|attr| attr.path().is_ident("datum")) {
+                if datum_count == 0 {
+                    datum_count = 1;
+                } else {
+                    panic!("Only one field can have the #[datum] attribute");
                 }
+                data_idents.push(ident);
+                data_types.push(&field.ty);
             } else {
                 topic_idents.push(ident);
                 topic_types.push(&field.ty);
@@ -175,9 +175,9 @@ fn event_struct_fields(input: &DeriveInput) -> EventFieldsInfo {
         }
     }
 
-    (
-        (topic_idents, topic_types),
-        (data_idents, data_types),
-        singleton_data,
-    )
+    EventFields {
+        topics: (topic_idents, topic_types),
+        data: (data_idents, data_types),
+        is_datum: datum_count == 1,
+    }
 }
