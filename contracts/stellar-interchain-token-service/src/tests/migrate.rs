@@ -269,6 +269,13 @@ fn coverage_migrate_native_interchain_token_succeeds() {
         flow_out_amount,
     );
 
+    env.as_contract(&its_client.address, || {
+        assert_ok!(InterchainTokenService::__migrate(
+            &env,
+            migration_data.clone()
+        ));
+    });
+
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
     assert_migrate_storage(
