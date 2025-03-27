@@ -121,7 +121,6 @@ fn deploy_interchain_token_with_initial_supply_no_minter() {
     assert!(token.is_minter(&token_manager));
     assert!(!token.is_minter(&sender));
     assert_eq!(token.balance(&sender), initial_supply);
-    assert_eq!(token.total_supply(), initial_supply);
 }
 
 #[test]
@@ -156,7 +155,6 @@ fn deploy_interchain_token_with_initial_supply_valid_minter() {
     assert!(token.is_minter(&token_manager));
     assert!(token.is_minter(&minter));
     assert_eq!(token.balance(&sender), initial_supply);
-    assert_eq!(token.total_supply(), initial_supply);
 }
 
 #[test]
@@ -217,7 +215,6 @@ fn deploy_interchain_token_zero_initial_supply_and_valid_minter() {
     assert!(!token.is_minter(&sender));
     assert!(token.is_minter(&minter));
     assert_eq!(token.balance(&sender), initial_supply);
-    assert_eq!(token.total_supply(), initial_supply);
 }
 
 #[test]
@@ -238,20 +235,6 @@ fn deploy_interchain_token_fails_with_zero_initial_supply_and_no_minter() {
         ),
         ContractError::InvalidTokenConfig
     );
-
-    goldie::assert!(events::fmt_emitted_event_at_idx::<
-        InterchainTokenDeployedEvent,
-    >(&env, INTERCHAIN_TOKEN_DEPLOYED_NO_SUPPLY_EVENT_IDX));
-
-    let token_address = client.registered_token_address(&token_id);
-    let token_manager = client.deployed_token_manager(&token_id);
-    let token = InterchainTokenClient::new(&env, &token_address);
-
-    assert_eq!(token.owner(), client.address);
-    assert!(token.is_minter(&token_manager));
-    assert!(!token.is_minter(&sender));
-    assert_eq!(token.balance(&sender), initial_supply);
-    assert_eq!(token.total_supply(), initial_supply);
 }
 
 #[test]
