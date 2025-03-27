@@ -249,12 +249,10 @@ fn migrate_native_interchain_token_succeeds() {
 fn coverage_migrate_native_interchain_token_succeeds() {
     let MigrateTestConfig {
         env,
-        owner,
         its_client,
         upgrader_client,
         token_id,
         current_epoch,
-        its_wasm_hash,
         migration_data,
         ..
     } = setup_migrate_env(TokenManagerType::NativeInterchainToken);
@@ -270,11 +268,6 @@ fn coverage_migrate_native_interchain_token_succeeds() {
         flow_in_amount,
         flow_out_amount,
     );
-
-    env.as_contract(&its_client.address, || {
-        crate::storage::set_interchain_token_wasm_hash(&env, &migration_data.new_interchain_token_wasm_hash);
-        crate::storage::set_token_manager_wasm_hash(&env, &migration_data.new_token_manager_wasm_hash);
-    });
 
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
