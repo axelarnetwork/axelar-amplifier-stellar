@@ -64,7 +64,7 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
                     })
             } else {
                 Vec::<Val>::try_from_val(env, &data)
-                    .expect("failed to parse data as Vec")
+                    .expect("invalid data format")
             };
 
             let mut data_idx = 0;
@@ -138,9 +138,9 @@ fn event_name_snake_case(input: &DeriveInput) -> String {
 type EventIdent<'a> = Vec<&'a Ident>;
 type EventType<'a> = Vec<&'a Type>;
 type EventStructFields<'a> = (EventIdent<'a>, EventType<'a>);
-type EventStructInfo<'a> = (EventStructFields<'a>, EventStructFields<'a>, bool);
+type EventFieldsInfo<'a> = (EventStructFields<'a>, EventStructFields<'a>, bool);
 
-fn event_struct_fields(input: &DeriveInput) -> EventStructInfo {
+fn event_struct_fields(input: &DeriveInput) -> EventFieldsInfo {
     let syn::Data::Struct(data_struct) = &input.data else {
         panic!("IntoEvent can only be derived for structs");
     };
