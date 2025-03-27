@@ -1,13 +1,15 @@
 #![cfg(test)]
 extern crate std;
 
+use std::format;
+
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_std::events::{fmt_emitted_event_at_idx, fmt_last_emitted_event};
 use stellar_axelar_std::interfaces::OwnershipTransferredEvent;
-use stellar_axelar_std::testutils::{Address as _, BytesN as _, Ledger};
+use stellar_axelar_std::testutils::{Address as _, BytesN as _, Events, Ledger};
 use stellar_axelar_std::{assert_auth, assert_auth_err, Address, BytesN, Env, IntoVal as _};
 
-use crate::event::{MinterAddedEvent, MinterRemovedEvent};
+use crate::event::{MinterAddedEvent, MinterRemovedEvent, TransferEvent};
 use crate::{InterchainToken, InterchainTokenClient};
 
 fn setup_token_metadata(env: &Env, name: &str, symbol: &str, decimal: u32) -> TokenMetadata {
@@ -51,6 +53,8 @@ fn register_interchain_token() {
             token_metadata.clone(),
         ),
     );
+
+    goldie::assert!(fmt_last_emitted_event::<MinterAddedEvent>(&env));
 
     let token = InterchainTokenClient::new(&env, &contract_id);
 
@@ -179,6 +183,9 @@ fn transfer() {
     assert_eq!(token.balance(&user1), amount);
 
     assert_auth!(user1, token.transfer(&user1, &user2, &600_i128));
+
+    goldie::assert!(fmt_emitted_event_at_idx::<TransferEvent>(&env, -1));
+
     assert_eq!(token.balance(&user1), 400_i128);
     assert_eq!(token.balance(&user2), 600_i128);
 }
@@ -312,6 +319,10 @@ fn transfer_from_succeeds() {
         user2,
         token.transfer_from(&user2, &user1, &user3, &400_i128)
     );
+
+    let events = env.events().all();
+    goldie::assert!(format!("{:#?}", events));
+
     assert_eq!(token.balance(&user1), 600_i128);
     assert_eq!(token.balance(&user2), 0_i128);
     assert_eq!(token.balance(&user3), 400_i128);
@@ -327,6 +338,10 @@ fn mint_succeeds() {
     let (token, _) = setup_token(&env);
 
     assert_auth!(token.owner(), token.mint(&user, &amount));
+
+    let events = env.events().all();
+    goldie::assert!(format!("{:#?}", events));
+
     assert_eq!(token.balance(&user), amount);
 
     token.mock_all_auths().remove_minter(&token.owner());
@@ -346,6 +361,10 @@ fn mint_from_succeeds() {
     let (token, minter) = setup_token(&env);
 
     assert_auth!(minter, token.mint_from(&minter, &user, &amount));
+
+    let events = env.events().all();
+    goldie::assert!(format!("{:#?}", events));
+
     assert_eq!(token.balance(&user), amount);
 
     assert_auth!(token.owner(), token.mint(&user, &amount));
@@ -439,6 +458,10 @@ fn burn_succeeds() {
     assert_eq!(token.balance(&user), amount);
 
     assert_auth!(user, token.burn(&user, &amount));
+
+    let events = env.events().all();
+    goldie::assert!(format!("{:#?}", events));
+
     assert_eq!(token.balance(&user), 0);
 }
 
@@ -500,6 +523,10 @@ fn burn_from_succeeds() {
     assert_eq!(token.allowance(&user1, &user2), burn_amount);
 
     assert_auth!(user2, token.burn_from(&user2, &user1, &burn_amount));
+
+    let events = env.events().all();
+    goldie::assert!(format!("{:#?}", events));
+
     assert_eq!(token.allowance(&user1, &user2), 0);
     assert_eq!(token.balance(&user1), (amount - burn_amount));
 }
@@ -590,6 +617,10 @@ fn allowance_returns_zero_when_expired() {
         user1,
         token.approve(&user1, &user2, &amount, &expiration_ledger)
     );
+
+    let events = env.events().all();
+    goldie::assert!(format!("{:#?}", events));
+
     assert_eq!(token.allowance(&user1, &user2), amount);
 
     // Move to ledger after expiration

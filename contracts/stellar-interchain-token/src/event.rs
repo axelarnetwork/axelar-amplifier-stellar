@@ -9,3 +9,12 @@ pub struct MinterAddedEvent {
 pub struct MinterRemovedEvent {
     pub minter: Address,
 }
+
+#[derive(Debug, PartialEq, Eq, IntoEvent)]
+#[event_name("transfer")]
+pub struct TransferEvent {
+    pub from: Address,
+    pub to: Address,
+    #[data]
+    pub amount: i128,
+}
