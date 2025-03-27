@@ -15,6 +15,15 @@ fn migrate_succeeds() {
     assert_auth!(owner, client.upgrade(&new_wasm_hash));
 
     client.mock_all_auths().migrate(&());
+}
+
+#[test]
+fn coverage_migrate_succeeds() {
+    let TestConfig { env, owner, client } = setup_env();
+
+    let new_wasm_hash = env.deployer().upload_contract_wasm(NEW_WASM);
+
+    assert_auth!(owner, client.upgrade(&new_wasm_hash));
 
     env.as_contract(&client.address, || {
         assert_ok!(InterchainToken::__migrate(&env, ()));
