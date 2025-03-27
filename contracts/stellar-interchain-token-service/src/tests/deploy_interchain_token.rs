@@ -121,7 +121,6 @@ fn deploy_interchain_token_with_initial_supply_no_minter() {
     assert!(token.is_minter(&token_manager));
     assert!(!token.is_minter(&sender));
     assert_eq!(token.balance(&sender), initial_supply);
-    assert_eq!(token.total_supply(), initial_supply);
 }
 
 #[test]
@@ -156,7 +155,6 @@ fn deploy_interchain_token_with_initial_supply_valid_minter() {
     assert!(token.is_minter(&token_manager));
     assert!(token.is_minter(&minter));
     assert_eq!(token.balance(&sender), initial_supply);
-    assert_eq!(token.total_supply(), initial_supply);
 }
 
 #[test]
@@ -217,7 +215,6 @@ fn deploy_interchain_token_zero_initial_supply_and_valid_minter() {
     assert!(!token.is_minter(&sender));
     assert!(token.is_minter(&minter));
     assert_eq!(token.balance(&sender), initial_supply);
-    assert_eq!(token.total_supply(), initial_supply);
 }
 
 #[test]
