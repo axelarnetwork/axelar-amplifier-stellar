@@ -14,7 +14,6 @@ pub struct MinterRemovedEvent {
 pub struct TransferEvent {
     pub from: Address,
     pub to: Address,
-    #[data]
     #[singleton_data]
     pub amount: i128,
 }
@@ -23,7 +22,6 @@ pub struct TransferEvent {
 pub struct MintEvent {
     pub owner: Address,
     pub to: Address,
-    #[data]
     #[singleton_data]
     pub amount: i128,
 }
@@ -32,10 +30,8 @@ pub struct MintEvent {
 pub struct ApproveEvent {
     pub owner: Address,
     pub spender: Address,
-    #[data]
     #[singleton_data]
     pub amount: i128,
-    #[data]
     #[singleton_data]
     pub expiration_ledger: u32,
 }
@@ -43,7 +39,6 @@ pub struct ApproveEvent {
 #[derive(Debug, PartialEq, Eq, IntoEvent)]
 pub struct BurnEvent {
     pub from: Address,
-    #[data]
     #[singleton_data]
     pub amount: i128,
 }
