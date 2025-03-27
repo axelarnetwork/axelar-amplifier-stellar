@@ -277,7 +277,7 @@ fn upgrade_and_migrate_native_interchain_token_succeeds() {
 }
 
 #[test]
-fn coverage_migrate_native_interchain_token_succeeds() {
+fn migrate_native_interchain_token_succeeds() {
     let MigrateTestConfig {
         env,
         its_client,
