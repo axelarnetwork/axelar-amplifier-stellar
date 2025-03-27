@@ -10,7 +10,7 @@ use stellar_axelar_std::xdr::ToXdr;
 use stellar_axelar_std::{
     contract, contractimpl, ensure, interfaces, only_operator, only_owner, soroban_sdk, vec,
     when_not_paused, Address, AxelarExecutable, Bytes, BytesN, Env, IntoVal, Operatable, Ownable,
-    Pausable, String, Symbol, Upgradable,
+    Pausable, String, Symbol, Upgradable, Val,
 };
 use stellar_interchain_token::InterchainTokenClient;
 
@@ -541,8 +541,8 @@ impl InterchainTokenService {
         amount: i128,
     ) {
         // Due to limitations of the soroban-sdk, there is no type-safe client for contract execution.
-        // The invocation will panic on error, so we can safely cast the return value to `()` and discard it.
-        env.invoke_contract::<()>(
+        // The invocation might return a value, so we use Val as the return type to avoid panics
+        env.invoke_contract::<Val>(
             &destination_address,
             &Symbol::new(env, EXECUTE_WITH_INTERCHAIN_TOKEN),
             vec![
