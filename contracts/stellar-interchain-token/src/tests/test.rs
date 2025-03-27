@@ -726,6 +726,8 @@ fn mint_fails_when_total_supply_overflows() {
     assert_eq!(token.total_supply() as u128, max_amount as u128);
 
     assert_auth!(minter, token.mint_from(&minter, &user2, &max_amount));
+    assert_eq!(token.total_supply() as u128, (max_amount * 2) as u128);
+
     assert_auth!(minter, token.mint_from(&minter, &user3, &max_amount));
 }
 
