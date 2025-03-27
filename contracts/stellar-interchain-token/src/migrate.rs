@@ -4,6 +4,8 @@ use stellar_axelar_std::{ensure, Env};
 use crate::error::ContractError;
 use crate::{storage, InterchainToken};
 
+pub mod legacy_storage {}
+
 impl CustomMigratableInterface for InterchainToken {
     type MigrationData = i128;
     type Error = ContractError;
