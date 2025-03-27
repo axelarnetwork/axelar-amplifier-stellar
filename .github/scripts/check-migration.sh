@@ -16,7 +16,6 @@ main() {
         [ -z "$file" ] && continue
         check_migration_file "$file"
     done <<< "$CHANGED_FILES"
-
 }
 
 check_migration_file() {
@@ -24,6 +23,11 @@ check_migration_file() {
 
     local contract_dir
     contract_dir=$(contract_dir "$file")
+
+    if ! is_upgradable "$contract_dir"; then
+        echo "Contract in $contract_dir is not upgradable, skipping migration checks"
+        exit 0
+    fi
 
     local migrate_file
     migrate_file=$(migrate_file "$contract_dir" "$file")
@@ -44,6 +48,19 @@ contract_dir() {
     [ -z "$contract_dir" ] && print_error "Could not determine contract directory for $file"
 
     echo "$contract_dir"
+}
+
+is_upgradable() {
+    local contract_dir="$1"
+    local contract_file
+    contract_file=$(find "$contract_dir/src" -name "contract.rs" -not -path "*/test*" | head -n 1)
+    [ -z "$contract_file" ] && print_error "Could not find contract.rs in $contract_dir/src/"
+
+    if grep -q "#\[derive(.*Upgradable.*)\]" "$contract_file"; then
+        return 0
+    fi
+
+    return 1
 }
 
 migrate_file() {

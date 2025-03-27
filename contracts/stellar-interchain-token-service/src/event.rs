@@ -70,5 +70,5 @@ pub struct InterchainTransferReceivedEvent {
     pub destination_address: Address,
     pub amount: i128,
     #[data]
-    pub data: Option<Bytes>,
+    pub data_hash: Option<BytesN<32>>,
 }

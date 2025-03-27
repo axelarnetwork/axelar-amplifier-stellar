@@ -1,19 +1,21 @@
 //! Dummy contract to test the `Upgrader` contract
 
-use soroban_sdk::{contract, contracterror, vec, Address, BytesN, Env};
 use stellar_axelar_std::interfaces::{OwnableInterface, UpgradableInterface};
-use stellar_axelar_std::{contractimpl, contractstorage, interfaces};
+use stellar_axelar_std::{
+    contract, contracterror, contractimpl, interfaces, soroban_sdk, vec, Address, BytesN, Env,
+    String, Vec,
+};
 
 #[contract]
 pub struct DummyContract;
 
 #[contractimpl]
 impl UpgradableInterface for DummyContract {
-    fn version(env: &Env) -> soroban_sdk::String {
-        soroban_sdk::String::from_str(env, "0.1.0")
+    fn version(env: &Env) -> String {
+        String::from_str(env, "0.1.0")
     }
 
-    fn required_auths(env: &Env) -> soroban_sdk::Vec<Address> {
+    fn required_auths(env: &Env) -> Vec<Address> {
         vec![env, Self::owner(env)]
     }
 
@@ -49,12 +51,12 @@ pub enum ContractError {
 }
 
 pub mod storage {
-    use super::*;
+    use stellar_axelar_std::{contractstorage, soroban_sdk, String};
 
     #[contractstorage]
     enum DataKey {
         #[instance]
-        #[value(soroban_sdk::String)]
+        #[value(String)]
         Data,
     }
 }
