@@ -53,28 +53,28 @@ pub fn format_auths(
     auths: std::vec::Vec<(Address, AuthorizedInvocation)>,
     description: &str,
 ) -> String {
-    let mut formatted_auths = format!("{:?}:\n", description.to_string());
+    let mut result = format!("{description:?}:\n");
 
     for (caller, invocation) in auths {
         let (client, method, args) = match invocation.function {
-            AuthorizedFunction::Contract((client, method, args)) => (client, method, args),
+            AuthorizedFunction::Contract(data) => data,
             _ => panic!("Expected a contract function"),
         };
-        formatted_auths.push_str(&format!("    caller: {:?}\n", caller));
-        formatted_auths.push_str(&format!(
-            "        invocation: {:?}.{:?}({:?})\n",
+
+        result.push_str(&format!("    caller: {caller:?}\n"));
+        result.push_str(&format!(
+            "        invocation: {:?}.{:?}({args:?})\n",
             client.to_string(),
-            method.to_string(),
-            args
+            method.to_string()
         ));
 
         for sub_invocation in invocation.sub_invocations {
-            formatted_auths.push_str(&format_auths(
+            result.push_str(&format_auths(
                 vec![(caller.clone(), sub_invocation)],
                 "sub_invocation",
             ));
         }
     }
 
-    formatted_auths
+    result
 }
