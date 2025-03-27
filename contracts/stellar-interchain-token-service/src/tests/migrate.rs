@@ -1,6 +1,5 @@
-use stellar_axelar_std::interfaces::CustomMigratableInterface;
 use stellar_axelar_std::testutils::BytesN as _;
-use stellar_axelar_std::{assert_contract_err, assert_ok, BytesN, String};
+use stellar_axelar_std::{assert_contract_err, BytesN, String};
 use testutils::{
     assert_migrate_storage, migrate, migrate_token, setup_migrate_env, setup_migrate_storage,
     upgrade, FlowData, MigrateTestConfig,
@@ -9,7 +8,6 @@ use testutils::{
 use crate::error::ContractError;
 use crate::tests::utils::format_auths;
 use crate::types::TokenManagerType;
-use crate::InterchainTokenService;
 
 const NEW_VERSION: &str = "1.1.0";
 
@@ -21,7 +19,7 @@ mod testutils {
 
     use crate::flow_limit::current_epoch;
     use crate::migrate::{legacy_storage, CustomMigrationData};
-    use crate::tests::utils::{format_auths, setup_env};
+    use crate::tests::utils::setup_env;
     use crate::testutils::setup_its_token;
     use crate::types::TokenManagerType;
     use crate::{InterchainTokenService, InterchainTokenServiceClient};
@@ -147,14 +145,14 @@ mod testutils {
             );
     }
 
-    pub fn migrate<'a>(
+    pub fn migrate(
         env: &Env,
-        its_client: &InterchainTokenServiceClient<'a>,
+        its_client: &InterchainTokenServiceClient<'_>,
         migration_data: CustomMigrationData,
     ) {
         env.as_contract(&its_client.address, || {
             assert_ok!(InterchainTokenService::__migrate(
-                &env,
+                env,
                 migration_data.clone()
             ));
         });
@@ -366,7 +364,7 @@ fn migrate_token_fails_with_invalid_token_id() {
 
     let non_existent_token_id = BytesN::random(&env);
 
-    migrate(&env, &its_client, migration_data.clone());
+    migrate(&env, &its_client, migration_data);
 
     assert_contract_err!(
         its_client.mock_all_auths().try_migrate_token(
@@ -420,12 +418,12 @@ fn migrate_native_interchain_token_with_flow_amount_succeeds() {
 fn migrate_with_lock_unlock_with_flow_amount_succeeds() {
     let MigrateTestConfig {
         env,
-        owner,
+
         its_client,
         upgrader_client,
         token_id,
         current_epoch,
-        its_wasm_hash,
+
         migration_data,
         ..
     } = setup_migrate_env(TokenManagerType::LockUnlock);
