@@ -49,7 +49,6 @@ impl OwnableInterface for InterchainToken {
         interfaces::owner(env)
     }
 
-    #[allow_during_migration]
     fn transfer_ownership(env: &Env, new_owner: Address) {
         let old_owner = Self::owner(env);
 
