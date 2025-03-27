@@ -40,6 +40,7 @@ impl UpgraderInterface for Upgrader {
         contract_client.upgrade(&new_wasm_hash);
         // The types of the arguments to the migrate function are unknown to this contract, so we need to call it with invoke_contract.
         // The migrate function's return value can be safely cast to Val no matter what it really is
+        // because it will panic on failure anyway
         let _: Val = env.invoke_contract(&contract_address, &MIGRATE, migration_data);
 
         ensure!(
