@@ -392,8 +392,6 @@ fn add_minter_fails_minter_already_exists() {
 
     assert_auth!(token.owner(), token.add_minter(&minter));
 
-    goldie::assert!(fmt_last_emitted_event::<MinterAddedEvent>(&env));
-
     token.mock_all_auths().add_minter(&minter);
 }
 
@@ -420,17 +418,17 @@ fn remove_minter_succeeds() {
     let env = Env::default();
 
     let amount = 1000;
-    let minter1 = Address::generate(&env);
+    let minter = Address::generate(&env);
     let user = Address::generate(&env);
 
     let (token, _) = setup_token(&env);
 
-    assert_auth!(token.owner(), token.add_minter(&minter1));
-    assert_auth!(token.owner(), token.remove_minter(&minter1));
+    assert_auth!(token.owner(), token.add_minter(&minter));
+    assert_auth!(token.owner(), token.remove_minter(&minter));
 
     goldie::assert!(fmt_last_emitted_event::<MinterRemovedEvent>(&env));
 
-    assert_auth_err!(minter1, token.mint_from(&minter1, &user, &amount));
+    assert_auth_err!(minter, token.mint_from(&minter, &user, &amount));
 }
 
 #[test]
@@ -456,8 +454,6 @@ fn remove_minter_fails_not_minter() {
 
     assert_auth!(token.owner(), token.add_minter(&minter));
     assert_auth!(token.owner(), token.remove_minter(&minter));
-
-    goldie::assert!(fmt_last_emitted_event::<MinterRemovedEvent>(&env));
 
     token.mock_all_auths().remove_minter(&minter);
 }
