@@ -2084,6 +2084,7 @@ dependencies = [
  "stellar-axelar-std",
  "stellar-interchain-token",
  "stellar-token-manager",
+ "stellar-upgrader",
 ]
 
 [[package]]

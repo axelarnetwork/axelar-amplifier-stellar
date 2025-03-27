@@ -1,7 +1,8 @@
-use stellar_axelar_std::{Address, BytesN, Env, String, Val};
+use stellar_axelar_std::{contractclient, soroban_sdk, Address, BytesN, Env, String, Val};
 
 use crate::error::ContractError;
 
+#[contractclient(name = "UpgraderClient")]
 pub trait UpgraderInterface {
     /// Upgrades and migrates a contract atomically to a new version using the provided WASM hash and migration data.
     ///
