@@ -33,6 +33,6 @@ enum DataKey {
     TokenId,
 
     #[instance]
-    #[value(i128)]
+    #[value(u128)]
     TotalSupply,
 }

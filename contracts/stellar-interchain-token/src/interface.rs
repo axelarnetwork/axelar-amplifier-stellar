@@ -9,7 +9,7 @@ pub trait InterchainTokenInterface:
     token::Interface + StellarAssetInterface + OwnableInterface + UpgradableInterface
 {
     /// Returns the total supply of the token on this chain.
-    fn total_supply(env: &Env) -> i128;
+    fn total_supply(env: &Env) -> u128;
 
     /// Returns the InterchainToken tokenId.
     fn token_id(env: &Env) -> BytesN<32>;

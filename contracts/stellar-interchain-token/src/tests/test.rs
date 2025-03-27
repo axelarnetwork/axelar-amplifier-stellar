@@ -661,30 +661,54 @@ fn update_total_supply_succeeds() {
     let (token, minter) = setup_token(&env);
     let user = Address::generate(&env);
 
-    assert_eq!(token.total_supply(), INITIAL_TOTAL_SUPPLY);
+    assert_eq!(token.total_supply() as u128, INITIAL_TOTAL_SUPPLY);
 
     let amount = 1000_i128;
     assert_auth!(minter, token.mint_from(&minter, &user, &amount));
-    assert_eq!(token.total_supply(), amount);
+    assert_eq!(token.total_supply() as u128, amount as u128);
 
     let burn_amount = 400_i128;
     assert_auth!(user, token.burn(&user, &burn_amount));
-    assert_eq!(token.total_supply(), amount - burn_amount);
-
+    assert_eq!(token.total_supply() as u128, (amount - burn_amount) as u128);
     assert_auth!(minter, token.mint_from(&minter, &user, &amount));
-    assert_eq!(token.total_supply(), (amount - burn_amount) + amount);
+    assert_eq!(
+        token.total_supply() as u128,
+        (amount - burn_amount + amount) as u128
+    );
+}
+
+#[test]
+#[should_panic(expected = "Ok(TotalSupplyOverflow)")]
+fn mint_fails_when_total_supply_overflows() {
+    let env = Env::default();
+    let (token, minter) = setup_token(&env);
+    let user: Address = Address::generate(&env);
+    let user2: Address = Address::generate(&env);
+    let user3: Address = Address::generate(&env);
+
+    assert_eq!(token.total_supply() as u128, INITIAL_TOTAL_SUPPLY);
+
+    let max_amount = i128::MAX;
+
+    assert_auth!(minter, token.mint_from(&minter, &user, &max_amount));
+    assert_eq!(token.total_supply() as u128, max_amount as u128);
+
+    assert_auth!(minter, token.mint_from(&minter, &user2, &max_amount));
+    assert_auth!(minter, token.mint_from(&minter, &user3, &max_amount));
 }
 
 #[test]
 #[should_panic(expected = "Err(Abort)")]
-fn update_total_supply_overflows() {
+fn mint_fails_when_account_balance_exceeds_max() {
     let env = Env::default();
     let (token, minter) = setup_token(&env);
-    let user = Address::generate(&env);
+    let user: Address = Address::generate(&env);
+
+    assert_eq!(token.total_supply() as u128, INITIAL_TOTAL_SUPPLY);
+
     let max_amount = i128::MAX;
-
     assert_auth!(minter, token.mint_from(&minter, &user, &max_amount));
-    assert_eq!(token.total_supply(), max_amount);
 
-    assert_auth!(minter, token.mint_from(&minter, &user, &1));
+    let amount = 1_i128;
+    assert_auth!(minter, token.mint_from(&minter, &user, &amount));
 }

@@ -4,7 +4,7 @@ use stellar_axelar_std::{Address, BytesN, Env, String};
 
 use crate::{InterchainToken, InterchainTokenClient};
 
-pub const INITIAL_TOTAL_SUPPLY: i128 = 0;
+pub const INITIAL_TOTAL_SUPPLY: u128 = 0;
 
 pub struct TestConfig<'a> {
     pub env: Env,

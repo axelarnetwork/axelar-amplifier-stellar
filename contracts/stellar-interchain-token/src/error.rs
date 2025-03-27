@@ -11,4 +11,6 @@ pub enum ContractError {
     InsufficientAllowance = 5,
     InsufficientBalance = 6,
     MigrationInProgress = 7,
+    TotalSupplyOverflow = 8,
+    TotalSupplyUnderflow = 9,
 }

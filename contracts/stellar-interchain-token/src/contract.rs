@@ -14,7 +14,7 @@ use crate::event::{MinterAddedEvent, MinterRemovedEvent};
 use crate::interface::InterchainTokenInterface;
 use crate::storage::{self, AllowanceDataKey, AllowanceValue};
 
-const INITIAL_TOTAL_SUPPLY: i128 = 0;
+const INITIAL_TOTAL_SUPPLY: u128 = 0;
 
 #[contract]
 #[derive(Upgradable)]
@@ -99,7 +99,7 @@ impl StellarAssetInterface for InterchainToken {
 
 #[contractimpl]
 impl InterchainTokenInterface for InterchainToken {
-    fn total_supply(env: &Env) -> i128 {
+    fn total_supply(env: &Env) -> u128 {
         storage::total_supply(env)
     }
 
@@ -238,18 +238,28 @@ impl InterchainToken {
 
     fn increase_total_supply(env: &Env, amount: i128) {
         let current_supply = storage::total_supply(env);
-        let new_supply = current_supply
-            .checked_add(amount)
-            .expect("total supply overflow");
-        storage::set_total_supply(env, &new_supply);
+        let amount_u128 = amount as u128;
+
+        assert_with_error!(
+            env,
+            current_supply <= u128::MAX - amount_u128,
+            ContractError::TotalSupplyOverflow
+        );
+
+        storage::set_total_supply(env, &(current_supply + amount_u128));
     }
 
     fn decrease_total_supply(env: &Env, amount: i128) {
         let current_supply = storage::total_supply(env);
-        let new_supply = current_supply
-            .checked_sub(amount)
-            .expect("total supply underflow");
-        storage::set_total_supply(env, &new_supply);
+        let amount_u128 = amount as u128;
+
+        assert_with_error!(
+            env,
+            current_supply >= amount_u128,
+            ContractError::TotalSupplyUnderflow
+        );
+
+        storage::set_total_supply(env, &(current_supply - amount_u128));
     }
 
     fn read_allowance(env: &Env, from: Address, spender: Address) -> AllowanceValue {
