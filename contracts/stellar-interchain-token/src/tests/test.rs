@@ -733,7 +733,7 @@ fn mint_fails_when_total_supply_overflows() {
     assert_auth!(minter, token.mint_from(&minter, &user3, &amount));
     assert_eq!(token.total_supply(), u128::MAX);
 
-    // This should fail because the total supply would overflow
+    // This should overflow the total supply and trigger the TotalSupplyOverflow error
     assert_auth!(minter, token.mint_from(&minter, &user4, &amount));
 }
 
