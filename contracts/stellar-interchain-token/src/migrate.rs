@@ -1,17 +1,21 @@
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
-use stellar_axelar_std::{ensure, Env};
+use stellar_axelar_std::{contracttype, ensure, soroban_sdk, Env};
 
 use crate::error::ContractError;
 use crate::{storage, InterchainToken};
 
-pub mod legacy_storage {}
+#[contracttype]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CustomMigrationData {
+    pub total_supply: i128,
+}
 
 impl CustomMigratableInterface for InterchainToken {
-    type MigrationData = i128;
+    type MigrationData = CustomMigrationData;
     type Error = ContractError;
 
     fn __migrate(env: &Env, migration_data: Self::MigrationData) -> Result<(), Self::Error> {
-        let total_supply = migration_data;
+        let CustomMigrationData { total_supply } = migration_data;
 
         ensure!(total_supply >= 0, ContractError::InvalidAmount);
 

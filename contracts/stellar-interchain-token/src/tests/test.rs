@@ -8,6 +8,7 @@ use stellar_axelar_std::testutils::{Address as _, BytesN as _, Ledger};
 use stellar_axelar_std::{assert_auth, assert_auth_err, Address, BytesN, Env, IntoVal as _};
 
 use crate::event::{MinterAddedEvent, MinterRemovedEvent};
+use crate::tests::testutils::INITIAL_TOTAL_SUPPLY;
 use crate::{InterchainToken, InterchainTokenClient};
 
 fn setup_token_metadata(env: &Env, name: &str, symbol: &str, decimal: u32) -> TokenMetadata {
@@ -660,36 +661,30 @@ fn update_total_supply_succeeds() {
     let (token, minter) = setup_token(&env);
     let user = Address::generate(&env);
 
-    // Initial supply should be 0
-    assert_eq!(token.total_supply(), 0);
+    assert_eq!(token.total_supply(), INITIAL_TOTAL_SUPPLY);
 
-    // Mint some tokens (increases supply)
-    let amount = 1000;
+    let amount = 1000_i128;
     assert_auth!(minter, token.mint_from(&minter, &user, &amount));
     assert_eq!(token.total_supply(), amount);
 
-    // Burn some tokens (decreases supply)
-    let burn_amount = 400;
+    let burn_amount = 400_i128;
     assert_auth!(user, token.burn(&user, &burn_amount));
     assert_eq!(token.total_supply(), amount - burn_amount);
 
-    // Mint more tokens
     assert_auth!(minter, token.mint_from(&minter, &user, &amount));
     assert_eq!(token.total_supply(), (amount - burn_amount) + amount);
 }
 
 #[test]
 #[should_panic(expected = "Err(Abort)")]
-fn total_supply_overflows() {
+fn update_total_supply_overflows() {
     let env = Env::default();
     let (token, minter) = setup_token(&env);
     let user = Address::generate(&env);
-
-    // Mint maximum i128 value
     let max_amount = i128::MAX;
+
     assert_auth!(minter, token.mint_from(&minter, &user, &max_amount));
     assert_eq!(token.total_supply(), max_amount);
 
-    // Try to mint one more token, should overflow
     assert_auth!(minter, token.mint_from(&minter, &user, &1));
 }

@@ -14,6 +14,8 @@ use crate::event::{MinterAddedEvent, MinterRemovedEvent};
 use crate::interface::InterchainTokenInterface;
 use crate::storage::{self, AllowanceDataKey, AllowanceValue};
 
+const INITIAL_TOTAL_SUPPLY: i128 = 0;
+
 #[contract]
 #[derive(Upgradable)]
 #[migratable]
@@ -34,7 +36,7 @@ impl InterchainToken {
 
         storage::set_token_id(&env, &token_id);
 
-        storage::set_total_supply(&env, &0);
+        storage::set_total_supply(&env, &INITIAL_TOTAL_SUPPLY);
 
         if let Some(minter) = minter {
             storage::set_minter_status(&env, minter.clone());
@@ -85,7 +87,7 @@ impl StellarAssetInterface for InterchainToken {
 
         Self::validate_amount(&env, amount);
         Self::receive_balance(&env, to.clone(), amount);
-        Self::increase_supply(&env, amount);
+        Self::increase_total_supply(&env, amount);
 
         TokenUtils::new(&env).events().mint(owner, to, amount);
     }
@@ -124,7 +126,7 @@ impl InterchainTokenInterface for InterchainToken {
 
         Self::validate_amount(env, amount);
         Self::receive_balance(env, to.clone(), amount);
-        Self::increase_supply(env, amount);
+        Self::increase_total_supply(env, amount);
 
         TokenUtils::new(env).events().mint(minter, to, amount);
 
@@ -200,7 +202,7 @@ impl token::Interface for InterchainToken {
 
         Self::validate_amount(&env, amount);
         Self::spend_balance(&env, from.clone(), amount);
-        Self::decrease_supply(&env, amount);
+        Self::decrease_total_supply(&env, amount);
 
         TokenUtils::new(&env).events().burn(from, amount);
     }
@@ -211,7 +213,7 @@ impl token::Interface for InterchainToken {
         Self::validate_amount(&env, amount);
         Self::spend_allowance(&env, from.clone(), spender, amount);
         Self::spend_balance(&env, from.clone(), amount);
-        Self::decrease_supply(&env, amount);
+        Self::decrease_total_supply(&env, amount);
 
         TokenUtils::new(&env).events().burn(from, amount)
     }
@@ -234,7 +236,7 @@ impl InterchainToken {
         assert_with_error!(env, amount >= 0, ContractError::InvalidAmount);
     }
 
-    fn increase_supply(env: &Env, amount: i128) {
+    fn increase_total_supply(env: &Env, amount: i128) {
         let current_supply = storage::total_supply(env);
         let new_supply = current_supply
             .checked_add(amount)
@@ -242,7 +244,7 @@ impl InterchainToken {
         storage::set_total_supply(env, &new_supply);
     }
 
-    fn decrease_supply(env: &Env, amount: i128) {
+    fn decrease_total_supply(env: &Env, amount: i128) {
         let current_supply = storage::total_supply(env);
         let new_supply = current_supply
             .checked_sub(amount)

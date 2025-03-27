@@ -1,7 +1,8 @@
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
 use stellar_axelar_std::{assert_auth, assert_ok};
 
-use crate::tests::testutils::{setup_env, TestConfig};
+use crate::migrate::CustomMigrationData;
+use crate::tests::testutils::{setup_env, TestConfig, INITIAL_TOTAL_SUPPLY};
 use crate::InterchainToken;
 
 const NEW_WASM: &[u8] = include_bytes!("testdata/stellar_interchain_token.optimized.wasm");
@@ -14,8 +15,8 @@ fn migrate_succeeds() {
 
     assert_auth!(owner, client.upgrade(&new_wasm_hash));
 
-    let total_supply = 0_i128;
-    let migration_data = total_supply;
+    let total_supply = INITIAL_TOTAL_SUPPLY;
+    let migration_data = CustomMigrationData { total_supply };
 
     assert_auth!(owner, client.migrate(&migration_data));
 
@@ -30,8 +31,8 @@ fn coverage_migrate_succeeds() {
 
     assert_auth!(owner, client.upgrade(&new_wasm_hash));
 
-    let total_supply = 0_i128;
-    let migration_data = total_supply;
+    let total_supply = INITIAL_TOTAL_SUPPLY;
+    let migration_data = CustomMigrationData { total_supply };
 
     env.as_contract(&client.address, || {
         assert_ok!(InterchainToken::__migrate(&env, migration_data));
