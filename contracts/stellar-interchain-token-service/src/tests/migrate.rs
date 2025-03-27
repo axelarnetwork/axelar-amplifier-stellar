@@ -462,79 +462,13 @@ fn migrate_with_lock_unlock_with_flow_amount_succeeds() {
 }
 
 #[test]
-fn coverage_migrate_native_interchain_token_succeeds() {
+fn __migrate_coverage() {
     let MigrateTestConfig {
         env,
-        owner,
         its_client,
-        upgrader_client,
-        token_id,
-        current_epoch,
-        its_wasm_hash,
         migration_data,
         ..
     } = setup_migrate_env(TokenManagerType::NativeInterchainToken);
-
-    let flow_in_amount = 100i128;
-    let flow_out_amount = 50i128;
-
-    setup_migrate_storage(
-        &env,
-        &its_client,
-        token_id,
-        current_epoch,
-        flow_in_amount,
-        flow_out_amount,
-    );
-
-    upgrade(
-        &env,
-        owner,
-        &its_client,
-        &upgrader_client,
-        its_wasm_hash,
-        migration_data.clone(),
-    );
-
-    env.as_contract(&its_client.address, || {
-        assert_ok!(InterchainTokenService::__migrate(&env, migration_data));
-    });
-}
-
-#[test]
-fn coverage_migrate_lock_unlock_succeeds() {
-    let MigrateTestConfig {
-        env,
-        owner,
-        its_client,
-        upgrader_client,
-        token_id,
-        current_epoch,
-        its_wasm_hash,
-        migration_data,
-        ..
-    } = setup_migrate_env(TokenManagerType::LockUnlock);
-
-    let flow_in_amount = 100i128;
-    let flow_out_amount = 50i128;
-
-    setup_migrate_storage(
-        &env,
-        &its_client,
-        token_id,
-        current_epoch,
-        flow_in_amount,
-        flow_out_amount,
-    );
-
-    upgrade(
-        &env,
-        owner,
-        &its_client,
-        &upgrader_client,
-        its_wasm_hash,
-        migration_data.clone(),
-    );
 
     env.as_contract(&its_client.address, || {
         assert_ok!(InterchainTokenService::__migrate(&env, migration_data));
