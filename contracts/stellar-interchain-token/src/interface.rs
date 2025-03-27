@@ -8,7 +8,7 @@ use crate::error::ContractError;
 pub trait InterchainTokenInterface:
     token::Interface + StellarAssetInterface + OwnableInterface + UpgradableInterface
 {
-    /// Returns the total supply of the interchain token.
+    /// Returns the total supply of the token on this chain.
     fn total_supply(env: &Env) -> i128;
 
     /// Returns the Interchain Token ID
