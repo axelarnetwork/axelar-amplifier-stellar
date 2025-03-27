@@ -1,7 +1,6 @@
 use dummy_contract::contract::{DummyContract, DummyContractClient};
-use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{Address, BytesN, Env, String};
-use stellar_axelar_std::{assert_contract_err, mock_auth};
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::{assert_contract_err, mock_auth, Address, BytesN, Env, String};
 
 use crate::error::ContractError;
 use crate::{Upgrader, UpgraderClient};
@@ -34,7 +33,7 @@ fn upgrade_and_migrate_are_atomic() {
             &contract_address,
             &expected_version,
             &hash_after_upgrade,
-            &soroban_sdk::vec![&env, expected_data.to_val()],
+            &stellar_axelar_std::vec![&env, expected_data.to_val()],
         ),
         &[upgrade_auth.invoke.clone(), migrate_auth.invoke.clone()]
     );
@@ -43,7 +42,7 @@ fn upgrade_and_migrate_are_atomic() {
         &contract_address,
         &expected_version,
         &hash_after_upgrade,
-        &soroban_sdk::vec![&env, expected_data.to_val()],
+        &stellar_axelar_std::vec![&env, expected_data.to_val()],
     );
 
     // ensure new version is set correctly
@@ -78,7 +77,7 @@ fn upgrade_fails_if_upgrading_to_the_same_version() {
                 &contract_address,
                 &original_version,
                 &dummy_hash,
-                &soroban_sdk::vec![&env, dummy_data.to_val()],
+                &stellar_axelar_std::vec![&env, dummy_data.to_val()],
             ),
         ContractError::SameVersion
     );
@@ -111,7 +110,7 @@ fn upgrade_fails_if_caller_is_authenticated_but_not_owner() {
         &contract_address,
         &expected_version,
         &hash_after_upgrade,
-        &soroban_sdk::vec![&env, expected_data.to_val()],
+        &stellar_axelar_std::vec![&env, expected_data.to_val()],
     );
 }
 
@@ -141,7 +140,7 @@ fn upgrade_fails_if_correct_owner_is_not_authenticated_for_full_invocation_tree(
         &contract_address,
         &expected_version,
         &hash_after_upgrade,
-        &soroban_sdk::vec![&env, expected_data.to_val()],
+        &stellar_axelar_std::vec![&env, expected_data.to_val()],
     );
 }
 
@@ -162,7 +161,7 @@ fn upgrade_fails_if_nobody_is_authenticated() {
         &contract_address,
         &expected_version,
         &hash_after_upgrade,
-        &soroban_sdk::vec![&env, expected_data.to_val()],
+        &stellar_axelar_std::vec![&env, expected_data.to_val()],
     );
 }
 
