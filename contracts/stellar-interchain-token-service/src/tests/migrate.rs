@@ -26,9 +26,9 @@ mod testutils {
 
     const NEW_INTERCHAIN_TOKEN_SERVICE_WASM: &[u8] =
         include_bytes!("testdata/stellar_interchain_token_service.optimized.wasm");
-    const TOKEN_MANAGER_WASM_V110: &[u8] =
+    const TOKEN_MANAGER_WASM_V1_1_0: &[u8] =
         include_bytes!("testdata/stellar_token_manager_v1_1_0.optimized.wasm");
-    const INTERCHAIN_TOKEN_WASM_V110: &[u8] =
+    const INTERCHAIN_TOKEN_WASM_V1_1_0: &[u8] =
         include_bytes!("testdata/stellar_interchain_token_v1_1_0.optimized.wasm");
 
     const NEW_VERSION: &str = "1.1.0";
@@ -69,11 +69,12 @@ mod testutils {
         let its_wasm_hash = env
             .deployer()
             .upload_contract_wasm(NEW_INTERCHAIN_TOKEN_SERVICE_WASM);
-        let new_token_manager_wasm_hash =
-            env.deployer().upload_contract_wasm(TOKEN_MANAGER_WASM_V110);
+        let new_token_manager_wasm_hash = env
+            .deployer()
+            .upload_contract_wasm(TOKEN_MANAGER_WASM_V1_1_0);
         let new_interchain_token_wasm_hash = env
             .deployer()
-            .upload_contract_wasm(INTERCHAIN_TOKEN_WASM_V110);
+            .upload_contract_wasm(INTERCHAIN_TOKEN_WASM_V1_1_0);
 
         let current_epoch = current_epoch(&env);
 
@@ -263,7 +264,10 @@ fn upgrade_and_migrate_native_interchain_token_succeeds() {
 
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
-    goldie::assert!(format_auths(env.auths(), "its.migrate_token(...)"));
+    goldie::assert!(format_auths(
+        env.auths(),
+        "its.migrate_token(&its_client, &upgrader_client, token_id.clone())"
+    ));
 
     assert_migrate_storage(
         &its_client,
@@ -339,7 +343,10 @@ fn migrate_lock_unlock_succeeds() {
     migrate(&env, &its_client, migration_data.clone());
 
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
-    goldie::assert!(format_auths(env.auths(), "its.migrate_token(...)"));
+    goldie::assert!(format_auths(
+        env.auths(),
+        "its.migrate_token(&its_client, &upgrader_client, token_id.clone())"
+    ));
 
     assert_migrate_storage(
         &its_client,

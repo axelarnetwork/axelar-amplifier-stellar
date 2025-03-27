@@ -1,4 +1,4 @@
-"its.migrate_token(...)":
+"its.migrate_token(&its_client, &upgrader_client, token_id.clone())":
     caller: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOLZM)
         invocation: String(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVAX5)."migrate_token"(Vec(Ok(Bytes(obj#999)), Ok(Address(obj#1003)), Ok(String(obj#1007))))
     caller: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVAX5)
