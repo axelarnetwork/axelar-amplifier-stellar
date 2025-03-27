@@ -127,6 +127,12 @@ impl InterchainTokenInterface for InterchainToken {
 
     #[only_owner]
     fn add_minter(env: &Env, minter: Address) {
+        assert_with_error!(
+            env,
+            !Self::is_minter(env, minter.clone()),
+            ContractError::MinterAlreadyExists
+        );
+
         storage::set_minter_status(env, minter.clone());
 
         MinterAddedEvent { minter }.emit(env);
@@ -134,6 +140,12 @@ impl InterchainTokenInterface for InterchainToken {
 
     #[only_owner]
     fn remove_minter(env: &Env, minter: Address) {
+        assert_with_error!(
+            env,
+            Self::is_minter(env, minter.clone()),
+            ContractError::NotMinter
+        );
+
         storage::remove_minter_status(env, minter.clone());
 
         MinterRemovedEvent { minter }.emit(env);

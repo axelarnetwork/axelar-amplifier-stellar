@@ -342,7 +342,9 @@ fn mint_succeeds() {
 
     assert_eq!(token.balance(&user), amount);
 
-    token.mock_all_auths().remove_minter(&token.owner());
+    if token.is_minter(&token.owner()) {
+        token.mock_all_auths().remove_minter(&token.owner());
+    }
 
     // Owner can mint without being a minter
     assert_auth!(token.owner(), token.mint(&user, &amount));
@@ -396,6 +398,20 @@ fn add_minter_fails_without_owner_auth() {
 }
 
 #[test]
+#[should_panic(expected = "HostError: Error(Contract, #8)")] // MinterAlreadyExists
+fn add_minter_fails_minter_already_exists() {
+    let env = Env::default();
+
+    let minter = Address::generate(&env);
+
+    let (token, _) = setup_token(&env);
+
+    assert_auth!(token.owner(), token.add_minter(&minter));
+
+    token.mock_all_auths().add_minter(&minter);
+}
+
+#[test]
 fn add_minter_succeeds() {
     let env = Env::default();
 
@@ -418,16 +434,17 @@ fn remove_minter_succeeds() {
     let env = Env::default();
 
     let amount = 1000;
-    let minter1 = Address::generate(&env);
+    let minter = Address::generate(&env);
     let user = Address::generate(&env);
 
     let (token, _) = setup_token(&env);
 
-    assert_auth!(token.owner(), token.remove_minter(&minter1));
+    assert_auth!(token.owner(), token.add_minter(&minter));
+    assert_auth!(token.owner(), token.remove_minter(&minter));
 
     goldie::assert!(fmt_last_emitted_event::<MinterRemovedEvent>(&env));
 
-    assert_auth_err!(minter1, token.mint_from(&minter1, &user, &amount));
+    assert_auth_err!(minter, token.mint_from(&minter, &user, &amount));
 }
 
 #[test]
@@ -440,6 +457,21 @@ fn remove_minter_fails_without_minter_auth() {
     let (token, _) = setup_token(&env);
 
     assert_auth_err!(user, token.remove_minter(&minter1));
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Contract, #2)")] // NotMinter
+fn remove_minter_fails_not_minter() {
+    let env = Env::default();
+
+    let minter = Address::generate(&env);
+
+    let (token, _) = setup_token(&env);
+
+    assert_auth!(token.owner(), token.add_minter(&minter));
+    assert_auth!(token.owner(), token.remove_minter(&minter));
+
+    token.mock_all_auths().remove_minter(&minter);
 }
 
 #[test]
