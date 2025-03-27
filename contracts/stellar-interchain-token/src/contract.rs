@@ -85,7 +85,7 @@ impl StellarAssetInterface for InterchainToken {
 
         Self::validate_amount(&env, amount);
         Self::receive_balance(&env, to.clone(), amount);
-        Self::update_total_supply(&env, amount);
+        Self::increase_supply(&env, amount);
 
         TokenUtils::new(&env).events().mint(owner, to, amount);
     }
@@ -124,7 +124,7 @@ impl InterchainTokenInterface for InterchainToken {
 
         Self::validate_amount(env, amount);
         Self::receive_balance(env, to.clone(), amount);
-        Self::update_total_supply(env, amount);
+        Self::increase_supply(env, amount);
 
         TokenUtils::new(env).events().mint(minter, to, amount);
 
@@ -200,7 +200,7 @@ impl token::Interface for InterchainToken {
 
         Self::validate_amount(&env, amount);
         Self::spend_balance(&env, from.clone(), amount);
-        Self::update_total_supply(&env, -amount);
+        Self::decrease_supply(&env, amount);
 
         TokenUtils::new(&env).events().burn(from, amount);
     }
@@ -211,7 +211,7 @@ impl token::Interface for InterchainToken {
         Self::validate_amount(&env, amount);
         Self::spend_allowance(&env, from.clone(), spender, amount);
         Self::spend_balance(&env, from.clone(), amount);
-        Self::update_total_supply(&env, -amount);
+        Self::decrease_supply(&env, amount);
 
         TokenUtils::new(&env).events().burn(from, amount)
     }
@@ -234,9 +234,20 @@ impl InterchainToken {
         assert_with_error!(env, amount >= 0, ContractError::InvalidAmount);
     }
 
-    fn update_total_supply(env: &Env, delta: i128) {
-        let total_supply = storage::total_supply(env);
-        storage::set_total_supply(env, &(total_supply + delta));
+    fn increase_supply(env: &Env, amount: i128) {
+        let current_supply = storage::total_supply(env);
+        let new_supply = current_supply
+            .checked_add(amount)
+            .expect("total supply overflow");
+        storage::set_total_supply(env, &new_supply);
+    }
+
+    fn decrease_supply(env: &Env, amount: i128) {
+        let current_supply = storage::total_supply(env);
+        let new_supply = current_supply
+            .checked_sub(amount)
+            .expect("total supply underflow");
+        storage::set_total_supply(env, &new_supply);
     }
 
     fn read_allowance(env: &Env, from: Address, spender: Address) -> AllowanceValue {
