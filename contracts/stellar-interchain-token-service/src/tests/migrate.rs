@@ -14,7 +14,7 @@ use crate::InterchainTokenService;
 const NEW_VERSION: &str = "1.1.0";
 
 mod testutils {
-    use stellar_axelar_std::{mock_auth, vec, Address, BytesN, Env, IntoVal, String};
+    use stellar_axelar_std::{assert_ok, mock_auth, vec, Address, BytesN, Env, IntoVal, String};
     use stellar_upgrader::testutils::setup_upgrader;
     use stellar_upgrader::UpgraderClient;
 
@@ -154,15 +154,17 @@ mod testutils {
         upgrader_client: &UpgraderClient<'a>,
         token_id: BytesN<32>,
     ) -> std::string::String {
-        its_client
-            .mock_all_auths_allowing_non_root_auth()
-            .migrate_token(
-                &token_id,
-                &upgrader_client.address,
-                &String::from_str(env, NEW_VERSION),
-            );
+        env.as_contract(&its_client.address, || {
+            env.mock_all_auths_allowing_non_root_auth();
+            assert_ok!(crate::migrate::migrate_token(
+                env,
+                token_id,
+                upgrader_client.address.clone(),
+                String::from_str(env, NEW_VERSION)
+            ));
+        });
 
-        format_auths(env.auths(), "its.migrate_token(...)")
+        format_auths(env.auths(), "migrate.migrate_token(...)")
     }
 
     pub fn assert_migrate_storage(
