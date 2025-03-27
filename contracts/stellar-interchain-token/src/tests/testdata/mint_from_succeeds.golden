@@ -1,1 +1,13 @@
-Vec(Ok((Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4), Vec(Ok(Symbol(mint)), Ok(Address(obj#147)), Ok(Address(obj#149))), I128(1000))))
+MintEvent {
+    owner: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M),
+    to: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM),
+    amount: 1000,
+}
+
+Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4)
+
+mint {
+    #[topic] owner: Address,
+    #[topic] to: Address,
+    #[data]  amount: i128,
+}

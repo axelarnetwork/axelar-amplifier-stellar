@@ -1,1 +1,11 @@
-Vec(Ok((Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM), Vec(Ok(Symbol(burn)), Ok(Address(obj#425))), I128(100))))
+BurnEvent {
+    from: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM),
+    amount: 100,
+}
+
+Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM)
+
+burn {
+    #[topic] from: Address,
+    #[data]  amount: i128,
+}

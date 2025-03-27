@@ -1,1 +1,13 @@
-Vec(Ok((Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4), Vec(Ok(Symbol(transfer)), Ok(Address(obj#451)), Ok(Address(obj#453))), I128(400))))
+TransferEvent {
+    from: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM),
+    to: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M),
+    amount: 400,
+}
+
+Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4)
+
+transfer {
+    #[topic] from: Address,
+    #[topic] to: Address,
+    #[data]  amount: i128,
+}

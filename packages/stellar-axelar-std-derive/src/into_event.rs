@@ -6,7 +6,7 @@ use syn::{DeriveInput, LitStr, Type};
 pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
     let name = &input.ident;
     let event_name = event_name_snake_case(input);
-    let ((topic_field_idents, topic_types), (data_field_idents, data_types)) =
+    let ((topic_field_idents, topic_types), (data_field_idents, data_types), singleton_data) =
         event_struct_fields(input);
 
     let topic_type_tokens = topic_types.iter().map(|ty| quote!(#ty));
@@ -55,12 +55,17 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
             // Parse data from Val to the corresponding types,
             // and assign them to a variable with the same name as the struct field
             // E.g. let message = Message::try_from_val(env, &data.get(0));
-            let data = Vec::<Val>::try_from_val(env, &data)
-                .unwrap_or_else(|_| {
-                    let mut vec = Vec::<Val>::new(env);
-                    vec.push_back(data);
-                    vec
-                });
+            let data = if #singleton_data {
+                Vec::<Val>::try_from_val(env, &data)
+                    .unwrap_or_else(|_| {
+                        let mut vec = Vec::<Val>::new(env);
+                        vec.push_back(data);
+                        vec
+                    })
+            } else {
+                Vec::<Val>::try_from_val(env, &data)
+                    .expect("failed to parse data as Vec")
+            };
 
             let mut data_idx = 0;
             #(
@@ -133,8 +138,9 @@ fn event_name_snake_case(input: &DeriveInput) -> String {
 type EventIdent<'a> = Vec<&'a Ident>;
 type EventType<'a> = Vec<&'a Type>;
 type EventStructFields<'a> = (EventIdent<'a>, EventType<'a>);
+type EventStructInfo<'a> = (EventStructFields<'a>, EventStructFields<'a>, bool);
 
-fn event_struct_fields(input: &DeriveInput) -> (EventStructFields, EventStructFields) {
+fn event_struct_fields(input: &DeriveInput) -> EventStructInfo {
     let syn::Data::Struct(data_struct) = &input.data else {
         panic!("IntoEvent can only be derived for structs");
     };
@@ -143,12 +149,20 @@ fn event_struct_fields(input: &DeriveInput) -> (EventStructFields, EventStructFi
     let mut topic_types = Vec::new();
     let mut data_idents = Vec::new();
     let mut data_types = Vec::new();
+    let mut singleton_data = false;
 
     for field in data_struct.fields.iter() {
         if let Some(ident) = field.ident.as_ref() {
             if field.attrs.iter().any(|attr| attr.path().is_ident("data")) {
                 data_idents.push(ident);
                 data_types.push(&field.ty);
+                if field
+                    .attrs
+                    .iter()
+                    .any(|attr| attr.path().is_ident("singleton_data"))
+                {
+                    singleton_data = true;
+                }
             } else {
                 topic_idents.push(ident);
                 topic_types.push(&field.ty);
@@ -156,5 +170,9 @@ fn event_struct_fields(input: &DeriveInput) -> (EventStructFields, EventStructFi
         }
     }
 
-    ((topic_idents, topic_types), (data_idents, data_types))
+    (
+        (topic_idents, topic_types),
+        (data_idents, data_types),
+        singleton_data,
+    )
 }

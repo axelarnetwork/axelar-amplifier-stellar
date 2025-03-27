@@ -280,7 +280,7 @@ fn ensure_no_args(attr: &Attribute) -> syn::Result<&Path> {
 /// }
 /// }
 /// ```
-#[proc_macro_derive(IntoEvent, attributes(data, event_name))]
+#[proc_macro_derive(IntoEvent, attributes(data, event_name, singleton_data))]
 pub fn derive_into_event(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
