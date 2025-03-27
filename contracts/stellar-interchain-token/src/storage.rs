@@ -32,7 +32,7 @@ enum DataKey {
     #[value(BytesN<32>)]
     TokenId,
 
-    #[persistent]
+    #[instance]
     #[value(i128)]
     TotalSupply,
 }
