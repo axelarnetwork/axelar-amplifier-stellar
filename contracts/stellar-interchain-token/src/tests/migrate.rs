@@ -14,7 +14,12 @@ fn migrate_succeeds() {
 
     assert_auth!(owner, client.upgrade(&new_wasm_hash));
 
-    client.mock_all_auths().migrate(&());
+    let total_supply = 0_i128;
+    let migration_data = total_supply;
+
+    assert_auth!(owner, client.migrate(&migration_data));
+
+    assert_eq!(client.total_supply(), total_supply);
 }
 
 #[test]
@@ -25,7 +30,10 @@ fn coverage_migrate_succeeds() {
 
     assert_auth!(owner, client.upgrade(&new_wasm_hash));
 
+    let total_supply = 0_i128;
+    let migration_data = total_supply;
+
     env.as_contract(&client.address, || {
-        assert_ok!(InterchainToken::__migrate(&env, ()));
+        assert_ok!(InterchainToken::__migrate(&env, migration_data));
     });
 }
