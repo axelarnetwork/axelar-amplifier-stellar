@@ -677,3 +677,19 @@ fn update_total_supply_succeeds() {
     assert_auth!(minter, token.mint_from(&minter, &user, &amount));
     assert_eq!(token.total_supply(), (amount - burn_amount) + amount);
 }
+
+#[test]
+#[should_panic(expected = "Err(Abort)")]
+fn total_supply_overflows() {
+    let env = Env::default();
+    let (token, minter) = setup_token(&env);
+    let user = Address::generate(&env);
+
+    // Mint maximum i128 value
+    let max_amount = i128::MAX;
+    assert_auth!(minter, token.mint_from(&minter, &user, &max_amount));
+    assert_eq!(token.total_supply(), max_amount);
+
+    // Try to mint one more token, should overflow
+    assert_auth!(minter, token.mint_from(&minter, &user, &1));
+}
