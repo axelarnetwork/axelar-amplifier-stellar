@@ -693,18 +693,18 @@ fn update_total_supply_succeeds() {
     let (token, minter) = setup_token(&env);
     let user = Address::generate(&env);
 
-    assert_eq!(token.total_supply() as u128, INITIAL_TOTAL_SUPPLY);
+    assert_eq!(token.total_supply(), INITIAL_TOTAL_SUPPLY);
 
     let amount = 1000_i128;
     assert_auth!(minter, token.mint_from(&minter, &user, &amount));
-    assert_eq!(token.total_supply() as u128, amount as u128);
+    assert_eq!(token.total_supply(), amount as u128);
 
     let burn_amount = 400_i128;
     assert_auth!(user, token.burn(&user, &burn_amount));
-    assert_eq!(token.total_supply() as u128, (amount - burn_amount) as u128);
+    assert_eq!(token.total_supply(), (amount - burn_amount) as u128);
     assert_auth!(minter, token.mint_from(&minter, &user, &amount));
     assert_eq!(
-        token.total_supply() as u128,
+        token.total_supply(),
         (amount - burn_amount + amount) as u128
     );
 }
@@ -717,18 +717,24 @@ fn mint_fails_when_total_supply_overflows() {
     let user: Address = Address::generate(&env);
     let user2: Address = Address::generate(&env);
     let user3: Address = Address::generate(&env);
+    let user4: Address = Address::generate(&env);
 
-    assert_eq!(token.total_supply() as u128, INITIAL_TOTAL_SUPPLY);
+    assert_eq!(token.total_supply(), INITIAL_TOTAL_SUPPLY);
 
     let max_amount = i128::MAX;
 
     assert_auth!(minter, token.mint_from(&minter, &user, &max_amount));
-    assert_eq!(token.total_supply() as u128, max_amount as u128);
+    assert_eq!(token.total_supply(), max_amount as u128);
 
     assert_auth!(minter, token.mint_from(&minter, &user2, &max_amount));
-    assert_eq!(token.total_supply() as u128, (max_amount * 2) as u128);
+    assert_eq!(token.total_supply(), (max_amount as u128) * 2);
 
-    assert_auth!(minter, token.mint_from(&minter, &user3, &max_amount));
+    let amount = 1_i128;
+    assert_auth!(minter, token.mint_from(&minter, &user3, &amount));
+    assert_eq!(token.total_supply(), u128::MAX);
+
+    // This should fail because the total supply would overflow
+    assert_auth!(minter, token.mint_from(&minter, &user4, &amount));
 }
 
 #[test]
@@ -738,7 +744,7 @@ fn mint_fails_when_account_balance_exceeds_max() {
     let (token, minter) = setup_token(&env);
     let user: Address = Address::generate(&env);
 
-    assert_eq!(token.total_supply() as u128, INITIAL_TOTAL_SUPPLY);
+    assert_eq!(token.total_supply(), INITIAL_TOTAL_SUPPLY);
 
     let max_amount = i128::MAX;
     assert_auth!(minter, token.mint_from(&minter, &user, &max_amount));
