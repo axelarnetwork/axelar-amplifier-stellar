@@ -481,7 +481,7 @@ fn coverage_migrate_native_interchain_token_succeeds() {
     setup_migrate_storage(
         &env,
         &its_client,
-        token_id.clone(),
+        token_id,
         current_epoch,
         flow_in_amount,
         flow_out_amount,
@@ -521,7 +521,7 @@ fn coverage_migrate_lock_unlock_succeeds() {
     setup_migrate_storage(
         &env,
         &its_client,
-        token_id.clone(),
+        token_id,
         current_epoch,
         flow_in_amount,
         flow_out_amount,
