@@ -2,7 +2,7 @@ enum DataKey {
 
     #[persistent]
     #[value(MessageApprovalValue)]
-    MessageApproval { message_approval_key: MessageApprovalKey },
+    MessageApproval { source_chain: String, message_id: String },
 
     #[instance]
     #[value(u64)]

@@ -1,10 +1,9 @@
-use soroban_sdk::{BytesN, Env};
-use stellar_axelar_std::ensure;
 use stellar_axelar_std::events::Event;
+use stellar_axelar_std::{ensure, BytesN, Env};
 
 use crate::error::ContractError;
 use crate::event::FlowLimitSetEvent;
-use crate::storage::{self, FlowKey};
+use crate::storage;
 
 const EPOCH_TIME: u64 = 6 * 60 * 60; // 6 hours in seconds = 21600
 
@@ -31,14 +30,9 @@ impl FlowDirection {
     }
 
     fn update_flow(&self, env: &Env, token_id: BytesN<32>, new_flow: i128) {
-        let flow_key = FlowKey {
-            token_id,
-            epoch: current_epoch(env),
-        };
-
         match self {
-            Self::In => storage::set_flow_in(env, flow_key, &new_flow),
-            Self::Out => storage::set_flow_out(env, flow_key, &new_flow),
+            Self::In => storage::set_flow_in(env, token_id, current_epoch(env), &new_flow),
+            Self::Out => storage::set_flow_out(env, token_id, current_epoch(env), &new_flow),
         };
     }
 
@@ -80,7 +74,7 @@ impl FlowDirection {
     }
 }
 
-fn current_epoch(env: &Env) -> u64 {
+pub fn current_epoch(env: &Env) -> u64 {
     env.ledger().timestamp() / EPOCH_TIME
 }
 
@@ -111,23 +105,9 @@ pub fn set_flow_limit(
 }
 
 pub fn flow_out_amount(env: &Env, token_id: BytesN<32>) -> i128 {
-    storage::try_flow_out(
-        env,
-        FlowKey {
-            token_id,
-            epoch: current_epoch(env),
-        },
-    )
-    .unwrap_or(0)
+    storage::try_flow_out(env, token_id, current_epoch(env)).unwrap_or(0)
 }
 
 pub fn flow_in_amount(env: &Env, token_id: BytesN<32>) -> i128 {
-    storage::try_flow_in(
-        env,
-        FlowKey {
-            token_id,
-            epoch: current_epoch(env),
-        },
-    )
-    .unwrap_or(0)
+    storage::try_flow_in(env, token_id, current_epoch(env)).unwrap_or(0)
 }

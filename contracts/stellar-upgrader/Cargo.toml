@@ -11,16 +11,15 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 cfg-if = { workspace = true }
-soroban-sdk = { workspace = true }
 stellar-axelar-std = { workspace = true }
 
 [dev-dependencies]
-goldie = { workspace = true }
-soroban-sdk = { workspace = true, features = ["testutils"] }
+dummy-contract = { path = "src/tests/testdata/dummy-contract" }
+stellar-axelar-std = { workspace = true, features = ["testutils"] }
 
 [features]
 library = [] # Only export the contract interface
-testutils = ["soroban-sdk/testutils", "stellar-axelar-std/testutils"]
+testutils = ["stellar-axelar-std/testutils"]
 
 [lints]
 workspace = true

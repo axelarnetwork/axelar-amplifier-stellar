@@ -1,7 +1,7 @@
-use soroban_sdk::xdr::ToXdr;
-use soroban_sdk::{Address, BytesN, Env};
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_std::events::Event;
+use stellar_axelar_std::xdr::ToXdr;
+use stellar_axelar_std::{Address, BytesN, Env};
 
 use crate::event::{InterchainTokenDeployedEvent, TokenManagerDeployedEvent};
 use crate::types::TokenManagerType;
