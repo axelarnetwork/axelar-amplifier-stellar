@@ -16,6 +16,7 @@ use crate::storage::{self, AllowanceDataKey, AllowanceValue};
 
 #[contract]
 #[derive(Upgradable)]
+#[migratable]
 pub struct InterchainToken;
 
 #[contractimpl]
@@ -43,6 +44,7 @@ impl InterchainToken {
 
 #[contractimpl]
 impl OwnableInterface for InterchainToken {
+    #[allow_during_migration]
     fn owner(env: &Env) -> Address {
         interfaces::owner(env)
     }

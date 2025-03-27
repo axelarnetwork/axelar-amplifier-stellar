@@ -36,4 +36,5 @@ pub enum ContractError {
     TokenInvocationError = 30,
     MigrationInProgress = 31,
     InvalidTokenConfig = 32,
+    InvalidFlowKey = 33,
 }

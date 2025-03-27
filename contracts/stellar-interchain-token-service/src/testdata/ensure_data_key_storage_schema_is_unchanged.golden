@@ -42,9 +42,9 @@ enum DataKey {
 
     #[temporary]
     #[value(i128)]
-    FlowOut { flow_key: FlowKey },
+    FlowOut { token_id: BytesN<32>, epoch: u64 },
 
     #[temporary]
     #[value(i128)]
-    FlowIn { flow_key: FlowKey },
+    FlowIn { token_id: BytesN<32>, epoch: u64 },
 }

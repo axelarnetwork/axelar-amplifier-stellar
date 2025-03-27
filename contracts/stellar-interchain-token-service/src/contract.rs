@@ -26,13 +26,14 @@ use crate::token_metadata::TokenMetadataExt;
 use crate::types::{
     DeployInterchainToken, HubMessage, InterchainTransfer, Message, TokenManagerType,
 };
-use crate::{deployer, flow_limit, token_handler, token_id, token_metadata};
+use crate::{deployer, flow_limit, migrate, token_handler, token_id, token_metadata};
 
 const ITS_HUB_CHAIN_NAME: &str = "axelar";
 const EXECUTE_WITH_INTERCHAIN_TOKEN: &str = "execute_with_interchain_token";
 
 #[contract]
 #[derive(Operatable, Ownable, Pausable, Upgradable, AxelarExecutable)]
+#[migratable]
 pub struct InterchainTokenService;
 
 #[contractimpl]
@@ -313,6 +314,16 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         Self::pay_gas_and_call_contract(env, caller, destination_chain, message, gas_token)?;
 
         Ok(())
+    }
+
+    #[only_owner]
+    fn migrate_token(
+        env: &Env,
+        token_id: BytesN<32>,
+        upgrader: Address,
+        new_version: String,
+    ) -> Result<(), ContractError> {
+        migrate::migrate_token(env, token_id, upgrader, new_version)
     }
 }
 
