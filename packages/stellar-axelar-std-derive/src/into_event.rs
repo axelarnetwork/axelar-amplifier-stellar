@@ -153,8 +153,12 @@ fn event_struct_fields(input: &DeriveInput) -> EventFieldsInfo {
 
     for field in data_struct.fields.iter() {
         if let Some(ident) = field.ident.as_ref() {
-            if field.attrs.iter().any(|attr| attr.path().is_ident("data")) || 
-               field.attrs.iter().any(|attr| attr.path().is_ident("singleton_data")) {
+            if field.attrs.iter().any(|attr| attr.path().is_ident("data"))
+                || field
+                    .attrs
+                    .iter()
+                    .any(|attr| attr.path().is_ident("singleton_data"))
+            {
                 data_idents.push(ident);
                 data_types.push(&field.ty);
                 if field
