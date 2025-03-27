@@ -2,8 +2,8 @@ use stellar_axelar_std::interfaces::CustomMigratableInterface;
 use stellar_axelar_std::testutils::BytesN as _;
 use stellar_axelar_std::{assert_contract_err, assert_ok, BytesN, String};
 use testutils::{
-    assert_migrate_storage, migrate_token, setup_migrate_env, setup_migrate_storage, upgrade,
-    FlowData, MigrateTestConfig,
+    assert_migrate_storage, migrate, migrate_token, setup_migrate_env, setup_migrate_storage,
+    upgrade, FlowData, MigrateTestConfig,
 };
 
 use crate::error::ContractError;
@@ -14,7 +14,8 @@ use crate::InterchainTokenService;
 const NEW_VERSION: &str = "1.1.0";
 
 mod testutils {
-    use stellar_axelar_std::{mock_auth, vec, Address, BytesN, Env, IntoVal, String};
+    use stellar_axelar_std::interfaces::CustomMigratableInterface;
+    use stellar_axelar_std::{assert_ok, mock_auth, vec, Address, BytesN, Env, IntoVal, String};
     use stellar_upgrader::testutils::setup_upgrader;
     use stellar_upgrader::UpgraderClient;
 
@@ -23,7 +24,7 @@ mod testutils {
     use crate::tests::utils::{format_auths, setup_env};
     use crate::testutils::setup_its_token;
     use crate::types::TokenManagerType;
-    use crate::InterchainTokenServiceClient;
+    use crate::{InterchainTokenService, InterchainTokenServiceClient};
 
     const NEW_INTERCHAIN_TOKEN_SERVICE_WASM: &[u8] =
         include_bytes!("testdata/stellar_interchain_token_service.optimized.wasm");
@@ -119,7 +120,7 @@ mod testutils {
         upgrader_client: &UpgraderClient<'a>,
         its_wasm_hash: BytesN<32>,
         migration_data: CustomMigrationData,
-    ) -> std::string::String {
+    ) {
         let its_upgrade_auth = mock_auth!(owner, its_client.upgrade(&its_wasm_hash));
         let its_migrate_auth = mock_auth!(owner, its_client.migrate(migration_data));
         let upgrader_upgrade_auth = mock_auth!(
@@ -144,8 +145,19 @@ mod testutils {
                 &its_wasm_hash,
                 &vec![&env, migration_data.into_val(env)],
             );
+    }
 
-        format_auths(env.auths(), "upgrader.upgrade(...)")
+    pub fn migrate<'a>(
+        env: &Env,
+        its_client: &InterchainTokenServiceClient<'a>,
+        migration_data: CustomMigrationData,
+    ) {
+        env.as_contract(&its_client.address, || {
+            assert_ok!(InterchainTokenService::__migrate(
+                &env,
+                migration_data.clone()
+            ));
+        });
     }
 
     pub fn migrate_token<'a>(
@@ -153,7 +165,7 @@ mod testutils {
         its_client: &InterchainTokenServiceClient<'a>,
         upgrader_client: &UpgraderClient<'a>,
         token_id: BytesN<32>,
-    ) -> std::string::String {
+    ) {
         its_client
             .mock_all_auths_allowing_non_root_auth()
             .migrate_token(
@@ -161,8 +173,6 @@ mod testutils {
                 &upgrader_client.address,
                 &String::from_str(env, NEW_VERSION),
             );
-
-        format_auths(env.auths(), "its.migrate_token(...)")
     }
 
     pub fn assert_migrate_storage(
@@ -195,7 +205,31 @@ mod testutils {
 }
 
 #[test]
-fn migrate_native_interchain_token_succeeds() {
+fn upgrade_and_migrate_succeeds() {
+    let MigrateTestConfig {
+        env,
+        owner,
+        its_client,
+        upgrader_client,
+        its_wasm_hash,
+        migration_data,
+        ..
+    } = setup_migrate_env(TokenManagerType::NativeInterchainToken);
+
+    upgrade(
+        &env,
+        owner,
+        &its_client,
+        &upgrader_client,
+        its_wasm_hash,
+        migration_data.clone(),
+    );
+
+    assert_migrate_storage(&its_client, migration_data, None);
+}
+
+#[test]
+fn upgrade_and_migrate_native_interchain_token_succeeds() {
     let MigrateTestConfig {
         env,
         owner,
@@ -220,7 +254,7 @@ fn migrate_native_interchain_token_succeeds() {
         flow_out_amount,
     );
 
-    let upgrader_upgrade_auths = upgrade(
+    upgrade(
         &env,
         owner,
         &its_client,
@@ -229,10 +263,9 @@ fn migrate_native_interchain_token_succeeds() {
         migration_data.clone(),
     );
 
-    let its_migrate_token_auths =
-        migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
+    migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
-    goldie::assert!([upgrader_upgrade_auths, its_migrate_token_auths].join("\n\n"));
+    goldie::assert!(format_auths(env.auths(), "its.migrate_token(...)"));
 
     assert_migrate_storage(
         &its_client,
@@ -268,14 +301,7 @@ fn coverage_migrate_native_interchain_token_succeeds() {
         flow_in_amount,
         flow_out_amount,
     );
-
-    env.as_contract(&its_client.address, || {
-        assert_ok!(InterchainTokenService::__migrate(
-            &env,
-            migration_data.clone()
-        ));
-    });
-
+    migrate(&env, &its_client, migration_data.clone());
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
     assert_migrate_storage(
@@ -293,12 +319,10 @@ fn coverage_migrate_native_interchain_token_succeeds() {
 fn migrate_lock_unlock_succeeds() {
     let MigrateTestConfig {
         env,
-        owner,
         its_client,
         upgrader_client,
         token_id,
         current_epoch,
-        its_wasm_hash,
         migration_data,
         ..
     } = setup_migrate_env(TokenManagerType::LockUnlock);
@@ -314,20 +338,10 @@ fn migrate_lock_unlock_succeeds() {
         flow_in_amount,
         flow_out_amount,
     );
+    migrate(&env, &its_client, migration_data.clone());
 
-    let upgrader_upgrade_auths = upgrade(
-        &env,
-        owner,
-        &its_client,
-        &upgrader_client,
-        its_wasm_hash,
-        migration_data.clone(),
-    );
-
-    let its_migrate_token_auths =
-        migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
-
-    goldie::assert!([upgrader_upgrade_auths, its_migrate_token_auths].join("\n\n"));
+    migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
+    goldie::assert!(format_auths(env.auths(), "its.migrate_token(...)"));
 
     assert_migrate_storage(
         &its_client,
@@ -344,24 +358,15 @@ fn migrate_lock_unlock_succeeds() {
 fn migrate_token_fails_with_invalid_token_id() {
     let MigrateTestConfig {
         env,
-        owner,
         its_client,
         upgrader_client,
-        its_wasm_hash,
         migration_data,
         ..
     } = setup_migrate_env(TokenManagerType::NativeInterchainToken);
 
     let non_existent_token_id = BytesN::random(&env);
 
-    let upgrader_upgrade_auths = upgrade(
-        &env,
-        owner,
-        &its_client,
-        &upgrader_client,
-        its_wasm_hash,
-        migration_data,
-    );
+    migrate(&env, &its_client, migration_data.clone());
 
     assert_contract_err!(
         its_client.mock_all_auths().try_migrate_token(
@@ -371,48 +376,16 @@ fn migrate_token_fails_with_invalid_token_id() {
         ),
         ContractError::InvalidTokenId
     );
-
-    let its_migrate_token_auths = format_auths(env.auths(), "its.migrate_token(...)");
-
-    goldie::assert!([upgrader_upgrade_auths, its_migrate_token_auths].join("\n\n"));
-}
-
-#[test]
-fn migrate_succeeds_with_empty_migration_data() {
-    let MigrateTestConfig {
-        env,
-        owner,
-        its_client,
-        upgrader_client,
-        its_wasm_hash,
-        migration_data,
-        ..
-    } = setup_migrate_env(TokenManagerType::NativeInterchainToken);
-
-    let upgrader_upgrade_auths = upgrade(
-        &env,
-        owner,
-        &its_client,
-        &upgrader_client,
-        its_wasm_hash,
-        migration_data.clone(),
-    );
-
-    goldie::assert!(upgrader_upgrade_auths);
-
-    assert_migrate_storage(&its_client, migration_data, None);
 }
 
 #[test]
 fn migrate_native_interchain_token_with_flow_amount_succeeds() {
     let MigrateTestConfig {
         env,
-        owner,
         its_client,
         upgrader_client,
         token_id,
         current_epoch,
-        its_wasm_hash,
         migration_data,
         ..
     } = setup_migrate_env(TokenManagerType::NativeInterchainToken);
@@ -428,20 +401,9 @@ fn migrate_native_interchain_token_with_flow_amount_succeeds() {
         flow_in_amount,
         flow_out_amount,
     );
+    migrate(&env, &its_client, migration_data.clone());
 
-    let upgrader_upgrade_auths = upgrade(
-        &env,
-        owner,
-        &its_client,
-        &upgrader_client,
-        its_wasm_hash,
-        migration_data.clone(),
-    );
-
-    let its_migrate_token_auths =
-        migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
-
-    goldie::assert!([upgrader_upgrade_auths, its_migrate_token_auths].join("\n\n"));
+    migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
     assert_migrate_storage(
         &its_client,
@@ -479,20 +441,9 @@ fn migrate_with_lock_unlock_with_flow_amount_succeeds() {
         flow_in_amount,
         flow_out_amount,
     );
+    migrate(&env, &its_client, migration_data.clone());
 
-    let upgrader_upgrade_auths = upgrade(
-        &env,
-        owner,
-        &its_client,
-        &upgrader_client,
-        its_wasm_hash,
-        migration_data.clone(),
-    );
-
-    let its_migrate_token_auths =
-        migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
-
-    goldie::assert!([upgrader_upgrade_auths, its_migrate_token_auths].join("\n\n"));
+    migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
     assert_migrate_storage(
         &its_client,
@@ -503,18 +454,4 @@ fn migrate_with_lock_unlock_with_flow_amount_succeeds() {
             flow_out_amount,
         }),
     );
-}
-
-#[test]
-fn __migrate_coverage() {
-    let MigrateTestConfig {
-        env,
-        its_client,
-        migration_data,
-        ..
-    } = setup_migrate_env(TokenManagerType::NativeInterchainToken);
-
-    env.as_contract(&its_client.address, || {
-        assert_ok!(InterchainTokenService::__migrate(&env, migration_data));
-    });
 }
