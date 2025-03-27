@@ -246,6 +246,50 @@ fn migrate_native_interchain_token_succeeds() {
 }
 
 #[test]
+fn coverage_migrate_native_interchain_token_succeeds() {
+    let MigrateTestConfig {
+        env,
+        owner,
+        its_client,
+        upgrader_client,
+        token_id,
+        current_epoch,
+        its_wasm_hash,
+        migration_data,
+        ..
+    } = setup_migrate_env(TokenManagerType::NativeInterchainToken);
+
+    let flow_in_amount = 100i128;
+    let flow_out_amount = 50i128;
+
+    setup_migrate_storage(
+        &env,
+        &its_client,
+        token_id.clone(),
+        current_epoch,
+        flow_in_amount,
+        flow_out_amount,
+    );
+
+    env.as_contract(&its_client.address, || {
+        crate::storage::set_interchain_token_wasm_hash(&env, &migration_data.new_interchain_token_wasm_hash);
+        crate::storage::set_token_manager_wasm_hash(&env, &migration_data.new_token_manager_wasm_hash);
+    });
+
+    migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
+
+    assert_migrate_storage(
+        &its_client,
+        migration_data,
+        Some(FlowData {
+            token_id,
+            flow_in_amount,
+            flow_out_amount,
+        }),
+    );
+}
+
+#[test]
 fn migrate_lock_unlock_succeeds() {
     let MigrateTestConfig {
         env,
