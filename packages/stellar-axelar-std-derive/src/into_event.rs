@@ -27,7 +27,11 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
                 #(, IntoVal::<_, Val>::into_val(&self.#data_field_idents, env))*
             ];
 
-            env.events().publish(topics, data);
+            if #has_datum {
+                env.events().publish(topics, data.get(0));
+            } else {
+                env.events().publish(topics, data);
+            }
         }
     };
 
