@@ -21,7 +21,7 @@ fn set_trusted_address() {
 }
 
 #[test]
-fn set_trusted_chain_fails_if_not_operator_or_owner() {
+fn set_trusted_chain_fails_if_not_operator() {
     let (env, client, _, _, _) = setup_env();
 
     let not_operator = Address::generate(&env);
