@@ -6,8 +6,10 @@ use syn::{DeriveInput, LitStr, Type};
 pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
     let name = &input.ident;
     let event_name = event_name_snake_case(input);
-    let ((topic_field_idents, topic_types), (data_field_idents, data_types)) =
-        event_struct_fields(input);
+    let fields = event_struct_fields(input);
+    let (topic_field_idents, topic_types) = fields.topics;
+    let (data_field_idents, data_types) = fields.data;
+    let has_datum = fields.has_datum;
 
     let topic_type_tokens = topic_types.iter().map(|ty| quote!(#ty));
     let data_type_tokens = data_types.iter().map(|ty| quote!(#ty));
@@ -25,7 +27,11 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
                 #(, IntoVal::<_, Val>::into_val(&self.#data_field_idents, env))*
             ];
 
-            env.events().publish(topics, data);
+            if #has_datum {
+                env.events().publish(topics, data.get(0));
+            } else {
+                env.events().publish(topics, data);
+            }
         }
     };
 
@@ -55,9 +61,14 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
             // Parse data from Val to the corresponding types,
             // and assign them to a variable with the same name as the struct field
             // E.g. let message = Message::try_from_val(env, &data.get(0));
-            // `data` is required to be a `Vec<Val>`
-            let data = Vec::<Val>::try_from_val(env, &data)
-                .expect("invalid data format");
+            let data = if #has_datum {
+                let mut vec = Vec::<Val>::new(env);
+                vec.push_back(data);
+                vec
+            } else {
+                Vec::<Val>::try_from_val(env, &data)
+                    .expect("invalid data format")
+            };
 
             let mut data_idx = 0;
             #(
@@ -131,27 +142,58 @@ type EventIdent<'a> = Vec<&'a Ident>;
 type EventType<'a> = Vec<&'a Type>;
 type EventStructFields<'a> = (EventIdent<'a>, EventType<'a>);
 
-fn event_struct_fields(input: &DeriveInput) -> (EventStructFields, EventStructFields) {
+struct EventFields<'a> {
+    topics: EventStructFields<'a>,
+    data: EventStructFields<'a>,
+    has_datum: bool,
+}
+
+impl<'a> EventFields<'a> {
+    fn add_field(&mut self, ident: &'a Ident, ty: &'a Type, field: &syn::Field) {
+        match field
+            .attrs
+            .iter()
+            .find(|attr| attr.path().is_ident("data") || attr.path().is_ident("datum"))
+        {
+            /* datum */
+            Some(attr) if attr.path().is_ident("datum") => {
+                if self.has_datum {
+                    panic!("Only one field can have the #[datum] attribute");
+                }
+                self.data.0.push(ident);
+                self.data.1.push(ty);
+                self.has_datum = true;
+            }
+            /* data */
+            Some(_) => {
+                self.data.0.push(ident);
+                self.data.1.push(ty);
+            }
+            /* topic */
+            None => {
+                self.topics.0.push(ident);
+                self.topics.1.push(ty);
+            }
+        }
+    }
+}
+
+fn event_struct_fields(input: &DeriveInput) -> EventFields {
     let syn::Data::Struct(data_struct) = &input.data else {
         panic!("IntoEvent can only be derived for structs");
     };
 
-    let mut topic_idents = Vec::new();
-    let mut topic_types = Vec::new();
-    let mut data_idents = Vec::new();
-    let mut data_types = Vec::new();
+    let mut fields = EventFields {
+        topics: (Vec::new(), Vec::new()),
+        data: (Vec::new(), Vec::new()),
+        has_datum: false,
+    };
 
     for field in data_struct.fields.iter() {
         if let Some(ident) = field.ident.as_ref() {
-            if field.attrs.iter().any(|attr| attr.path().is_ident("data")) {
-                data_idents.push(ident);
-                data_types.push(&field.ty);
-            } else {
-                topic_idents.push(ident);
-                topic_types.push(&field.ty);
-            }
+            fields.add_field(ident, &field.ty, field);
         }
     }
 
-    ((topic_idents, topic_types), (data_idents, data_types))
+    fields
 }
