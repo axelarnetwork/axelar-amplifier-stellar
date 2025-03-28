@@ -74,7 +74,10 @@ impl FlowDirection {
             ContractError::FlowLimitExceeded
         );
 
-        self.update_flow(env, token_id, new_flow_u as i128);
+        let new_flow: i128 = new_flow_u
+            .try_into()
+            .map_err(|_| ContractError::FlowAmountOverflow)?;
+        self.update_flow(env, token_id, new_flow);
 
         Ok(())
     }
