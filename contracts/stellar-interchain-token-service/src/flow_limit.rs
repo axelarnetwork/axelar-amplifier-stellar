@@ -56,19 +56,25 @@ impl FlowDirection {
 
         ensure!(flow_amount <= flow_limit, ContractError::FlowLimitExceeded);
 
-        let new_flow = self
-            .flow(env, token_id.clone())
-            .checked_add(flow_amount)
+        let flow_amount_u = flow_amount as u128;
+        let flow_limit_u = flow_limit as u128;
+        let current_flow_u = self.flow(env, token_id.clone()) as u128;
+        let reverse_flow_u = self.reverse_flow(env, token_id.clone()) as u128;
+
+        let new_flow_u = current_flow_u
+            .checked_add(flow_amount_u)
             .ok_or(ContractError::FlowAmountOverflow)?;
-        let max_allowed = self
-            .reverse_flow(env, token_id.clone())
-            .checked_add(flow_limit)
+        let max_allowed_u = reverse_flow_u
+            .checked_add(flow_limit_u)
             .ok_or(ContractError::FlowAmountOverflow)?;
 
         // Equivalent to flow_amount + flow - reverse_flow <= flow_limit
-        ensure!(new_flow <= max_allowed, ContractError::FlowLimitExceeded);
+        ensure!(
+            new_flow_u <= max_allowed_u,
+            ContractError::FlowLimitExceeded
+        );
 
-        self.update_flow(env, token_id, new_flow);
+        self.update_flow(env, token_id, new_flow_u as i128);
 
         Ok(())
     }
@@ -89,7 +95,6 @@ pub fn set_flow_limit(
 ) -> Result<(), ContractError> {
     if let Some(flow_limit) = flow_limit {
         ensure!(flow_limit >= 0, ContractError::InvalidFlowLimit);
-
         storage::set_flow_limit(env, token_id.clone(), &flow_limit);
     } else {
         storage::remove_flow_limit(env, token_id.clone());
