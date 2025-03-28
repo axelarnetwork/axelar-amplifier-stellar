@@ -178,6 +178,6 @@ fn event_struct_fields(input: &DeriveInput) -> EventFields {
     EventFields {
         topics: (topic_idents, topic_types),
         data: (data_idents, data_types),
-        has_datum: has_datum,
+        has_datum,
     }
 }
