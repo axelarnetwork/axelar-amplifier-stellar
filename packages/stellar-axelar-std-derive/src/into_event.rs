@@ -148,40 +148,52 @@ struct EventFields<'a> {
     has_datum: bool,
 }
 
+impl<'a> EventFields<'a> {
+    fn add_field(&mut self, ident: &'a Ident, ty: &'a Type, field: &syn::Field) {
+        match field
+            .attrs
+            .iter()
+            .find(|attr| attr.path().is_ident("data") || attr.path().is_ident("datum"))
+        {
+            /* datum */
+            Some(attr) if attr.path().is_ident("datum") => {
+                if self.has_datum {
+                    panic!("Only one field can have the #[datum] attribute");
+                }
+                self.data.0.push(ident);
+                self.data.1.push(ty);
+                self.has_datum = true;
+            }
+            /* data */
+            Some(_) => {
+                self.data.0.push(ident);
+                self.data.1.push(ty);
+            }
+            /* topic */
+            None => {
+                self.topics.0.push(ident);
+                self.topics.1.push(ty);
+            }
+        }
+    }
+}
+
 fn event_struct_fields(input: &DeriveInput) -> EventFields {
     let syn::Data::Struct(data_struct) = &input.data else {
         panic!("IntoEvent can only be derived for structs");
     };
 
-    let mut topic_idents = Vec::new();
-    let mut topic_types = Vec::new();
-    let mut data_idents = Vec::new();
-    let mut data_types = Vec::new();
-    let mut has_datum = false;
+    let mut fields = EventFields {
+        topics: (Vec::new(), Vec::new()),
+        data: (Vec::new(), Vec::new()),
+        has_datum: false,
+    };
 
     for field in data_struct.fields.iter() {
         if let Some(ident) = field.ident.as_ref() {
-            if field.attrs.iter().any(|attr| attr.path().is_ident("data")) {
-                data_idents.push(ident);
-                data_types.push(&field.ty);
-            } else if field.attrs.iter().any(|attr| attr.path().is_ident("datum")) {
-                if !has_datum {
-                    has_datum = true;
-                } else {
-                    panic!("Only one field can have the #[datum] attribute");
-                }
-                data_idents.push(ident);
-                data_types.push(&field.ty);
-            } else {
-                topic_idents.push(ident);
-                topic_types.push(&field.ty);
-            }
+            fields.add_field(ident, &field.ty, field);
         }
     }
 
-    EventFields {
-        topics: (topic_idents, topic_types),
-        data: (data_idents, data_types),
-        has_datum,
-    }
+    fields
 }
