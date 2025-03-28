@@ -14,6 +14,8 @@ pub struct ContractCalledEvent {
     pub payload: Bytes,
 }
 
+// test
+
 #[derive(Debug, PartialEq, Eq, IntoEvent)]
 pub struct MessageApprovedEvent {
     pub message: Message,
