@@ -56,25 +56,22 @@ impl FlowDirection {
 
         ensure!(flow_amount <= flow_limit, ContractError::FlowLimitExceeded);
 
-        let flow_amount_u = flow_amount as u128;
-        let flow_limit_u = flow_limit as u128;
-        let current_flow_u = self.flow(env, token_id.clone()) as u128;
-        let reverse_flow_u = self.reverse_flow(env, token_id.clone()) as u128;
+        let flow_amount_ = flow_amount as u128;
+        let flow_limit_ = flow_limit as u128;
+        let current_flow_ = self.flow(env, token_id.clone()) as u128;
+        let reverse_flow_ = self.reverse_flow(env, token_id.clone()) as u128;
 
-        let new_flow_u = current_flow_u
-            .checked_add(flow_amount_u)
+        let new_flow_ = current_flow_
+            .checked_add(flow_amount_)
             .ok_or(ContractError::FlowAmountOverflow)?;
-        let max_allowed_u = reverse_flow_u
-            .checked_add(flow_limit_u)
+        let max_allowed_ = reverse_flow_
+            .checked_add(flow_limit_)
             .ok_or(ContractError::FlowAmountOverflow)?;
 
         // Equivalent to flow_amount + flow - reverse_flow <= flow_limit
-        ensure!(
-            new_flow_u <= max_allowed_u,
-            ContractError::FlowLimitExceeded
-        );
+        ensure!(new_flow_ <= max_allowed_, ContractError::FlowLimitExceeded);
 
-        let new_flow: i128 = new_flow_u
+        let new_flow: i128 = new_flow_
             .try_into()
             .map_err(|_| ContractError::FlowAmountOverflow)?;
         self.update_flow(env, token_id, new_flow);
