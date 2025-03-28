@@ -21,21 +21,13 @@ fn set_trusted_address() {
 }
 
 #[test]
-fn set_trusted_chain_fails_if_not_operator() {
+fn set_trusted_chain_fails_if_not_operator_or_owner() {
     let (env, client, _, _, _) = setup_env();
 
     let not_operator = Address::generate(&env);
     let chain = String::from_str(&env, "chain");
 
     assert_auth_err!(not_operator, client.set_trusted_chain(&chain));
-}
-
-#[test]
-fn set_trusted_chain_fails_if_owner() {
-    let (env, client, _, _, _) = setup_env();
-
-    let chain = String::from_str(&env, "chain");
-
     assert_auth_err!(client.owner(), client.set_trusted_chain(&chain));
 }
 
@@ -70,21 +62,13 @@ fn remove_trusted_chain() {
 }
 
 #[test]
-fn remove_trusted_chain_fails_if_not_operator() {
+fn remove_trusted_chain_fails_if_not_operator_or_owner() {
     let (env, client, _, _, _) = setup_env();
 
     let not_operator = Address::generate(&env);
     let chain = String::from_str(&env, "chain");
 
     assert_auth_err!(not_operator, client.remove_trusted_chain(&chain));
-}
-
-#[test]
-fn remove_trusted_chain_fails_if_owner() {
-    let (env, client, _, _, _) = setup_env();
-
-    let chain = String::from_str(&env, "chain");
-
     assert_auth_err!(client.owner(), client.remove_trusted_chain(&chain));
 }
 
