@@ -62,7 +62,7 @@ fn remove_trusted_chain() {
 }
 
 #[test]
-fn remove_trusted_chain_fails_if_not_operator_or_owner() {
+fn remove_trusted_chain_fails_if_not_operator() {
     let (env, client, _, _, _) = setup_env();
 
     let not_operator = Address::generate(&env);
