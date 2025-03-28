@@ -96,7 +96,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         storage::is_trusted_chain(env, chain)
     }
 
-    #[only_owner]
+    #[only_operator]
     fn set_trusted_chain(env: &Env, chain: String) -> Result<(), ContractError> {
         ensure!(
             !storage::is_trusted_chain(env, chain.clone()),
@@ -110,7 +110,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         Ok(())
     }
 
-    #[only_owner]
+    #[only_operator]
     fn remove_trusted_chain(env: &Env, chain: String) -> Result<(), ContractError> {
         ensure!(
             storage::is_trusted_chain(env, chain.clone()),
