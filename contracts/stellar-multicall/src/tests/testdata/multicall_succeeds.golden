@@ -1,0 +1,9 @@
+ExecutedEvent {
+    value: 0,
+}
+
+Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M)
+
+executed {
+    #[topic] value: u32,
+}
