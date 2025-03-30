@@ -12,9 +12,9 @@ use crate::{Multicall, MulticallClient};
 
 #[macro_export]
 macro_rules! function_call {
-    ($contract:expr, $approver:expr, $client:ident . $function:ident ( $($arg:expr),* $(,)? )) => {{
+    ($approver:expr, $client:ident . $function:ident ( $($arg:expr),* $(,)? )) => {{
         FunctionCall {
-            contract: $contract.clone(),
+            contract: $client.address.clone(),
             approver: $approver.clone(),
             function: soroban_sdk::Symbol::new(&$client.env, stringify!($function)),
             args: vec![&$client.env, $($arg.into_val(&$client.env)),*],
@@ -121,12 +121,12 @@ mod test_target {
 }
 
 use test_bank::{TestBankContract, TestBankContractClient};
-use test_target::{ExecutedEvent, TestTarget};
+use test_target::{ExecutedEvent, TestTarget, TestTargetClient};
 
 pub struct TestConfig<'a> {
     pub env: Env,
     pub client: MulticallClient<'a>,
-    pub target_id: Address,
+    pub target_client: TestTargetClient<'a>,
     pub owner: Address,
 }
 
@@ -137,11 +137,12 @@ fn setup<'a>() -> TestConfig<'a> {
     let client = MulticallClient::new(&env, &contract_id);
 
     let target_id = env.register(TestTarget, (owner.clone(),));
+    let target_client = TestTargetClient::new(&env, &target_id);
 
     TestConfig {
         env,
         client,
-        target_id,
+        target_client,
         owner,
     }
 }
@@ -151,8 +152,9 @@ fn multicall_succeeds() {
     let TestConfig {
         env,
         client,
-        target_id,
+        target_client,
         owner,
+        ..
     } = setup();
 
     let bank_id = env.register(TestBankContract, (owner.clone(),));
@@ -160,10 +162,10 @@ fn multicall_succeeds() {
 
     let function_calls = vec![
         &env,
-        function_call!(bank_id, owner, bank_client.deposit(42u32)),
-        function_call!(bank_id, owner, bank_client.withdraw(10u32)),
-        function_call!(target_id, owner, client.method(0u32)),
-        function_call!(target_id, owner, client.owner()),
+        function_call!(owner, bank_client.deposit(42u32)),
+        function_call!(owner, bank_client.withdraw(10u32)),
+        function_call!(owner, target_client.method(0u32)),
+        function_call!(owner, target_client.owner()),
     ];
 
     let bank_deposit_auth = mock_auth!(owner, bank_client.deposit(42u32));
@@ -199,8 +201,9 @@ fn multicall_succeeds_different_approvers() {
     let TestConfig {
         env,
         client,
-        target_id,
+        target_client,
         owner,
+        ..
     } = setup();
 
     let bank_owner1 = Address::generate(&env);
@@ -210,17 +213,13 @@ fn multicall_succeeds_different_approvers() {
 
     let function_calls = vec![
         &env,
-        function_call!(bank_id, bank_owner1, bank_client.deposit(20u32)),
-        function_call!(bank_id, bank_owner1, bank_client.withdraw(10u32)),
-        function_call!(
-            bank_id,
-            bank_owner1,
-            bank_client.transfer_ownership(bank_owner2)
-        ),
-        function_call!(bank_id, bank_owner2, bank_client.deposit(10u32)),
-        function_call!(bank_id, bank_owner2, bank_client.withdraw(20u32)),
-        function_call!(target_id, owner, client.method(0u32)),
-        function_call!(target_id, owner, client.owner()),
+        function_call!(bank_owner1, bank_client.deposit(20u32)),
+        function_call!(bank_owner1, bank_client.withdraw(10u32)),
+        function_call!(bank_owner1, bank_client.transfer_ownership(bank_owner2)),
+        function_call!(bank_owner2, bank_client.deposit(10u32)),
+        function_call!(bank_owner2, bank_client.withdraw(20u32)),
+        function_call!(owner, target_client.method(0u32)),
+        function_call!(owner, target_client.owner()),
     ];
 
     let bank_old_owner_deposit_auth = mock_auth!(bank_owner1, bank_client.deposit(20u32));
@@ -296,8 +295,8 @@ fn multicall_fails_withdraw_more_than_balance() {
 
     let function_calls = vec![
         &env,
-        function_call!(bank_id, owner, bank_client.deposit(10u32)),
-        function_call!(bank_id, owner, bank_client.withdraw(20u32)),
+        function_call!(owner, bank_client.deposit(10u32)),
+        function_call!(owner, bank_client.withdraw(20u32)),
     ];
 
     let bank_deposit_auth = mock_auth!(owner, bank_client.deposit(10u32));
@@ -333,16 +332,17 @@ fn multicall_no_auth_fails() {
     let TestConfig {
         env,
         client,
-        target_id,
+        target_client,
         owner,
+        ..
     } = setup();
     let new_owner = Address::generate(&env);
 
     let function_calls = vec![
         &env,
-        function_call!(target_id, owner, client.method(42u32)),
-        function_call!(target_id, owner, client.transfer_ownership(new_owner)),
-        function_call!(target_id, owner, client.method(0u32)),
+        function_call!(owner, target_client.method(42u32)),
+        function_call!(owner, target_client.transfer_ownership(new_owner)),
+        function_call!(owner, target_client.method(0u32)),
     ];
 
     client.multicall(&function_calls);
@@ -354,16 +354,17 @@ fn multicall_incorrect_approver_auth_fails() {
     let TestConfig {
         env,
         client,
-        target_id,
+        target_client,
         owner,
+        ..
     } = setup();
     let new_owner = Address::generate(&env);
 
     let function_calls = vec![
         &env,
-        function_call!(target_id, owner, client.method(42u32)),
-        function_call!(target_id, owner, client.transfer_ownership(new_owner)),
-        function_call!(target_id, owner, client.method(0u32)),
+        function_call!(owner, target_client.method(42u32)),
+        function_call!(owner, target_client.transfer_ownership(new_owner)),
+        function_call!(owner, target_client.method(0u32)),
     ];
 
     // Skip the TestTargetClient usage and just set up the multicall auth directly
@@ -385,16 +386,17 @@ fn multicall_incomplete_auth_fails() {
     let TestConfig {
         env,
         client,
-        target_id,
+        target_client,
         owner,
+        ..
     } = setup();
     let new_owner = Address::generate(&env);
 
     let function_calls = vec![
         &env,
-        function_call!(target_id, owner, client.method(42u32)),
-        function_call!(target_id, owner, client.transfer_ownership(new_owner)),
-        function_call!(target_id, owner, client.method(0u32)),
+        function_call!(owner, target_client.method(42u32)),
+        function_call!(owner, target_client.transfer_ownership(new_owner)),
+        function_call!(owner, target_client.method(0u32)),
     ];
 
     let multicall_auth = mock_auth!(owner, client.multicall(&function_calls));
@@ -414,11 +416,12 @@ fn multicall_fails_when_target_panics() {
     let TestConfig {
         env,
         client,
-        target_id,
+        target_client,
         owner,
+        ..
     } = setup();
 
-    let function_calls = vec![&env, function_call!(target_id, owner, client.failing())];
+    let function_calls = vec![&env, function_call!(owner, target_client.failing())];
 
     client.mock_all_auths().multicall(&function_calls);
 }
@@ -428,13 +431,14 @@ fn multicall_fails_when_target_returns_error() {
     let TestConfig {
         env,
         client,
-        target_id,
+        target_client,
         owner,
+        ..
     } = setup();
 
     let function_calls = vec![
         &env,
-        function_call!(target_id, owner, client.failing_with_error()),
+        function_call!(owner, target_client.failing_with_error()),
     ];
 
     assert_contract_err!(
@@ -448,15 +452,16 @@ fn multicall_fails_when_some_calls_returns_error() {
     let TestConfig {
         env,
         client,
-        target_id,
+        target_client,
         owner,
+        ..
     } = setup();
 
     let function_calls = vec![
         &env,
-        function_call!(target_id, owner, client.method(42u32)),
-        function_call!(target_id, owner, client.failing_with_error()),
-        function_call!(target_id, owner, client.method(0u32)),
+        function_call!(owner, target_client.method(42u32)),
+        function_call!(owner, target_client.failing_with_error()),
+        function_call!(owner, target_client.method(0u32)),
     ];
 
     let multicall_auth = mock_auth!(owner, client.multicall(&function_calls));
