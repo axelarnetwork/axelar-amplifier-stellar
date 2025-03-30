@@ -1,14 +1,12 @@
 #![cfg(test)]
 extern crate std;
 
+use crate::types::FunctionCall;
+use crate::{Multicall, MulticallClient};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{vec, Address, Env, IntoVal, Vec};
 use stellar_axelar_std::events::fmt_last_emitted_event;
-use stellar_axelar_std::{assert_contract_err, mock_auth};
-
-use crate::error::ContractError;
-use crate::types::FunctionCall;
-use crate::{Multicall, MulticallClient};
+use stellar_axelar_std::mock_auth;
 
 #[macro_export]
 macro_rules! function_call {
@@ -23,10 +21,16 @@ macro_rules! function_call {
 }
 
 mod test_bank {
+    use soroban_sdk::contracterror;
     use soroban_sdk::{contract, contractimpl, symbol_short, Address, Env, Symbol};
     use stellar_axelar_std::{interfaces, Ownable};
 
-    use crate::error::ContractError;
+    #[contracterror]
+    #[derive(Debug, Eq, PartialEq)]
+    #[repr(u32)]
+    pub enum TestBankError {
+        InsufficientBalance = 1,
+    }
 
     #[contract]
     #[derive(Ownable)]
@@ -63,7 +67,7 @@ mod test_bank {
                 .set(&Self::BALANCE_KEY, &new_balance);
         }
 
-        pub fn withdraw(env: &Env, amount: u32) -> Result<(), ContractError> {
+        pub fn withdraw(env: &Env, amount: u32) -> Result<(), TestBankError> {
             let owner = Self::owner(env);
             owner.require_auth();
 
@@ -73,7 +77,7 @@ mod test_bank {
                 .get(&Self::BALANCE_KEY)
                 .unwrap_or(0u32);
             if current_balance < amount {
-                return Err(ContractError::FunctionCallFailed);
+                return Err(TestBankError::InsufficientBalance);
             }
             let new_balance = current_balance - amount;
             env.storage()
@@ -85,11 +89,17 @@ mod test_bank {
 }
 
 mod test_target {
+    use soroban_sdk::contracterror;
     use soroban_sdk::{contract, contractimpl, Address, Env, Val};
     use stellar_axelar_std::events::Event;
     use stellar_axelar_std::{interfaces, IntoEvent, Ownable};
 
-    use crate::error::ContractError;
+    #[contracterror]
+    #[derive(Debug, Eq, PartialEq)]
+    #[repr(u32)]
+    pub enum TestTargetError {
+        TestError = 1,
+    }
 
     #[contract]
     #[derive(Ownable)]
@@ -114,8 +124,8 @@ mod test_target {
             panic!("This method should fail");
         }
 
-        pub const fn failing_with_error(_env: &Env) -> Result<Val, ContractError> {
-            Err(ContractError::FunctionCallFailed)
+        pub const fn failing_with_error(_env: &Env) -> Result<Val, TestTargetError> {
+            Err(TestTargetError::TestError)
         }
     }
 }
@@ -285,6 +295,7 @@ fn multicall_zero_call_succeeds() {
 }
 
 #[test]
+#[should_panic(expected = "HostError: Error(Contract, #1)")] // TestBankError::InsufficientBalance
 fn multicall_fails_withdraw_more_than_balance() {
     let TestConfig {
         env, client, owner, ..
@@ -314,16 +325,13 @@ fn multicall_fails_withdraw_more_than_balance() {
 
     let multicall_auth = mock_auth!(owner, client.multicall(&function_calls));
 
-    assert_contract_err!(
-        client
-            .mock_auths(&[
-                multicall_deposit_auth,
-                multicall_withdraw_auth,
-                multicall_auth,
-            ])
-            .try_multicall(&function_calls),
-        ContractError::FunctionCallFailed
-    );
+    client
+        .mock_auths(&[
+            multicall_deposit_auth,
+            multicall_withdraw_auth,
+            multicall_auth,
+        ])
+        .multicall(&function_calls);
 }
 
 #[test]
@@ -427,6 +435,7 @@ fn multicall_fails_when_target_panics() {
 }
 
 #[test]
+#[should_panic(expected = "HostError: Error(Contract, #1)")] // TestTargetError::TestError
 fn multicall_fails_when_target_returns_error() {
     let TestConfig {
         env,
@@ -441,13 +450,11 @@ fn multicall_fails_when_target_returns_error() {
         function_call!(owner, target_client.failing_with_error()),
     ];
 
-    assert_contract_err!(
-        client.mock_all_auths().try_multicall(&function_calls),
-        ContractError::FunctionCallFailed
-    );
+    client.mock_all_auths().multicall(&function_calls);
 }
 
 #[test]
+#[should_panic(expected = "HostError: Error(Contract, #1)")] // TestTargetError::TestError
 fn multicall_fails_when_some_calls_returns_error() {
     let TestConfig {
         env,
@@ -466,14 +473,11 @@ fn multicall_fails_when_some_calls_returns_error() {
 
     let multicall_auth = mock_auth!(owner, client.multicall(&function_calls));
 
-    assert_contract_err!(
-        client
-            .mock_auths(&[
-                multicall_auth.clone(),
-                multicall_auth.clone(),
-                multicall_auth
-            ])
-            .try_multicall(&function_calls),
-        ContractError::FunctionCallFailed
-    );
+    client
+        .mock_auths(&[
+            multicall_auth.clone(),
+            multicall_auth.clone(),
+            multicall_auth,
+        ])
+        .multicall(&function_calls);
 }
