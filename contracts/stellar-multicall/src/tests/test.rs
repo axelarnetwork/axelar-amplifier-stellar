@@ -22,7 +22,7 @@ macro_rules! function_call {
 
 mod test_bank {
     use soroban_sdk::contracterror;
-    use soroban_sdk::{contract, contractimpl, symbol_short, Address, Env, Symbol};
+    use soroban_sdk::{contract, contractimpl, Address, Env};
     use stellar_axelar_std::{interfaces, Ownable};
 
     #[contracterror]
@@ -36,53 +36,46 @@ mod test_bank {
     #[derive(Ownable)]
     pub struct TestBankContract;
 
+    mod storage {
+        use stellar_axelar_std::contractstorage;
+        #[contractstorage]
+        enum DataKey {
+            #[instance]
+            #[value(u32)]
+            Balance,
+        }
+    }
+
     #[contractimpl]
     impl TestBankContract {
-        const BALANCE_KEY: Symbol = symbol_short!("balance");
-
         pub fn __constructor(env: Env, owner: Address) {
             interfaces::set_owner(&env, &owner);
-            env.storage().instance().set(&Self::BALANCE_KEY, &0u32);
+            storage::set_balance(&env, &0u32);
         }
 
         pub fn balance(env: &Env) -> u32 {
-            env.storage()
-                .instance()
-                .get(&Self::BALANCE_KEY)
-                .unwrap_or(0u32)
+            storage::balance(env)
         }
 
         pub fn deposit(env: &Env, amount: u32) {
             let owner = Self::owner(env);
             owner.require_auth();
 
-            let current_balance: u32 = env
-                .storage()
-                .instance()
-                .get(&Self::BALANCE_KEY)
-                .unwrap_or(0u32);
+            let current_balance = storage::balance(env);
             let new_balance = current_balance + amount;
-            env.storage()
-                .instance()
-                .set(&Self::BALANCE_KEY, &new_balance);
+            storage::set_balance(env, &new_balance);
         }
 
         pub fn withdraw(env: &Env, amount: u32) -> Result<(), TestBankError> {
             let owner = Self::owner(env);
             owner.require_auth();
 
-            let current_balance: u32 = env
-                .storage()
-                .instance()
-                .get(&Self::BALANCE_KEY)
-                .unwrap_or(0u32);
+            let current_balance = storage::balance(env);
             if current_balance < amount {
                 return Err(TestBankError::InsufficientBalance);
             }
             let new_balance = current_balance - amount;
-            env.storage()
-                .instance()
-                .set(&Self::BALANCE_KEY, &new_balance);
+            storage::set_balance(env, &new_balance);
             Ok(())
         }
     }
