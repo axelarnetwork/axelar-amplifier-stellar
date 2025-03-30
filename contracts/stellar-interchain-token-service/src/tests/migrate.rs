@@ -193,11 +193,11 @@ mod testutils {
         if let Some(flow_data) = flow_data {
             assert_eq!(
                 its_client.flow_in_amount(&flow_data.token_id),
-                flow_data.flow_in_amount as u128
+                { flow_data.flow_in_amount }
             );
             assert_eq!(
                 its_client.flow_out_amount(&flow_data.token_id),
-                flow_data.flow_out_amount as u128
+                { flow_data.flow_out_amount }
             );
         }
     }
