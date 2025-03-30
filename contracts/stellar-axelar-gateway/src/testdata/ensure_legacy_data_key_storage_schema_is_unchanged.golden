@@ -1,6 +1,0 @@
-enum LegacyDataKey {
-
-    #[persistent]
-    #[value(MessageApprovalValue)]
-    MessageApproval { message_approval_key: MessageApprovalKey },
-}

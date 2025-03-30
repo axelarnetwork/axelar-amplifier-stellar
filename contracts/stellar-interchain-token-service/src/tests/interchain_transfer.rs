@@ -1,9 +1,10 @@
+use soroban_sdk::testutils::Address as _;
+use soroban_sdk::token::{StellarAssetClient, TokenClient};
+use soroban_sdk::{Address, Bytes, BytesN, Env, String};
 use stellar_axelar_gas_service::testutils::setup_gas_token;
-use stellar_axelar_std::testutils::Address as _;
-use stellar_axelar_std::token::{StellarAssetClient, TokenClient};
 use stellar_axelar_std::traits::BytesExt;
 use stellar_axelar_std::types::Token;
-use stellar_axelar_std::{assert_contract_err, events, Address, Bytes, BytesN, Env, String};
+use stellar_axelar_std::{assert_contract_err, events};
 
 use super::utils::setup_env;
 use crate::error::ContractError;
@@ -158,7 +159,7 @@ fn interchain_transfer_send_fails_when_paused() {
 }
 
 #[test]
-#[should_panic(expected = "burn, Error(Contract, #6)")] // InvalidPayload
+#[should_panic(expected = "burn, Error(Contract, #9)")]
 fn interchain_transfer_send_fails_on_insufficient_balance() {
     let (env, client, _, _, _) = setup_env();
     client

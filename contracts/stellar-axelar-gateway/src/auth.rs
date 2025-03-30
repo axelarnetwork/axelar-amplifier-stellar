@@ -1,5 +1,6 @@
+use soroban_sdk::{Bytes, BytesN, Env, Vec};
+use stellar_axelar_std::ensure;
 use stellar_axelar_std::events::Event;
-use stellar_axelar_std::{ensure, Bytes, BytesN, Env, Vec};
 
 use crate::error::ContractError;
 use crate::event::SignersRotatedEvent;

@@ -1,6 +1,6 @@
+use soroban_sdk::xdr::ToXdr;
+use soroban_sdk::{Address, BytesN, Env};
 use stellar_axelar_std::address::AddressExt;
-use stellar_axelar_std::xdr::ToXdr;
-use stellar_axelar_std::{Address, BytesN, Env};
 
 const PREFIX_CANONICAL_TOKEN_SALT: &str = "canonical-token-salt";
 const PREFIX_INTERCHAIN_TOKEN_SALT: &str = "interchain-token-salt";

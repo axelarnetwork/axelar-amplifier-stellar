@@ -1,4 +1,5 @@
-use stellar_axelar_std::{Address, IntoEvent};
+use soroban_sdk::Address;
+use stellar_axelar_std::IntoEvent;
 
 #[derive(Debug, PartialEq, Eq, IntoEvent)]
 pub struct OperatorAddedEvent {

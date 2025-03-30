@@ -28,15 +28,18 @@ macro_rules! derive_only {
 mod storage {
     #![allow(non_camel_case_types)]
 
+    use crate as stellar_axelar_std;
+    use crate::contractstorage;
+
     // add a separate module for each interface with a dedicated data key.
     // Using a single enum could lead to unintentionally breaks of unrelated interfaces,
     // because the key serialization is variant order dependent.
 
     pub mod operator {
-        use soroban_sdk::Address;
-        use stellar_axelar_std::contractstorage;
 
-        use crate as stellar_axelar_std;
+        use soroban_sdk::Address;
+
+        use super::*;
 
         #[contractstorage]
         enum OperatorDataKey {
@@ -47,10 +50,10 @@ mod storage {
     }
 
     pub mod owner {
-        use soroban_sdk::Address;
-        use stellar_axelar_std::contractstorage;
 
-        use crate as stellar_axelar_std;
+        use soroban_sdk::Address;
+
+        use super::*;
 
         #[contractstorage]
         enum OwnerDataKey {
@@ -61,9 +64,8 @@ mod storage {
     }
 
     pub mod pausable {
-        use stellar_axelar_std::contractstorage;
 
-        use crate as stellar_axelar_std;
+        use super::*;
 
         #[contractstorage]
         enum PausableDataKey {
@@ -74,9 +76,8 @@ mod storage {
     }
 
     pub mod migrating {
-        use stellar_axelar_std::contractstorage;
 
-        use crate as stellar_axelar_std;
+        use super::*;
 
         #[contractstorage]
         enum MigratingDataKey {

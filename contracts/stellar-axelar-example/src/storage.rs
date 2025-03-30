@@ -1,4 +1,5 @@
-use stellar_axelar_std::{contractstorage, soroban_sdk, Address};
+use soroban_sdk::Address;
+use stellar_axelar_std::contractstorage;
 
 #[contractstorage]
 #[derive(Clone, Debug)]
@@ -14,4 +15,8 @@ enum DataKey {
     #[instance]
     #[value(Address)]
     InterchainTokenService,
+
+    #[instance]
+    #[status]
+    Paused,
 }

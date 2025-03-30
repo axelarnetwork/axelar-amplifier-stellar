@@ -1,4 +1,4 @@
-use stellar_axelar_std::{contracterror, soroban_sdk};
+use soroban_sdk::contracterror;
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -34,7 +34,4 @@ pub enum ContractError {
     ContractPaused = 28,
     InvalidInitialSupply = 29,
     TokenInvocationError = 30,
-    MigrationInProgress = 31,
-    InvalidTokenConfig = 32,
-    InvalidFlowKey = 33,
 }

@@ -1,9 +1,8 @@
+use soroban_sdk::testutils::Address as _;
+use soroban_sdk::{contract, contracterror, contractimpl, Address, Env};
 use stellar_axelar_std::interfaces::OwnableClient;
-use stellar_axelar_std::testutils::Address as _;
-use stellar_axelar_std::{
-    assert_auth, assert_auth_err, contract, contracterror, only_owner, Address, Env,
-};
-use stellar_axelar_std_derive::{contractimpl, Ownable};
+use stellar_axelar_std::{assert_auth, assert_auth_err, only_owner};
+use stellar_axelar_std_derive::Ownable;
 
 use crate as stellar_axelar_std;
 
@@ -25,7 +24,7 @@ impl Contract {
     }
 
     #[only_owner]
-    pub fn owner_function(_env: &Env) {}
+    pub fn owner_function(env: &Env) {}
 }
 
 #[test]

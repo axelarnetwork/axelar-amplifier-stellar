@@ -76,9 +76,9 @@ impl VariantExt for Variant {
         let (field_names, field_types) = (self.fields.names(), self.fields.types());
 
         if field_names.is_empty() {
-            quote! { env: &stellar_axelar_std::Env }
+            quote! { env: &soroban_sdk::Env }
         } else {
-            quote! { env: &stellar_axelar_std::Env, #(#field_names: #field_types),* }
+            quote! { env: &soroban_sdk::Env, #(#field_names: #field_types),* }
         }
     }
 
@@ -102,7 +102,6 @@ struct StorageFunctionNames {
     remover: Ident,
     try_getter: Ident,
     ttl_extender: Ident,
-    has: Ident,
 }
 
 impl Value {
@@ -199,7 +198,6 @@ impl Value {
             remover,
             try_getter,
             ttl_extender,
-            has,
         }: &StorageFunctionNames,
         params: &TokenStream,
         storage_key: &TokenStream,
@@ -248,11 +246,6 @@ impl Value {
                 let key = #storage_key;
                 #ttl_function
             }
-
-            pub fn #has(#params) -> bool {
-                let key = #storage_key;
-                #storage_method.has(&key)
-            }
         }
     }
 
@@ -266,7 +259,6 @@ impl Value {
                 remover: format_ident!("remove_{}_status", ident),
                 try_getter: format_ident!("_"),
                 ttl_extender: format_ident!("extend_{}_ttl", ident),
-                has: format_ident!("_"),
             },
             Self::Type(_) => StorageFunctionNames {
                 getter: format_ident!("{}", ident),
@@ -274,7 +266,6 @@ impl Value {
                 remover: format_ident!("remove_{}", ident),
                 try_getter: format_ident!("try_{}", ident),
                 ttl_extender: format_ident!("extend_{}_ttl", ident),
-                has: format_ident!("has_{}", ident),
             },
         }
     }
@@ -364,7 +355,7 @@ pub fn contract_storage(input: &DeriveInput) -> TokenStream {
         .collect();
 
     let contract_storage = quote! {
-        #[stellar_axelar_std::contracttype]
+        #[soroban_sdk::contracttype]
         enum #r#enum {
             #(#transformed_variants,)*
         }
@@ -443,11 +434,11 @@ fn contract_storage_tests(r#enum: &Ident, enum_input: &DeriveInput) -> TokenStre
     quote! {
         #[cfg(test)]
         mod #test_module {
-            use super::*;
+            use goldie;
 
             #[test]
             fn #test() {
-                stellar_axelar_std::assert_matches_golden_file!(#formatted_enum);
+                goldie::assert!(#formatted_enum);
             }
         }
     }

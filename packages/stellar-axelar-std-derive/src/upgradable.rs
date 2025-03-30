@@ -29,22 +29,13 @@ pub fn upgradable(input: &DeriveInput) -> TokenStream2 {
     quote! {
         use stellar_axelar_std::interfaces::{UpgradableInterface as _, MigratableInterface as _};
 
-        #[stellar_axelar_std::contractimpl]
+        #[soroban_sdk::contractimpl]
         impl stellar_axelar_std::interfaces::UpgradableInterface for #name {
-            #[allow_during_migration]
-            fn version(env: &Env) -> stellar_axelar_std::String {
-                stellar_axelar_std::String::from_str(env, env!("CARGO_PKG_VERSION"))
+            fn version(env: &Env) -> soroban_sdk::String {
+                soroban_sdk::String::from_str(env, env!("CARGO_PKG_VERSION"))
             }
 
-            #[allow_during_migration]
-            fn required_auths(env: &Env) -> stellar_axelar_std::Vec<stellar_axelar_std::Address> {
-                stellar_axelar_std::interfaces::required_auths::<Self>(env)
-            }
-
-            // if upgrade is not allowed during migration, the contract could get completely bricked
-            // if there is a bug in the migration code and the contract can't be upgraded again
-            #[allow_during_migration]
-            fn upgrade(env: &Env, new_wasm_hash: stellar_axelar_std::BytesN<32>) {
+            fn upgrade(env: &Env, new_wasm_hash: soroban_sdk::BytesN<32>) {
                 stellar_axelar_std::interfaces::upgrade::<Self>(env, new_wasm_hash);
             }
         }
@@ -52,11 +43,10 @@ pub fn upgradable(input: &DeriveInput) -> TokenStream2 {
         #[allow(non_camel_case_types)]
         type #migration_data_alias = <#name as stellar_axelar_std::interfaces::CustomMigratableInterface>::MigrationData;
 
-        #[stellar_axelar_std::contractimpl]
+        #[soroban_sdk::contractimpl]
         impl stellar_axelar_std::interfaces::MigratableInterface for #name {
             type Error = ContractError;
 
-            #[allow_during_migration]
             fn migrate(env: &Env, migration_data: #migration_data_alias) -> Result<(), ContractError> {
                 stellar_axelar_std::interfaces::migrate::<Self>(env, migration_data)
                     .map_err(|err| match err {
@@ -110,7 +100,6 @@ mod tests {
         let formatted_upgradable_impl = prettyplease::unparse(&upgradable_impl_file)
             .replace("pub fn ", "\npub fn ")
             .replace("#[cfg(test)]", "\n#[cfg(test)]");
-
         goldie::assert!(formatted_upgradable_impl);
     }
 }

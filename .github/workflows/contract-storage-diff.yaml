@@ -15,5 +15,4 @@ jobs:
       - name: Check for storage schema changes
         run: |
           chmod +x .github/scripts/check-migration.sh
-
           .github/scripts/check-migration.sh ${{ github.event.pull_request.base.sha }} ${{ github.sha }}

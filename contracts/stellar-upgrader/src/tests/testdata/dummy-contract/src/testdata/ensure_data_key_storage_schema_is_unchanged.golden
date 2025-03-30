@@ -1,6 +1,0 @@
-enum DataKey {
-
-    #[instance]
-    #[value(String)]
-    Data,
-}

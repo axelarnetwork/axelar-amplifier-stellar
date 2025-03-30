@@ -1,7 +1,5 @@
 // this is only needed in this crate itself, any crate that imports this one doesn't have to do this manual import resolution
-use stellar_axelar_std::{
-    contract, contracterror, contractimpl, contracttype, Address, Env, String,
-};
+use soroban_sdk::{contract, contracterror, contractimpl, contracttype, Address, Env, String};
 use stellar_axelar_std_derive::{Ownable, Upgradable};
 
 use crate as stellar_axelar_std;
@@ -23,13 +21,13 @@ pub struct MigrationData {
 
 #[contractimpl]
 impl ContractNonTrivial {
-    pub fn __constructor(env: Env, owner: Option<Address>, operator: Option<Address>) {
+    pub fn __constructor(_env: Env, owner: Option<Address>, operator: Option<Address>) {
         if let Some(owner) = owner {
-            ownable::set_owner(&env, &owner);
+            ownable::set_owner(&_env, &owner);
         }
 
         if let Some(operator) = operator {
-            operatable::set_operator(&env, &operator);
+            operatable::set_operator(&_env, &operator);
         }
     }
 
@@ -56,5 +54,4 @@ impl CustomMigratableInterface for ContractNonTrivial {
 #[repr(u32)]
 pub enum ContractError {
     MigrationNotAllowed = 1,
-    MigrationInProgress = 2,
 }

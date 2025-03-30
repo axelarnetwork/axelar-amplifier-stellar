@@ -13,16 +13,17 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
     let data_type_tokens = data_types.iter().map(|ty| quote!(#ty));
 
     let emit_impl = quote! {
-        fn emit(self, env: &stellar_axelar_std::Env) {
-            use stellar_axelar_std::{IntoVal, Symbol, Env, Val, Vec, vec};
+        fn emit(self, env: &soroban_sdk::Env) {
+            use soroban_sdk::IntoVal;
 
-            let topics = (Symbol::new(env, #event_name),
-                #(IntoVal::<Env, Val>::into_val(&self.#topic_field_idents, env),)*
+            let topics = (
+                soroban_sdk::Symbol::new(env, #event_name),
+                #(soroban_sdk::IntoVal::<soroban_sdk::Env, soroban_sdk::Val>::into_val(&self.#topic_field_idents, env),)*
             );
 
-            let data: Vec<Val> = vec![
+            let data: soroban_sdk::Vec<soroban_sdk::Val> = soroban_sdk::vec![
                 env
-                #(, IntoVal::<_, Val>::into_val(&self.#data_field_idents, env))*
+                #(, soroban_sdk::IntoVal::<_, soroban_sdk::Val>::into_val(&self.#data_field_idents, env))*
             ];
 
             env.events().publish(topics, data);
@@ -30,15 +31,14 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
     };
 
     let from_event_impl = quote! {
-        fn from_event(env: &stellar_axelar_std::Env,
-            topics: stellar_axelar_std::Vec<stellar_axelar_std::Val>, data: stellar_axelar_std::Val) -> Self {
-            use stellar_axelar_std::{TryFromVal, Symbol, Val, Vec};
+        fn from_event(env: &soroban_sdk::Env, topics: soroban_sdk::Vec<soroban_sdk::Val>, data: soroban_sdk::Val) -> Self {
+            use soroban_sdk::TryFromVal;
 
             // Verify the event name matches
-            let event_name = Symbol::try_from_val(env, &topics.get(0)
+            let event_name = soroban_sdk::Symbol::try_from_val(env, &topics.get(0)
                 .expect("missing event name in topics"))
                 .expect("invalid event name type");
-            assert_eq!(event_name, Symbol::new(env, #event_name), "event name mismatch");
+            assert_eq!(event_name, soroban_sdk::Symbol::new(env, #event_name), "event name mismatch");
 
             // Parse topics from Val to the corresponding type,
             // and assign them to a variable with the same name as the struct field
@@ -56,7 +56,7 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
             // and assign them to a variable with the same name as the struct field
             // E.g. let message = Message::try_from_val(env, &data.get(0));
             // `data` is required to be a `Vec<Val>`
-            let data = Vec::<Val>::try_from_val(env, &data)
+            let data = soroban_sdk::Vec::<soroban_sdk::Val>::try_from_val(env, &data)
                 .expect("invalid data format");
 
             let mut data_idx = 0;
@@ -78,7 +78,7 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
     };
 
     let schema_impl = quote! {
-        fn schema(env: &stellar_axelar_std::Env) -> &'static str {
+        fn schema(env: &soroban_sdk::Env) -> &'static str {
             concat!(
                 #event_name, " {\n",
                 #(

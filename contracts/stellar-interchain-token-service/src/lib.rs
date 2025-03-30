@@ -28,7 +28,6 @@ cfg_if::cfg_if! {
         mod token_handler;
         mod contract;
         mod flow_limit;
-        mod migrate;
 
         pub use contract::{InterchainTokenService, InterchainTokenServiceClient};
     }

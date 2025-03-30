@@ -10,9 +10,6 @@ pub mod error;
 
 pub mod interface;
 
-#[cfg(any(test, feature = "testutils"))]
-pub mod testutils;
-
 #[cfg(test)]
 mod tests;
 

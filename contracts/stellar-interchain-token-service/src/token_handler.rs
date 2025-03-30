@@ -1,5 +1,5 @@
-use stellar_axelar_std::token::TokenClient;
-use stellar_axelar_std::{Address, Env};
+use soroban_sdk::token::TokenClient;
+use soroban_sdk::{Address, Env};
 use stellar_token_manager::TokenManagerClient;
 
 use crate::error::ContractError;

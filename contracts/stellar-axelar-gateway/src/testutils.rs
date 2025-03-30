@@ -3,10 +3,10 @@ extern crate std;
 use ed25519_dalek::{Signature, Signer, SigningKey};
 use rand::distributions::{Alphanumeric, DistString};
 use rand::Rng;
-use stellar_axelar_std::testutils::{Address as _, BytesN as _};
+use soroban_sdk::testutils::{Address as _, BytesN as _};
+use soroban_sdk::xdr::ToXdr;
+use soroban_sdk::{vec, Address, Bytes, BytesN, Env, String, Vec};
 use stellar_axelar_std::traits::IntoVec;
-use stellar_axelar_std::xdr::ToXdr;
-use stellar_axelar_std::{vec, Address, Bytes, BytesN, Env, String, Vec};
 
 use crate::types::{
     CommandType, Message, Proof, ProofSignature, ProofSigner, WeightedSigner, WeightedSigners,

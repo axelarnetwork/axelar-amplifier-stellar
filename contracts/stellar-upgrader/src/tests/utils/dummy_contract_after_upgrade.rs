@@ -1,28 +1,20 @@
-//! Base for the dummy_contract_after_upgrade.wasm file. This is the dummy contract after upgrade.
+//! Base for the dummy.wasm file. This is the dummy contract after upgrade.
 
+use soroban_sdk::{contract, contracterror, contractimpl, Address, BytesN, Env};
 use stellar_axelar_std::interfaces::{OwnableInterface, UpgradableInterface};
-use stellar_axelar_std::{
-    contract, contracterror, contractimpl, interfaces, soroban_sdk, vec, Address, BytesN, Env,
-    String, Vec,
-};
+use stellar_axelar_std::{contractstorage, interfaces, only_owner};
 
 #[contract]
 pub struct DummyContract;
 
 #[contractimpl]
 impl UpgradableInterface for DummyContract {
-    fn version(env: &Env) -> String {
-        String::from_str(env, "0.2.0")
+    fn version(env: &Env) -> soroban_sdk::String {
+        soroban_sdk::String::from_str(env, "0.2.0")
     }
 
-    fn required_auths(env: &Env) -> Vec<Address> {
-        vec![env, Self::owner(env)]
-    }
-
+    #[only_owner]
     fn upgrade(env: &Env, new_wasm_hash: BytesN<32>) {
-        Self::required_auths(env)
-            .iter()
-            .for_each(|addr| addr.require_auth());
         env.deployer().update_current_contract_wasm(new_wasm_hash);
     }
 }
@@ -44,11 +36,8 @@ impl DummyContract {
         interfaces::set_owner(&env, &owner);
     }
 
-    pub fn migrate(env: Env, migration_data: String) -> Result<(), ContractError> {
-        Self::required_auths(&env)
-            .iter()
-            .for_each(|addr| addr.require_auth());
-
+    #[only_owner]
+    pub fn migrate(env: Env, migration_data: soroban_sdk::String) -> Result<(), ContractError> {
         storage::set_data(&env, &migration_data);
 
         Ok(())
@@ -58,16 +47,15 @@ impl DummyContract {
 #[contracterror]
 pub enum ContractError {
     SomeFailure = 1,
-    MigrationInProgress = 2,
 }
 
 mod storage {
-    use stellar_axelar_std::{contractstorage, soroban_sdk, String};
+    use super::*;
 
     #[contractstorage]
     enum DataKey {
         #[instance]
-        #[value(String)]
+        #[value(soroban_sdk::String)]
         Data,
     }
 }

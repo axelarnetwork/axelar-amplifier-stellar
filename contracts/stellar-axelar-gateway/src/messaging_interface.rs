@@ -1,4 +1,4 @@
-use stellar_axelar_std::{contractclient, soroban_sdk, Address, Bytes, BytesN, Env, String};
+use soroban_sdk::{contractclient, Address, Bytes, BytesN, Env, String};
 
 #[contractclient(name = "AxelarGatewayMessagingClient")]
 pub trait AxelarGatewayMessagingInterface {

@@ -1,13 +1,12 @@
+use soroban_sdk::testutils::{Address as _, Ledger as _};
+use soroban_sdk::{vec, Address, Bytes, BytesN, Env, String};
 use stellar_axelar_gas_service::testutils::setup_gas_token;
 use stellar_axelar_gateway::testutils::{approve_gateway_messages, TestSignerSet};
 use stellar_axelar_gateway::types::Message as GatewayMessage;
 use stellar_axelar_gateway::AxelarGatewayClient;
 use stellar_axelar_std::address::AddressExt;
-use stellar_axelar_std::testutils::{Address as _, Ledger as _};
 use stellar_axelar_std::traits::BytesExt;
-use stellar_axelar_std::{
-    assert_auth, assert_contract_err, events, vec, Address, Bytes, BytesN, Env, String,
-};
+use stellar_axelar_std::{assert_auth, assert_contract_err, events};
 
 use super::utils::setup_env;
 use crate::error::ContractError;

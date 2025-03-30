@@ -1,4 +1,4 @@
-use stellar_axelar_std::{contracttype, soroban_sdk, Bytes, BytesN, String};
+use soroban_sdk::{contracttype, Bytes, BytesN, String};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Message {

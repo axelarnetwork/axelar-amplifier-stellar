@@ -1,11 +1,10 @@
+use soroban_sdk::testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation};
+use soroban_sdk::token::{self, StellarAssetClient};
+use soroban_sdk::{Address, Bytes, BytesN, IntoVal, String, Symbol};
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_gas_service::testutils::setup_gas_token;
-use stellar_axelar_std::testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation};
-use stellar_axelar_std::token::{self, StellarAssetClient};
 use stellar_axelar_std::types::Token;
-use stellar_axelar_std::{
-    auth_invocation, events, Address, Bytes, BytesN, IntoVal, String, Symbol,
-};
+use stellar_axelar_std::{auth_invocation, events};
 
 use super::utils::{setup_env, TokenMetadataExt};
 use crate::event::InterchainTokenDeploymentStartedEvent;

@@ -1,4 +1,5 @@
-use stellar_axelar_std::{Address, Bytes, BytesN, IntoEvent, String};
+use soroban_sdk::{Address, Bytes, BytesN, String};
+use stellar_axelar_std::IntoEvent;
 
 #[derive(Debug, PartialEq, Eq, IntoEvent)]
 pub struct ExecutedEvent {

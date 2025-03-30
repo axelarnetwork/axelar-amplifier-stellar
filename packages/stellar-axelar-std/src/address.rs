@@ -33,11 +33,10 @@ impl AddressExt for Address {
 
 #[cfg(test)]
 mod tests {
-    use stellar_axelar_std::testutils::Address as _;
-    use stellar_axelar_std::{Address, Bytes, Env, String};
+    use soroban_sdk::testutils::Address as _;
+    use soroban_sdk::{Address, Bytes, Env, String};
 
     use super::{AddressExt, ZERO_ADDRESS};
-    use crate as stellar_axelar_std;
 
     #[test]
     fn zero_address_to_string() {

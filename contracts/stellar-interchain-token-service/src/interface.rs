@@ -1,10 +1,10 @@
+use soroban_sdk::{contractclient, Address, Bytes, BytesN, Env, String};
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_gateway::executable::AxelarExecutableInterface;
 use stellar_axelar_std::interfaces::{
     OperatableInterface, OwnableInterface, PausableInterface, UpgradableInterface,
 };
 use stellar_axelar_std::types::Token;
-use stellar_axelar_std::{contractclient, soroban_sdk, Address, Bytes, BytesN, Env, String};
 
 use crate::error::ContractError;
 use crate::types::TokenManagerType;
@@ -265,25 +265,5 @@ pub trait InterchainTokenServiceInterface:
         amount: i128,
         metadata: Option<Bytes>,
         gas_token: Option<Token>,
-    ) -> Result<(), ContractError>;
-
-    /// Migrates a token to a new version.
-    ///
-    /// Note: This is a separate function so each token's migration is within its own transaction,
-    ///       instead of within one atomic migrate call, to accommodate Stellar's resource constraints.
-    ///
-    /// More on Stellar resource limits: <https://developers.stellar.org/docs/networks/resource-limits-fees>
-    ///
-    /// # Arguments
-    /// - `token_id`: The unique identifier of the token to be migrated.
-    /// - `upgrader_client`: The address of the upgrader client.
-    /// - `new_version`: The new version of the token.
-    ///
-    /// # Returns
-    fn migrate_token(
-        env: &Env,
-        token_id: BytesN<32>,
-        upgrader_client: Address,
-        new_version: String,
     ) -> Result<(), ContractError>;
 }

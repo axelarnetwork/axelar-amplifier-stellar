@@ -1,7 +1,7 @@
 use core::fmt::Debug;
 
-use stellar_axelar_std::{contract, contracterror, Address, Env};
-use stellar_axelar_std_derive::{contractimpl, Ownable, Upgradable};
+use soroban_sdk::{contract, contracterror, contractimpl, Address, Env};
+use stellar_axelar_std_derive::{Ownable, Upgradable};
 
 use crate as stellar_axelar_std;
 use crate::events::Event;
@@ -13,7 +13,6 @@ use crate::IntoEvent;
 #[repr(u32)]
 pub enum ContractError {
     MigrationNotAllowed = 1,
-    MigrationInProgress = 2,
 }
 
 #[contract]

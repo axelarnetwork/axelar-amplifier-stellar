@@ -1,6 +1,6 @@
 use core::fmt::Debug;
 
-use soroban_sdk::{contractclient, vec, Address, BytesN, Env, FromVal, String, Val, Vec};
+use soroban_sdk::{contractclient, BytesN, Env, FromVal, String, Val};
 
 use crate as stellar_axelar_std;
 use crate::events::Event;
@@ -11,9 +11,6 @@ use crate::{ensure, IntoEvent};
 pub trait UpgradableInterface: OwnableInterface {
     /// Returns the current version of the contract.
     fn version(env: &Env) -> String;
-
-    /// Returns all addresses the contract authorizes before upgrading.
-    fn required_auths(env: &Env) -> Vec<Address>;
 
     /// Upgrades the contract to a new WASM hash.
     fn upgrade(env: &Env, new_wasm_hash: BytesN<32>);
@@ -32,8 +29,6 @@ pub trait MigratableInterface: UpgradableInterface + CustomMigratableInterface {
 
 /// This trait is used to implement custom migration logic for a contract.
 /// It is automatically implemented for the contract if the `#[migratable]` attribute is applied to the contract struct.
-///
-/// Do NOT add the implementation of [`CustomMigratableInterface`] to the public interface of the contract, i.e. do not annotate the `impl` block with `#[contractimpl]`
 pub trait CustomMigratableInterface: UpgradableInterface {
     /// Data needed during the migration. Each contract can define its own data type.
     /// Choose `()` if none is necessary
@@ -48,10 +43,8 @@ pub trait CustomMigratableInterface: UpgradableInterface {
 
 /// This function checks that the caller can authenticate as the owner of the contract,
 /// then upgrades the contract to a new WASM hash and prepares it for migration.
-pub fn upgrade<T: UpgradableInterface>(env: &Env, new_wasm_hash: BytesN<32>) {
-    T::required_auths(env)
-        .iter()
-        .for_each(|addr| addr.require_auth());
+pub fn upgrade<T: OwnableInterface>(env: &Env, new_wasm_hash: BytesN<32>) {
+    T::owner(env).require_auth();
 
     env.deployer().update_current_contract_wasm(new_wasm_hash);
     start_migration(env);
@@ -67,9 +60,7 @@ pub fn migrate<T: CustomMigratableInterface>(
     env: &Env,
     migration_data: T::MigrationData,
 ) -> Result<(), MigrationError<T::Error>> {
-    T::required_auths(env)
-        .iter()
-        .for_each(|addr| addr.require_auth());
+    T::owner(env).require_auth();
 
     ensure_is_migrating::<T>(env)?;
 
@@ -82,10 +73,6 @@ pub fn migrate<T: CustomMigratableInterface>(
     .emit(env);
 
     Ok(())
-}
-
-pub fn required_auths<T: UpgradableInterface>(env: &Env) -> Vec<Address> {
-    vec![env, T::owner(env)]
 }
 
 fn start_migration(env: &Env) {
@@ -101,10 +88,6 @@ fn ensure_is_migrating<T: CustomMigratableInterface>(
     );
 
     Ok(())
-}
-
-pub fn is_migrating(env: &Env) -> bool {
-    storage::migrating::is_interfaces_migrating(env)
 }
 
 fn custom_migrate<T: CustomMigratableInterface>(
@@ -131,10 +114,9 @@ pub enum MigrationError<T> {
 
 #[cfg(test)]
 mod test {
-    use stellar_axelar_std::testutils::Address as _;
-    use stellar_axelar_std::{Address, BytesN, Env, String};
+    use soroban_sdk::testutils::Address as _;
+    use soroban_sdk::{Address, BytesN, Env, String};
 
-    use crate as stellar_axelar_std;
     use crate::interfaces::testdata::{ContractClient, ContractNonTrivialClient, MigrationData};
     use crate::interfaces::upgradable::UpgradedEvent;
     use crate::interfaces::{testdata, upgradable};

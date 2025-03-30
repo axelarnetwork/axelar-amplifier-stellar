@@ -1,8 +1,6 @@
+use soroban_sdk::{contract, contractimpl, Address, Env, Symbol, Val, Vec};
 use stellar_axelar_std::events::Event;
-use stellar_axelar_std::{
-    contract, contractimpl, ensure, interfaces, only_owner, soroban_sdk, Address, Env, Ownable,
-    Symbol, Upgradable, Val, Vec,
-};
+use stellar_axelar_std::{ensure, interfaces, only_owner, Ownable, Upgradable};
 
 use crate::error::ContractError;
 use crate::event::{OperatorAddedEvent, OperatorRemovedEvent};

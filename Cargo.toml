@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["contracts/*", "contracts/stellar-upgrader/src/tests/testdata/*", "packages/*"]
+members = ["contracts/*", "packages/*"]
 
 [workspace.package]
 edition = "2021"
@@ -20,7 +20,7 @@ hex = { version = "0.4", default-features = false }
 paste = { version = "1.0", default-features = false }
 proc-macro2 = { version = "1.0", default-features = false }
 rand = { version = "0.8.5", default-features = false }
-serde = { version = "1.0.152", default-features = false, features = ["derive"] }
+soroban-sdk = { version = "22.0.6" }
 soroban-token-sdk = { version = "22.0.6" }
 stellar-axelar-example = { version = "^1.0.0", path = "contracts/stellar-axelar-example" }
 stellar-axelar-gas-service = { version = "^1.0.0", path = "contracts/stellar-axelar-gas-service" }
@@ -32,7 +32,6 @@ stellar-interchain-token = { version = "^1.0.0", path = "contracts/stellar-inter
 stellar-interchain-token-service = { version = "^1.0.0", path = "contracts/stellar-interchain-token-service" }
 stellar-token-manager = { version = "^1.0.0", path = "contracts/stellar-token-manager" }
 stellar-multicall = { version = "^1.0.0", path = "contracts/stellar-multicall" }
-stellar-upgrader = { version = "^1.0.0", path = "contracts/stellar-upgrader" }
 
 [workspace.lints.clippy]
 nursery = { level = "warn", priority = -1 }

@@ -1,11 +1,11 @@
-use stellar_axelar_std::{contracterror, soroban_sdk};
+use soroban_sdk::contracterror;
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 #[repr(u32)]
 pub enum ContractError {
     MigrationNotAllowed = 1,
-    InvalidAmount = 2,
-    InsufficientBalance = 3,
-    MigrationInProgress = 4,
+    InvalidAddress = 2,
+    InvalidAmount = 3,
+    InsufficientBalance = 4,
 }

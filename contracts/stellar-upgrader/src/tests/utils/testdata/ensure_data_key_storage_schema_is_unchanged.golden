@@ -1,6 +1,6 @@
 enum DataKey {
 
     #[instance]
-    #[value(String)]
+    #[value(soroban_sdk::String)]
     Data,
 }

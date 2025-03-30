@@ -766,20 +766,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
 
 [[package]]
-name = "dummy-contract"
-version = "0.1.0"
-dependencies = [
- "stellar-axelar-std",
-]
-
-[[package]]
-name = "dummy-contract-after-upgrade"
-version = "0.1.0"
-dependencies = [
- "stellar-axelar-std",
-]
-
-[[package]]
 name = "dunce"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2062,6 +2048,7 @@ name = "stellar-axelar-example"
 version = "1.0.0"
 dependencies = [
  "goldie",
+ "soroban-sdk",
  "soroban-token-sdk",
  "stellar-axelar-gas-service",
  "stellar-axelar-gateway",
@@ -2076,6 +2063,7 @@ dependencies = [
  "cfg-if",
  "goldie",
  "paste",
+ "soroban-sdk",
  "stellar-axelar-std",
 ]
 
@@ -2091,6 +2079,7 @@ dependencies = [
  "paste",
  "rand",
  "rand_chacha",
+ "soroban-sdk",
  "stellar-axelar-std",
 ]
 
@@ -2101,6 +2090,7 @@ dependencies = [
  "cfg-if",
  "goldie",
  "paste",
+ "soroban-sdk",
  "stellar-axelar-std",
 ]
 
@@ -2111,8 +2101,8 @@ dependencies = [
  "goldie",
  "hex",
  "paste",
- "serde",
  "soroban-sdk",
+ "soroban-token-sdk",
  "stellar-axelar-std-derive",
 ]
 
@@ -2136,6 +2126,7 @@ dependencies = [
  "cfg-if",
  "goldie",
  "paste",
+ "soroban-sdk",
  "soroban-token-sdk",
  "stellar-axelar-std",
 ]
@@ -2150,13 +2141,13 @@ dependencies = [
  "goldie",
  "hex",
  "paste",
+ "soroban-sdk",
  "soroban-token-sdk",
  "stellar-axelar-gas-service",
  "stellar-axelar-gateway",
  "stellar-axelar-std",
  "stellar-interchain-token",
  "stellar-token-manager",
- "stellar-upgrader",
 ]
 
 [[package]]
@@ -2187,6 +2178,7 @@ dependencies = [
  "cfg-if",
  "goldie",
  "paste",
+ "soroban-sdk",
  "stellar-axelar-std",
 ]
 
@@ -2195,7 +2187,8 @@ name = "stellar-upgrader"
 version = "1.0.0"
 dependencies = [
  "cfg-if",
- "dummy-contract",
+ "goldie",
+ "soroban-sdk",
  "stellar-axelar-std",
 ]
 

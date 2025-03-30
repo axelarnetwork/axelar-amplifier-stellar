@@ -1,6 +1,7 @@
 use alloy_primitives::{FixedBytes, Uint, U256};
 use alloy_sol_types::{sol, SolValue};
-use stellar_axelar_std::{ensure, Bytes, BytesN, Env, String};
+use soroban_sdk::{Bytes, BytesN, Env, String};
+use stellar_axelar_std::ensure;
 
 // alloc needed for converting to alloy types
 use crate::abi::alloc::{string::String as StdString, vec};
@@ -246,8 +247,9 @@ mod tests {
     use alloc::vec;
     use std::vec::Vec;
 
+    use soroban_sdk::{Bytes, BytesN, Env, String};
+    use stellar_axelar_std::assert_ok;
     use stellar_axelar_std::traits::BytesExt;
-    use stellar_axelar_std::{assert_ok, Bytes, BytesN, Env, String};
 
     use super::*;
 

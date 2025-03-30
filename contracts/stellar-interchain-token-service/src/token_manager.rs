@@ -1,4 +1,4 @@
-use stellar_axelar_std::{vec, Address, Env, IntoVal, Symbol, Val};
+use soroban_sdk::{vec, Address, Env, IntoVal, Symbol, Val};
 use stellar_token_manager::TokenManagerClient;
 
 pub trait TokenManagerClientExt {

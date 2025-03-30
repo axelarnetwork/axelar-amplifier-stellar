@@ -1,8 +1,9 @@
 use std::vec;
 
-use stellar_axelar_std::testutils::Address as _;
-use stellar_axelar_std::xdr::ToXdr;
-use stellar_axelar_std::{assert_contract_err, events, Address, BytesN};
+use soroban_sdk::testutils::Address as _;
+use soroban_sdk::xdr::ToXdr;
+use soroban_sdk::{Address, BytesN};
+use stellar_axelar_std::{assert_contract_err, events};
 
 use super::utils::setup_env;
 use crate::error::ContractError;

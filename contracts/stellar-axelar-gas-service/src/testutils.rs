@@ -1,7 +1,7 @@
-use stellar_axelar_std::testutils::Address as _;
-use stellar_axelar_std::token::StellarAssetClient;
+use soroban_sdk::testutils::Address as _;
+use soroban_sdk::token::StellarAssetClient;
+use soroban_sdk::{Address, Env};
 use stellar_axelar_std::types::Token;
-use stellar_axelar_std::{Address, Env};
 
 use crate::{AxelarGasService, AxelarGasServiceClient};
 

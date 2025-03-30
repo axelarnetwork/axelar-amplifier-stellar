@@ -25,10 +25,9 @@ impl StringExt for soroban_sdk::String {
 
 #[cfg(test)]
 mod tests {
-    use stellar_axelar_std::{Env, String};
+    use soroban_sdk::{Env, String};
 
     use super::*;
-    use crate as stellar_axelar_std;
 
     #[test]
     fn validate_ascii_strings_are_ascii() {

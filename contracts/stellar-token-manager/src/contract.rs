@@ -1,15 +1,12 @@
+use soroban_sdk::{contract, contractimpl, Address, Env, Symbol, Val, Vec};
 use stellar_axelar_std::ttl::extend_instance_ttl;
-use stellar_axelar_std::{
-    contract, contractimpl, interfaces, only_owner, soroban_sdk, Address, Env, Ownable, Symbol,
-    Upgradable, Val, Vec,
-};
+use stellar_axelar_std::{interfaces, only_owner, Ownable, Upgradable};
 
 use crate::error::ContractError;
 use crate::interface::TokenManagerInterface;
 
 #[contract]
 #[derive(Ownable, Upgradable)]
-#[migratable]
 pub struct TokenManager;
 
 #[contractimpl]

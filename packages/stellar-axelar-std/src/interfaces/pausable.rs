@@ -50,9 +50,8 @@ pub struct UnpausedEvent {}
 
 #[cfg(test)]
 mod test {
-    use stellar_axelar_std::testutils::Address as _;
-    use stellar_axelar_std::{contract, contracterror, Address, Env};
-    use stellar_axelar_std_derive::contractimpl;
+    use soroban_sdk::testutils::Address as _;
+    use soroban_sdk::{contract, contracterror, contractimpl, Address, Env};
 
     use super::{PausedEvent, UnpausedEvent};
     use crate as stellar_axelar_std;
@@ -64,7 +63,6 @@ mod test {
     #[repr(u32)]
     pub enum ContractError {
         ContractPaused = 1,
-        MigrationInProgress = 2,
     }
 
     #[contract]

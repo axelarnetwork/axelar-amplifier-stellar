@@ -1,11 +1,13 @@
 #![cfg(test)]
 extern crate std;
-use stellar_axelar_std::events::Event;
-use stellar_axelar_std::testutils::Address as _;
-use stellar_axelar_std::{
-    assert_auth, assert_auth_err, contract, contracterror, contractimpl, soroban_sdk, symbol_short,
-    vec, Address, Env, IntoEvent, IntoVal, Symbol, Val, Vec,
+
+use soroban_sdk::testutils::Address as _;
+use soroban_sdk::{
+    contract, contracterror, contractimpl, symbol_short, vec, Address, Env, IntoVal, Symbol, Val,
+    Vec,
 };
+use stellar_axelar_std::events::Event;
+use stellar_axelar_std::{assert_auth, assert_auth_err, IntoEvent};
 
 use crate::{TokenManager, TokenManagerClient};
 
@@ -32,7 +34,7 @@ impl TestTarget {
         panic!("This method should fail");
     }
 
-    pub fn failing_with_error(_env: &Env) -> Result<Val, TestTargetError> {
+    pub const fn failing_with_error(_env: &Env) -> Result<Val, TestTargetError> {
         Err(TestTargetError::TestError)
     }
 }

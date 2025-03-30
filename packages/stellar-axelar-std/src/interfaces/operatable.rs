@@ -5,7 +5,7 @@ use soroban_sdk::{contractclient, Address, Env};
 use crate as stellar_axelar_std;
 use crate::events::Event;
 use crate::interfaces::storage;
-use crate::{soroban_sdk, IntoEvent};
+use crate::IntoEvent;
 
 #[contractclient(name = "OperatableClient")]
 pub trait OperatableInterface {
@@ -49,10 +49,9 @@ pub struct OperatorshipTransferredEvent {
 
 #[cfg(test)]
 mod test {
-    use stellar_axelar_std::testutils::Address as _;
-    use stellar_axelar_std::{Address, Env};
+    use soroban_sdk::testutils::Address as _;
+    use soroban_sdk::{Address, Env};
 
-    use crate as stellar_axelar_std;
     use crate::interfaces::testdata::Contract;
     use crate::interfaces::{OperatableClient, OperatorshipTransferredEvent};
     use crate::{assert_auth, assert_auth_err, events};

@@ -17,7 +17,6 @@ cfg_if::cfg_if! {
         pub mod event;
         mod storage;
         mod contract;
-        mod migrate;
 
         pub use contract::{InterchainToken, InterchainTokenClient};
     }

@@ -1,4 +1,5 @@
-use stellar_axelar_std::{contractstorage, contracttype, soroban_sdk, Address, BytesN, String};
+use soroban_sdk::{contracttype, Address, BytesN, String};
+use stellar_axelar_std::contractstorage;
 
 use crate::types::TokenManagerType;
 
@@ -46,11 +47,11 @@ enum DataKey {
 
     #[temporary]
     #[value(i128)]
-    FlowOut { token_id: BytesN<32>, epoch: u64 },
+    FlowOut { flow_key: FlowKey },
 
     #[temporary]
     #[value(i128)]
-    FlowIn { token_id: BytesN<32>, epoch: u64 },
+    FlowIn { flow_key: FlowKey },
 }
 
 #[contracttype]
@@ -59,4 +60,11 @@ pub struct TokenIdConfigValue {
     pub token_address: Address,
     pub token_manager: Address,
     pub token_manager_type: TokenManagerType,
+}
+
+#[contracttype]
+#[derive(Clone, Debug)]
+pub struct FlowKey {
+    pub token_id: BytesN<32>,
+    pub epoch: u64,
 }
