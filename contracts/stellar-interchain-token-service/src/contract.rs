@@ -96,7 +96,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         storage::is_trusted_chain(env, chain)
     }
 
-    #[only_owner]
+    #[only_operator]
     fn set_trusted_chain(env: &Env, chain: String) -> Result<(), ContractError> {
         ensure!(
             !storage::is_trusted_chain(env, chain.clone()),
@@ -110,7 +110,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         Ok(())
     }
 
-    #[only_owner]
+    #[only_operator]
     fn remove_trusted_chain(env: &Env, chain: String) -> Result<(), ContractError> {
         ensure!(
             storage::is_trusted_chain(env, chain.clone()),
@@ -651,7 +651,10 @@ impl InterchainTokenService {
         );
 
         // Give minter role to the token manager
-        interchain_token_client.add_minter(&token_manager);
+        // Check if token_manager is already a minter before adding to avoid MinterAlreadyExists error
+        if !interchain_token_client.is_minter(&token_manager) {
+            interchain_token_client.add_minter(&token_manager);
+        }
 
         Ok(token_address)
     }

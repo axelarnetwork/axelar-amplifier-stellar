@@ -127,6 +127,12 @@ impl InterchainTokenInterface for InterchainToken {
 
     #[only_owner]
     fn add_minter(env: &Env, minter: Address) {
+        assert_with_error!(
+            env,
+            !Self::is_minter(env, minter.clone()),
+            ContractError::MinterAlreadyExists
+        );
+
         storage::set_minter_status(env, minter.clone());
 
         MinterAddedEvent { minter }.emit(env);
@@ -134,6 +140,12 @@ impl InterchainTokenInterface for InterchainToken {
 
     #[only_owner]
     fn remove_minter(env: &Env, minter: Address) {
+        assert_with_error!(
+            env,
+            Self::is_minter(env, minter.clone()),
+            ContractError::NotMinter
+        );
+
         storage::remove_minter_status(env, minter.clone());
 
         MinterRemovedEvent { minter }.emit(env);
@@ -186,7 +198,7 @@ impl token::Interface for InterchainToken {
         Self::spend_balance(&env, from.clone(), amount);
         Self::receive_balance(&env, to.clone(), amount);
 
-        TokenUtils::new(&env).events().transfer(from, to, amount)
+        TokenUtils::new(&env).events().transfer(from, to, amount);
     }
 
     fn burn(env: Env, from: Address, amount: i128) {
@@ -205,7 +217,7 @@ impl token::Interface for InterchainToken {
         Self::spend_allowance(&env, from.clone(), spender, amount);
         Self::spend_balance(&env, from.clone(), amount);
 
-        TokenUtils::new(&env).events().burn(from, amount)
+        TokenUtils::new(&env).events().burn(from, amount);
     }
 
     fn decimals(env: Env) -> u32 {

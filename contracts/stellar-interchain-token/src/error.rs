@@ -11,4 +11,5 @@ pub enum ContractError {
     InsufficientAllowance = 5,
     InsufficientBalance = 6,
     MigrationInProgress = 7,
+    MinterAlreadyExists = 8,
 }

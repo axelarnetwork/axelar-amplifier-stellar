@@ -4,12 +4,12 @@
 
 mod axelar_executable;
 mod contractimpl;
+mod contractstorage;
 mod into_event;
 mod its_executable;
 mod operatable;
 mod ownable;
 mod pausable;
-mod storage;
 mod upgradable;
 mod utils;
 
@@ -280,7 +280,7 @@ fn ensure_no_args(attr: &Attribute) -> syn::Result<&Path> {
 /// }
 /// }
 /// ```
-#[proc_macro_derive(IntoEvent, attributes(data, event_name))]
+#[proc_macro_derive(IntoEvent, attributes(event_name, datum, data))]
 pub fn derive_into_event(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
@@ -420,7 +420,7 @@ pub fn only_operator(_attr: TokenStream, item: TokenStream) -> TokenStream {
 pub fn contractstorage(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as DeriveInput);
 
-    storage::contract_storage(&input).into()
+    contractstorage::contract_storage(&input).into()
 }
 
 trait MapTranspose<T> {
