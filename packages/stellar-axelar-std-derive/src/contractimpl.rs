@@ -2,15 +2,24 @@ use itertools::Itertools;
 use proc_macro2::Ident;
 use quote::quote;
 use syn::{
-    parse_quote, AngleBracketedGenericArguments, GenericArgument, ImplItem, ImplItemFn, ItemImpl,
-    PathArguments, PathSegment, ReturnType, Stmt, Type, TypePath, Visibility,
+    parse_quote, AngleBracketedGenericArguments, FnArg, GenericArgument, ImplItem, ImplItemFn,
+    ItemImpl, Pat, PathArguments, PathSegment, ReturnType, Stmt, Type, TypePath, Visibility,
 };
 
 use crate::utils::{parse_env_identifier, PrependStatement};
 
 pub fn contractimpl(impl_block: &mut ItemImpl) -> Result<proc_macro2::TokenStream, syn::Error> {
-    // this needs to be defined before the iteration, because during it, we can't get a reference to the impl block
+    let all_contract_endpoints = all_contract_endpoints(impl_block);
     let any_stateful_endpoints = any_stateful_endpoints(impl_block);
+
+    impl_block
+        .items
+        .iter_mut()
+        .filter_map(all_contract_endpoints)
+        .try_for_each(|method| {
+            instance_ttl_extension(method)?;
+            Ok::<_, syn::Error>(())
+        })?;
 
     impl_block
         .items
@@ -32,6 +41,58 @@ pub fn contractimpl(impl_block: &mut ItemImpl) -> Result<proc_macro2::TokenStrea
     Ok(quote! {
         #[soroban_sdk::contractimpl]
         #impl_block
+    })
+}
+
+/// Returns fn that finds all contract endpoints with an Env parameter
+fn all_contract_endpoints(
+    impl_block: &ItemImpl,
+) -> impl Fn(&mut ImplItem) -> Option<&mut ImplItemFn> {
+    let any_contract_endpoint = if impl_block.trait_.is_some() {
+        any
+    } else {
+        any_pub_fn
+    };
+
+    move |item| {
+        any_fn(item)
+            .and_then(any_contract_endpoint)
+            .filter(has_env_param)
+    }
+}
+
+fn instance_ttl_extension(method: &mut ImplItemFn) -> Result<(), syn::Error> {
+    let env_ident = parse_env_identifier(&method.sig.inputs)?;
+
+    let extend_ttl_stmt: Stmt = if is_env_ref(&method, &env_ident) {
+        parse_quote! {
+            stellar_axelar_std::ttl::extend_instance_ttl(#env_ident);
+        }
+    } else {
+        parse_quote! {
+            stellar_axelar_std::ttl::extend_instance_ttl(&#env_ident);
+        }
+    };
+
+    method.prepend_statement(extend_ttl_stmt);
+    Ok(())
+}
+
+fn has_env_param(fn_: &&mut ImplItemFn) -> bool {
+    parse_env_identifier(&fn_.sig.inputs).is_ok()
+}
+
+fn is_env_ref(method: &ImplItemFn, env_ident: &Ident) -> bool {
+    method.sig.inputs.iter().any(|arg| match arg {
+        FnArg::Typed(pat_type) => {
+            if let Type::Reference(_) = *pat_type.ty {
+                if let Pat::Ident(pat) = &*pat_type.pat {
+                    return pat.ident == *env_ident;
+                }
+            }
+            false
+        }
+        _ => false,
     })
 }
 
@@ -133,7 +194,7 @@ fn extract_error_arg(result_segment: &PathSegment) -> Option<&GenericArgument> {
 }
 
 fn is_contract_error_type(error: &&GenericArgument) -> bool {
-    matches!(error, GenericArgument::Type(Type::Path(TypePath { path, .. })) 
+    matches!(error, GenericArgument::Type(Type::Path(TypePath { path, .. }))
         if path.segments
         .last()
         .filter(|segment| segment.ident == "ContractError")

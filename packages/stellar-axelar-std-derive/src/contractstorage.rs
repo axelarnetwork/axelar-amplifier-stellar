@@ -333,7 +333,7 @@ impl StorageType {
             Self::Persistent => {
                 quote! { stellar_axelar_std::ttl::extend_persistent_ttl(env, &#key); }
             }
-            Self::Instance => quote! { stellar_axelar_std::ttl::extend_instance_ttl(env); },
+            Self::Instance => quote! {},
             Self::Temporary => quote! {},
         }
     }
