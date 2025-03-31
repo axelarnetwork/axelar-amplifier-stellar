@@ -85,7 +85,7 @@ pub fn migrate_token(
     }
 
     let current_epoch = current_epoch(env);
-    
+
     let flow_key = legacy_storage::FlowKey {
         token_id: token_id.clone(),
         epoch: current_epoch,
