@@ -64,7 +64,7 @@ fn all_contract_endpoints(
 fn instance_ttl_extension(method: &mut ImplItemFn) -> Result<(), syn::Error> {
     let env_ident = parse_env_identifier(&method.sig.inputs)?;
 
-    let extend_ttl_stmt: Stmt = if is_env_ref(&method, &env_ident) {
+    let extend_ttl_stmt: Stmt = if is_env_ref(method, env_ident) {
         parse_quote! {
             stellar_axelar_std::ttl::extend_instance_ttl(#env_ident);
         }
