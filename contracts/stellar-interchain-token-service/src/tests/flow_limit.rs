@@ -240,7 +240,8 @@ fn flow_limit_resets_after_epoch() {
 
     execute_its_transfer(&env, &client, &gateway, &token.id, amount);
 
-    assert_eq!(client.flow_in_amount(&token.id), amount as u128);
+    let amount = u128::try_from(amount).expect("expected positive");
+    assert_eq!(client.flow_in_amount(&token.id), amount);
 
     env.ledger()
         .set_timestamp(env.ledger().timestamp() + EPOCH_TIME);
@@ -258,7 +259,8 @@ fn add_flow_in_succeeds() {
 
     execute_its_transfer(&env, &client, &gateway, &token.id, amount);
 
-    assert_eq!(client.flow_in_amount(&token.id), amount as u128);
+    let amount = u128::try_from(amount).expect("expected positive");
+    assert_eq!(client.flow_in_amount(&token.id), amount);
     assert_eq!(client.flow_out_amount(&token.id), 0);
 }
 
@@ -270,7 +272,8 @@ fn add_flow_in_fails_on_exceeding_flow_limit() {
 
     execute_its_transfer(&env, &client, &gateway, &token.id, amount);
 
-    assert_eq!(client.flow_in_amount(&token.id), amount as u128);
+    let amount = u128::try_from(amount).expect("expected positive");
+    assert_eq!(client.flow_in_amount(&token.id), amount);
 
     let amount = 1;
     let msg = approve_its_transfer(&env, &client, &gateway, &token.id, amount);
@@ -310,7 +313,8 @@ fn add_flow_out_succeeds() {
         &Some(gas_token),
     );
 
-    assert_eq!(client.flow_out_amount(&token.id), amount as u128);
+    let amount = u128::try_from(amount).expect("expected positive");
+    assert_eq!(client.flow_out_amount(&token.id), amount);
     assert_eq!(client.flow_in_amount(&token.id), 0);
 }
 
@@ -336,7 +340,8 @@ fn add_flow_out_fails_on_exceeding_flow_limit() {
         &Some(gas_token.clone()),
     );
 
-    assert_eq!(client.flow_out_amount(&token.id), amount as u128);
+    let amount = u128::try_from(amount).expect("expected positive");
+    assert_eq!(client.flow_out_amount(&token.id), amount);
 
     let second_amount = 1;
 

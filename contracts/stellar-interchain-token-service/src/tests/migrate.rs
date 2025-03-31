@@ -267,8 +267,8 @@ fn upgrade_and_migrate_native_interchain_token_succeeds() {
         "its.migrate_token(&its_client, &upgrader_client, token_id.clone())"
     ));
 
-    let flow_in_amount = flow_in_amount as u128;
-    let flow_out_amount = flow_out_amount as u128;
+    let flow_in_amount = u128::try_from(flow_in_amount).expect("expected positive");
+    let flow_out_amount = u128::try_from(flow_out_amount).expect("expected positive");
 
     assert_migrate_storage(
         &its_client,
@@ -307,8 +307,8 @@ fn migrate_native_interchain_token_succeeds() {
     migrate(&env, &its_client, migration_data.clone());
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
-    let flow_in_amount = flow_in_amount as u128;
-    let flow_out_amount = flow_out_amount as u128;
+    let flow_in_amount = u128::try_from(flow_in_amount).expect("expected positive");
+    let flow_out_amount = u128::try_from(flow_out_amount).expect("expected positive");
 
     assert_migrate_storage(
         &its_client,
@@ -352,8 +352,8 @@ fn migrate_lock_unlock_succeeds() {
         "its.migrate_token(&its_client, &upgrader_client, token_id.clone())"
     ));
 
-    let flow_in_amount = flow_in_amount as u128;
-    let flow_out_amount = flow_out_amount as u128;
+    let flow_in_amount = u128::try_from(flow_in_amount).expect("expected positive");
+    let flow_out_amount = u128::try_from(flow_out_amount).expect("expected positive");
 
     assert_migrate_storage(
         &its_client,
@@ -417,8 +417,8 @@ fn migrate_native_interchain_token_with_flow_amount_succeeds() {
 
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
-    let flow_in_amount = flow_in_amount as u128;
-    let flow_out_amount = flow_out_amount as u128;
+    let flow_in_amount = u128::try_from(flow_in_amount).expect("expected positive");
+    let flow_out_amount = u128::try_from(flow_out_amount).expect("expected positive");
 
     assert_migrate_storage(
         &its_client,
@@ -460,8 +460,8 @@ fn migrate_with_lock_unlock_with_flow_amount_succeeds() {
 
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
-    let flow_in_amount = flow_in_amount as u128;
-    let flow_out_amount = flow_out_amount as u128;
+    let flow_in_amount = u128::try_from(flow_in_amount).expect("expected positive");
+    let flow_out_amount = u128::try_from(flow_out_amount).expect("expected positive");
 
     assert_migrate_storage(
         &its_client,
