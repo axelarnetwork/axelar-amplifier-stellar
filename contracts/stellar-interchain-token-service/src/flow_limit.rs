@@ -93,7 +93,7 @@ pub fn set_flow_limit(
 ) -> Result<(), ContractError> {
     if let Some(flow_limit) = flow_limit {
         ensure!(flow_limit >= 0, ContractError::InvalidFlowLimit);
-        
+
         storage::set_flow_limit(env, token_id.clone(), &flow_limit);
     } else {
         storage::remove_flow_limit(env, token_id.clone());
