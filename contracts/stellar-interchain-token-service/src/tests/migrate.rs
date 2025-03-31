@@ -307,13 +307,16 @@ fn migrate_native_interchain_token_succeeds() {
     migrate(&env, &its_client, migration_data.clone());
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
+    let flow_in_amount = flow_in_amount as u128;
+    let flow_out_amount = flow_out_amount as u128;
+
     assert_migrate_storage(
         &its_client,
         migration_data,
         Some(FlowData {
             token_id,
-            flow_in_amount: flow_in_amount as u128,
-            flow_out_amount: flow_out_amount as u128,
+            flow_in_amount,
+            flow_out_amount,
         }),
     );
 }
@@ -349,13 +352,16 @@ fn migrate_lock_unlock_succeeds() {
         "its.migrate_token(&its_client, &upgrader_client, token_id.clone())"
     ));
 
+    let flow_in_amount = flow_in_amount as u128;
+    let flow_out_amount = flow_out_amount as u128;
+
     assert_migrate_storage(
         &its_client,
         migration_data,
         Some(FlowData {
             token_id,
-            flow_in_amount: flow_in_amount as u128,
-            flow_out_amount: flow_out_amount as u128,
+            flow_in_amount,
+            flow_out_amount,
         }),
     );
 }
@@ -411,13 +417,16 @@ fn migrate_native_interchain_token_with_flow_amount_succeeds() {
 
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
+    let flow_in_amount = flow_in_amount as u128;
+    let flow_out_amount = flow_out_amount as u128;
+
     assert_migrate_storage(
         &its_client,
         migration_data,
         Some(FlowData {
             token_id,
-            flow_in_amount: flow_in_amount as u128,
-            flow_out_amount: flow_out_amount as u128,
+            flow_in_amount,
+            flow_out_amount,
         }),
     );
 }
@@ -451,13 +460,16 @@ fn migrate_with_lock_unlock_with_flow_amount_succeeds() {
 
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
+    let flow_in_amount = flow_in_amount as u128;
+    let flow_out_amount = flow_out_amount as u128;
+
     assert_migrate_storage(
         &its_client,
         migration_data,
         Some(FlowData {
             token_id,
-            flow_in_amount: flow_in_amount as u128,
-            flow_out_amount: flow_out_amount as u128,
+            flow_in_amount,
+            flow_out_amount,
         }),
     );
 }

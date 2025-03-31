@@ -74,6 +74,7 @@ pub fn migrate_token(
         &storage::token_manager_wasm_hash(env),
         &vec![env, ().into()],
     );
+
     /* Only tokens deployed via ITS may be upgraded. */
     if token_manager_type == TokenManagerType::NativeInterchainToken {
         upgrader_client.upgrade(
@@ -92,10 +93,10 @@ pub fn migrate_token(
     };
 
     if let Some(flow_out) = legacy_storage::try_flow_out(env, flow_key.clone()) {
-        storage::set_flow_out(env, token_id.clone(), current_epoch, &(flow_out as u128));
+        storage::set_flow_out(env, token_id.clone(), current_epoch, &u128::try_from(flow_out).expect("expected positive"));
     }
     if let Some(flow_in) = legacy_storage::try_flow_in(env, flow_key) {
-        storage::set_flow_in(env, token_id, current_epoch, &(flow_in as u128));
+        storage::set_flow_in(env, token_id, current_epoch, &u128::try_from(flow_in).expect("expected positive"));
     }
 
     Ok(())
