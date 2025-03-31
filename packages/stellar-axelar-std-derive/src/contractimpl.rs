@@ -300,4 +300,41 @@ mod tests {
 
         goldie::assert!(formatted_contract_impl);
     }
+
+    #[test]
+    fn ttl_extension_handles_both_ref_and_value_env() {
+        let mut ref_contract_input: syn::ItemImpl = syn::parse_quote! {
+            #[contractimpl]
+            impl Contract {
+                pub fn with_ref_env(env: &Env, arg: String) -> u32 {
+                    42
+                }
+            }
+        };
+
+        let mut value_contract_input: syn::ItemImpl = syn::parse_quote! {
+            #[contractimpl]
+            impl Contract {
+                pub fn with_value_env(env: Env, arg: String) -> u32 {
+                    42
+                }
+            }
+        };
+
+        let ref_impl: proc_macro2::TokenStream =
+            crate::contractimpl::contractimpl(&mut ref_contract_input).unwrap();
+        let value_impl: proc_macro2::TokenStream =
+            crate::contractimpl::contractimpl(&mut value_contract_input).unwrap();
+
+        let ref_file: syn::File = syn::parse2(ref_impl).unwrap();
+        let value_file: syn::File = syn::parse2(value_impl).unwrap();
+
+        let ref_formatted = prettyplease::unparse(&ref_file);
+        let value_formatted = prettyplease::unparse(&value_file);
+
+        assert!(ref_formatted.contains("stellar_axelar_std::ttl::extend_instance_ttl(env);"));
+        assert!(value_formatted.contains("stellar_axelar_std::ttl::extend_instance_ttl(&env);"));
+
+        goldie::assert!([ref_formatted, value_formatted].join("\n\n"));
+    }
 }
