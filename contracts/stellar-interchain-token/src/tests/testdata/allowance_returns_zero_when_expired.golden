@@ -1,0 +1,15 @@
+ApproveEvent {
+    owner: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM),
+    spender: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4),
+    amount: 1000,
+    expiration_ledger: 200,
+}
+
+Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM)
+
+approve {
+    #[topic] owner: Address,
+    #[topic] spender: Address,
+    #[data]  amount: i128,
+    #[data]  expiration_ledger: u32,
+}
