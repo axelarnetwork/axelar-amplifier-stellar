@@ -44,7 +44,6 @@ pub fn contractimpl(impl_block: &mut ItemImpl) -> Result<proc_macro2::TokenStrea
     })
 }
 
-/// Returns fn that finds all contract endpoints with an Env parameter
 fn all_contract_endpoints(
     impl_block: &ItemImpl,
 ) -> impl Fn(&mut ImplItem) -> Option<&mut ImplItemFn> {
