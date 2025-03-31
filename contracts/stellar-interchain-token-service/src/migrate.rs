@@ -21,11 +21,11 @@ pub mod legacy_storage {
     #[contractstorage]
     enum LegacyDataKey {
         #[temporary]
-        #[value(u128)]
+        #[value(i128)]
         FlowOut { flow_key: FlowKey },
 
         #[temporary]
-        #[value(u128)]
+        #[value(i128)]
         FlowIn { flow_key: FlowKey },
     }
 
@@ -68,15 +68,13 @@ pub fn migrate_token(
         token_manager_type,
     } = storage::try_token_id_config(env, token_id.clone()).ok_or(ContractError::InvalidTokenId)?;
 
-    // First migrate the token manager
     upgrader_client.upgrade(
         &token_manager,
         &new_version,
         &storage::token_manager_wasm_hash(env),
         &vec![env, ().into()],
     );
-
-    // Then migrate the interchain token if it's a native interchain token
+    /* Only tokens deployed via ITS may be upgraded. */
     if token_manager_type == TokenManagerType::NativeInterchainToken {
         upgrader_client.upgrade(
             &interchain_token,
@@ -86,18 +84,18 @@ pub fn migrate_token(
         );
     }
 
-    // Finally migrate the flow data
     let current_epoch = current_epoch(env);
+    
     let flow_key = legacy_storage::FlowKey {
         token_id: token_id.clone(),
         epoch: current_epoch,
     };
 
     if let Some(flow_out) = legacy_storage::try_flow_out(env, flow_key.clone()) {
-        storage::set_flow_out(env, token_id.clone(), current_epoch, &flow_out);
+        storage::set_flow_out(env, token_id.clone(), current_epoch, &(flow_out as u128));
     }
     if let Some(flow_in) = legacy_storage::try_flow_in(env, flow_key) {
-        storage::set_flow_in(env, token_id, current_epoch, &flow_in);
+        storage::set_flow_in(env, token_id, current_epoch, &(flow_in as u128));
     }
 
     Ok(())

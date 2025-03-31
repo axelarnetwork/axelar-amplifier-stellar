@@ -107,8 +107,8 @@ mod testutils {
                 epoch: current_epoch,
             };
 
-            legacy_storage::set_flow_in(env, flow_key.clone(), &(flow_in_amount as u128));
-            legacy_storage::set_flow_out(env, flow_key, &(flow_out_amount as u128));
+            legacy_storage::set_flow_in(env, flow_key.clone(), &flow_in_amount);
+            legacy_storage::set_flow_out(env, flow_key, &flow_out_amount);
         });
     }
 
@@ -239,16 +239,16 @@ fn upgrade_and_migrate_native_interchain_token_succeeds() {
         ..
     } = setup_migrate_env(TokenManagerType::NativeInterchainToken);
 
-    let flow_in_amount = 100u128;
-    let flow_out_amount = 50u128;
+    let flow_in_amount = 100i128;
+    let flow_out_amount = 50i128;
 
     setup_migrate_storage(
         &env,
         &its_client,
         token_id.clone(),
         current_epoch,
-        flow_in_amount as i128,
-        flow_out_amount as i128,
+        flow_in_amount,
+        flow_out_amount,
     );
 
     upgrade(
@@ -266,6 +266,9 @@ fn upgrade_and_migrate_native_interchain_token_succeeds() {
         env.auths(),
         "its.migrate_token(&its_client, &upgrader_client, token_id.clone())"
     ));
+
+    let flow_in_amount = flow_in_amount as u128;
+    let flow_out_amount = flow_out_amount as u128;
 
     assert_migrate_storage(
         &its_client,
@@ -290,16 +293,16 @@ fn migrate_native_interchain_token_succeeds() {
         ..
     } = setup_migrate_env(TokenManagerType::NativeInterchainToken);
 
-    let flow_in_amount = 100u128;
-    let flow_out_amount = 50u128;
+    let flow_in_amount = 100i128;
+    let flow_out_amount = 50i128;
 
     setup_migrate_storage(
         &env,
         &its_client,
         token_id.clone(),
         current_epoch,
-        flow_in_amount as i128,
-        flow_out_amount as i128,
+        flow_in_amount,
+        flow_out_amount,
     );
     migrate(&env, &its_client, migration_data.clone());
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
@@ -309,8 +312,8 @@ fn migrate_native_interchain_token_succeeds() {
         migration_data,
         Some(FlowData {
             token_id,
-            flow_in_amount,
-            flow_out_amount,
+            flow_in_amount: flow_in_amount as u128,
+            flow_out_amount: flow_out_amount as u128,
         }),
     );
 }
@@ -327,16 +330,16 @@ fn migrate_lock_unlock_succeeds() {
         ..
     } = setup_migrate_env(TokenManagerType::LockUnlock);
 
-    let flow_in_amount = 100u128;
-    let flow_out_amount = 50u128;
+    let flow_in_amount = 100i128;
+    let flow_out_amount = 50i128;
 
     setup_migrate_storage(
         &env,
         &its_client,
         token_id.clone(),
         current_epoch,
-        flow_in_amount as i128,
-        flow_out_amount as i128,
+        flow_in_amount,
+        flow_out_amount,
     );
     migrate(&env, &its_client, migration_data.clone());
 
@@ -351,8 +354,8 @@ fn migrate_lock_unlock_succeeds() {
         migration_data,
         Some(FlowData {
             token_id,
-            flow_in_amount,
-            flow_out_amount,
+            flow_in_amount: flow_in_amount as u128,
+            flow_out_amount: flow_out_amount as u128,
         }),
     );
 }
@@ -393,16 +396,16 @@ fn migrate_native_interchain_token_with_flow_amount_succeeds() {
         ..
     } = setup_migrate_env(TokenManagerType::NativeInterchainToken);
 
-    let flow_in_amount = 100u128;
-    let flow_out_amount = 50u128;
+    let flow_in_amount = 100i128;
+    let flow_out_amount = 50i128;
 
     setup_migrate_storage(
         &env,
         &its_client,
         token_id.clone(),
         current_epoch,
-        flow_in_amount as i128,
-        flow_out_amount as i128,
+        flow_in_amount,
+        flow_out_amount,
     );
     migrate(&env, &its_client, migration_data.clone());
 
@@ -413,8 +416,8 @@ fn migrate_native_interchain_token_with_flow_amount_succeeds() {
         migration_data,
         Some(FlowData {
             token_id,
-            flow_in_amount,
-            flow_out_amount,
+            flow_in_amount: flow_in_amount as u128,
+            flow_out_amount: flow_out_amount as u128,
         }),
     );
 }
@@ -433,16 +436,16 @@ fn migrate_with_lock_unlock_with_flow_amount_succeeds() {
         ..
     } = setup_migrate_env(TokenManagerType::LockUnlock);
 
-    let flow_in_amount = 100u128;
-    let flow_out_amount = 50u128;
+    let flow_in_amount = 100i128;
+    let flow_out_amount = 50i128;
 
     setup_migrate_storage(
         &env,
         &its_client,
         token_id.clone(),
         current_epoch,
-        flow_in_amount as i128,
-        flow_out_amount as i128,
+        flow_in_amount,
+        flow_out_amount,
     );
     migrate(&env, &its_client, migration_data.clone());
 
@@ -453,8 +456,8 @@ fn migrate_with_lock_unlock_with_flow_amount_succeeds() {
         migration_data,
         Some(FlowData {
             token_id,
-            flow_in_amount,
-            flow_out_amount,
+            flow_in_amount: flow_in_amount as u128,
+            flow_out_amount: flow_out_amount as u128,
         }),
     );
 }
