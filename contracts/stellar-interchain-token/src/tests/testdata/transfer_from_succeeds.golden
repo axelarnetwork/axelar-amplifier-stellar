@@ -9,5 +9,5 @@ Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4)
 transfer {
     #[topic] from: Address,
     #[topic] to: Address,
-    #[data]  amount: i128,
+    #[datum] amount: i128,
 }
