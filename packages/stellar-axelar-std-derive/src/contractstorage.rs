@@ -351,6 +351,7 @@ impl TryFrom<&[Attribute]> for StorageType {
     }
 }
 
+/// See contractstorage docstring for more on StorageTypes.
 impl StorageType {
     fn storage_method(&self) -> TokenStream {
         match self {
