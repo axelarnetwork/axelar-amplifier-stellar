@@ -88,6 +88,8 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
         }
     };
 
+    let attribute_name = if has_datum { "#[datum] " } else { "#[data]  " };
+
     let schema_impl = quote! {
         fn schema(env: &stellar_axelar_std::Env) -> &'static str {
             concat!(
@@ -100,7 +102,7 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
                     ",\n",
                 )*
                 #(
-                    "    #[data]  ",
+                    "    ", #attribute_name,
                     stringify!(#data_field_idents),
                     ": ",
                     stringify!(#data_types),
