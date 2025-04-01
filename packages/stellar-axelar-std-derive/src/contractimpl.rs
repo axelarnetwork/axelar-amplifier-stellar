@@ -2,8 +2,8 @@ use itertools::Itertools;
 use proc_macro2::Ident;
 use quote::quote;
 use syn::{
-    parse_quote, AngleBracketedGenericArguments, FnArg, GenericArgument, ImplItem, ImplItemFn,
-    ItemImpl, Pat, PathArguments, PathSegment, ReturnType, Stmt, Type, TypePath, Visibility,
+    parse_quote, AngleBracketedGenericArguments, GenericArgument, ImplItem, ImplItemFn,
+    ItemImpl, PathArguments, PathSegment, ReturnType, Stmt, Type, TypePath, Visibility,
 };
 
 use crate::utils::{parse_env_identifier, PrependStatement};
@@ -64,14 +64,8 @@ fn all_contract_endpoints(
 fn instance_ttl_extension(method: &mut ImplItemFn) -> Result<(), syn::Error> {
     let env_ident = parse_env_identifier(&method.sig.inputs)?;
 
-    let extend_ttl_stmt: Stmt = if is_env_ref(method, env_ident) {
-        parse_quote! {
-            stellar_axelar_std::ttl::extend_instance_ttl(#env_ident);
-        }
-    } else {
-        parse_quote! {
-            stellar_axelar_std::ttl::extend_instance_ttl(&#env_ident);
-        }
+    let extend_ttl_stmt: Stmt = parse_quote! {
+        stellar_axelar_std::ttl::extend_instance_ttl(&#env_ident);
     };
 
     method.prepend_statement(extend_ttl_stmt);
@@ -80,20 +74,6 @@ fn instance_ttl_extension(method: &mut ImplItemFn) -> Result<(), syn::Error> {
 
 fn has_env_param(fn_: &&mut ImplItemFn) -> bool {
     parse_env_identifier(&fn_.sig.inputs).is_ok()
-}
-
-fn is_env_ref(method: &ImplItemFn, env_ident: &Ident) -> bool {
-    method.sig.inputs.iter().any(|arg| match arg {
-        FnArg::Typed(pat_type) => {
-            if let Type::Reference(_) = *pat_type.ty {
-                if let Pat::Ident(pat) = &*pat_type.pat {
-                    return pat.ident == *env_ident;
-                }
-            }
-            false
-        }
-        _ => false,
-    })
 }
 
 /// If a function doesn't have any arguments it cannot modify the environment, so it's safe to be called during migration
@@ -299,42 +279,5 @@ mod tests {
         let formatted_contract_impl = prettyplease::unparse(&contract_impl_file);
 
         goldie::assert!(formatted_contract_impl);
-    }
-
-    #[test]
-    fn ttl_extension_handles_both_ref_and_value_env() {
-        let mut ref_contract_input: syn::ItemImpl = syn::parse_quote! {
-            #[contractimpl]
-            impl Contract {
-                pub fn with_ref_env(env: &Env, arg: String) -> u32 {
-                    42
-                }
-            }
-        };
-
-        let mut value_contract_input: syn::ItemImpl = syn::parse_quote! {
-            #[contractimpl]
-            impl Contract {
-                pub fn with_value_env(env: Env, arg: String) -> u32 {
-                    42
-                }
-            }
-        };
-
-        let ref_impl: proc_macro2::TokenStream =
-            crate::contractimpl::contractimpl(&mut ref_contract_input).unwrap();
-        let value_impl: proc_macro2::TokenStream =
-            crate::contractimpl::contractimpl(&mut value_contract_input).unwrap();
-
-        let ref_file: syn::File = syn::parse2(ref_impl).unwrap();
-        let value_file: syn::File = syn::parse2(value_impl).unwrap();
-
-        let ref_formatted = prettyplease::unparse(&ref_file);
-        let value_formatted = prettyplease::unparse(&value_file);
-
-        assert!(ref_formatted.contains("stellar_axelar_std::ttl::extend_instance_ttl(env);"));
-        assert!(value_formatted.contains("stellar_axelar_std::ttl::extend_instance_ttl(&env);"));
-
-        goldie::assert!([ref_formatted, value_formatted].join("\n\n"));
     }
 }
