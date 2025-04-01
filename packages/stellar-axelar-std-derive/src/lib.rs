@@ -367,6 +367,16 @@ pub fn only_operator(_attr: TokenStream, item: TokenStream) -> TokenStream {
 /// Each variant requires a `#[value(Type)]` xor `#[status]` attribute to specify the stored value type.
 /// Storage type can be specified with `#[instance]`, `#[persistent]`, or `#[temporary]` attributes (defaults to instance).
 ///
+/// Certain types have default behaviors for TTL extensions:
+/// - `#[persistent]`: This is extended by default every time a data key is accessed, for that data key.
+///                    The persistent data type does not share the same TTL as the contract instance.
+/// - `#[instance]`: This is extended by default for all contract endpoints, so it does not need to be included in generated data key access functions.
+///                  This also serves to extend the lifetime of the contract's bytecode, since the instance data type does share the same TTL as the contract instance.
+/// - `#[temporary]`: This is not extended by default, since this data type can be easily recreated or only valid for a certain period of time.
+///                   In the special case that temporary data needs to be extended, a user may call the generated #ttl_extender function for that temporary data key.
+///
+/// More on Stellar data types: <https://developers.stellar.org/docs/learn/encyclopedia/storage/state-archival#contract-data-type-descriptions>
+///
 /// # Example
 /// ```rust,ignore
 /// # mod test {

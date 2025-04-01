@@ -159,17 +159,32 @@ impl Value {
         let ttl_function = storage_type.ttl_function(&quote! { key });
         let default_ttl_function = storage_type.default_ttl_function(&quote! { key });
 
-        quote! {
-            pub fn #getter(#params) -> bool {
-                let key = #storage_key;
-                let value = #storage_method.has(&key);
+        let has_ttl_function = !default_ttl_function.to_string().trim().is_empty();
 
-                if value {
-                    #default_ttl_function
+        let getter = if has_ttl_function {
+            quote! {
+                pub fn #getter(#params) -> bool {
+                    let key = #storage_key;
+                    let value = #storage_method.has(&key);
+
+                    if value {
+                        #default_ttl_function
+                    }
+
+                    value
                 }
-
-                value
             }
+        } else {
+            quote! {
+                pub fn #getter(#params) -> bool {
+                    let key = #storage_key;
+                    #storage_method.has(&key)
+                }
+            }
+        };
+
+        quote! {
+            #getter
 
             pub fn #setter(#params) {
                 let key = #storage_key;
@@ -208,29 +223,58 @@ impl Value {
         let storage_method = storage_type.storage_method();
         let ttl_function = storage_type.ttl_function(&quote! { key });
         let default_ttl_function = storage_type.default_ttl_function(&quote! { key });
+        let has_ttl_function = !default_ttl_function.to_string().trim().is_empty();
+
+        let getter = if has_ttl_function {
+            quote! {
+                pub fn #getter(#params) -> #value_type {
+                    let key = #storage_key;
+                    let value = #storage_method
+                        .get::<_, #value_type>(&key)
+                        .unwrap();
+
+                    #default_ttl_function
+
+                    value
+                }
+            }
+        } else {
+            quote! {
+                pub fn #getter(#params) -> #value_type {
+                    let key = #storage_key;
+                    #storage_method
+                        .get::<_, #value_type>(&key)
+                        .unwrap()
+                }
+            }
+        };
+
+        let try_getter = if has_ttl_function {
+            quote! {
+                pub fn #try_getter(#params) -> Option<#value_type> {
+                    let key = #storage_key;
+                    let value = #storage_method.get::<_, #value_type>(&key);
+
+                    if value.is_some() {
+                        #default_ttl_function
+                    }
+
+                    value
+                }
+            }
+        } else {
+            quote! {
+                pub fn #try_getter(#params) -> Option<#value_type> {
+                    let key = #storage_key;
+                    #storage_method.get::<_, #value_type>(&key)
+                }
+            }
+        };
 
         quote! {
-            pub fn #getter(#params) -> #value_type {
-                let key = #storage_key;
-                let value = #storage_method
-                    .get::<_, #value_type>(&key)
-                    .unwrap();
+            #getter
 
-                #default_ttl_function
-
-                value
-            }
-
-            pub fn #try_getter(#params) -> Option<#value_type> {
-                let key = #storage_key;
-                let value = #storage_method.get::<_, #value_type>(&key);
-
-                if value.is_some() {
-                    #default_ttl_function
-                }
-
-                value
-            }
+            #try_getter
 
             pub fn #setter(#params, value: &#value_type) {
                 let key = #storage_key;
@@ -307,6 +351,7 @@ impl TryFrom<&[Attribute]> for StorageType {
     }
 }
 
+/// See contractstorage docstring for more on StorageTypes.
 impl StorageType {
     fn storage_method(&self) -> TokenStream {
         match self {
@@ -330,10 +375,10 @@ impl StorageType {
 
     fn default_ttl_function(&self, key: &TokenStream) -> TokenStream {
         match self {
-            Self::Persistent => {
-                quote! { stellar_axelar_std::ttl::extend_persistent_ttl(env, &#key); }
-            }
-            Self::Instance => quote! { stellar_axelar_std::ttl::extend_instance_ttl(env); },
+            Self::Persistent => quote! {
+                stellar_axelar_std::ttl::extend_persistent_ttl(env, &#key);
+            },
+            Self::Instance => quote! {},
             Self::Temporary => quote! {},
         }
     }

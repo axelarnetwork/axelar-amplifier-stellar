@@ -1,4 +1,3 @@
-use stellar_axelar_std::ttl::extend_instance_ttl;
 use stellar_axelar_std::{
     contract, contractimpl, interfaces, only_owner, soroban_sdk, Address, Env, Ownable, Symbol,
     Upgradable, Val, Vec,
@@ -29,8 +28,6 @@ impl TokenManagerInterface for TokenManager {
         args: Vec<Val>,
     ) -> Result<Val, ContractError> {
         let res: Val = env.invoke_contract(&contract, &func, args);
-
-        extend_instance_ttl(env);
 
         Ok(res)
     }
