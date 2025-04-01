@@ -1,11 +1,13 @@
-use soroban_sdk::token::{StellarAssetInterface, TokenInterface};
-use soroban_sdk::{assert_with_error, contract, contractimpl, token, Address, BytesN, Env, String};
 use soroban_token_sdk::event::Events as TokenEvents;
 use soroban_token_sdk::metadata::TokenMetadata;
 use soroban_token_sdk::TokenUtils;
 use stellar_axelar_std::events::Event;
 use stellar_axelar_std::interfaces::OwnableInterface;
-use stellar_axelar_std::{ensure, interfaces, only_owner, Upgradable};
+use stellar_axelar_std::token::{StellarAssetInterface, TokenInterface};
+use stellar_axelar_std::{
+    assert_with_error, contract, contractimpl, ensure, interfaces, only_owner, soroban_sdk, token,
+    Address, BytesN, Env, String, Upgradable,
+};
 
 use crate::error::ContractError;
 use crate::event::{MinterAddedEvent, MinterRemovedEvent};
@@ -14,6 +16,7 @@ use crate::storage::{self, AllowanceDataKey, AllowanceValue};
 
 #[contract]
 #[derive(Upgradable)]
+#[migratable]
 pub struct InterchainToken;
 
 #[contractimpl]
@@ -41,15 +44,17 @@ impl InterchainToken {
 
 #[contractimpl]
 impl OwnableInterface for InterchainToken {
+    #[allow_during_migration]
     fn owner(env: &Env) -> Address {
         interfaces::owner(env)
     }
 
     fn transfer_ownership(env: &Env, new_owner: Address) {
+        let old_owner = Self::owner(env);
+
         interfaces::transfer_ownership::<Self>(env, new_owner.clone());
 
-        // Emit the standard soroban event for setting admin
-        TokenEvents::new(env).set_admin(Self::owner(env), new_owner);
+        TokenEvents::new(env).set_admin(old_owner, new_owner);
     }
 }
 
@@ -122,6 +127,12 @@ impl InterchainTokenInterface for InterchainToken {
 
     #[only_owner]
     fn add_minter(env: &Env, minter: Address) {
+        assert_with_error!(
+            env,
+            !Self::is_minter(env, minter.clone()),
+            ContractError::MinterAlreadyExists
+        );
+
         storage::set_minter_status(env, minter.clone());
 
         MinterAddedEvent { minter }.emit(env);
@@ -129,6 +140,12 @@ impl InterchainTokenInterface for InterchainToken {
 
     #[only_owner]
     fn remove_minter(env: &Env, minter: Address) {
+        assert_with_error!(
+            env,
+            Self::is_minter(env, minter.clone()),
+            ContractError::NotMinter
+        );
+
         storage::remove_minter_status(env, minter.clone());
 
         MinterRemovedEvent { minter }.emit(env);
@@ -181,7 +198,7 @@ impl token::Interface for InterchainToken {
         Self::spend_balance(&env, from.clone(), amount);
         Self::receive_balance(&env, to.clone(), amount);
 
-        TokenUtils::new(&env).events().transfer(from, to, amount)
+        TokenUtils::new(&env).events().transfer(from, to, amount);
     }
 
     fn burn(env: Env, from: Address, amount: i128) {
@@ -200,7 +217,7 @@ impl token::Interface for InterchainToken {
         Self::spend_allowance(&env, from.clone(), spender, amount);
         Self::spend_balance(&env, from.clone(), amount);
 
-        TokenUtils::new(&env).events().burn(from, amount)
+        TokenUtils::new(&env).events().burn(from, amount);
     }
 
     fn decimals(env: Env) -> u32 {

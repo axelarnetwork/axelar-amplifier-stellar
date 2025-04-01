@@ -1,14 +1,15 @@
 #![cfg(test)]
 extern crate std;
 
-use soroban_sdk::testutils::{Address as _, BytesN as _, Ledger};
-use soroban_sdk::{Address, BytesN, Env, IntoVal as _};
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_std::events::{fmt_emitted_event_at_idx, fmt_last_emitted_event};
 use stellar_axelar_std::interfaces::OwnershipTransferredEvent;
-use stellar_axelar_std::{assert_auth, assert_auth_err};
+use stellar_axelar_std::testutils::{Address as _, BytesN as _, Ledger};
+use stellar_axelar_std::{assert_auth, assert_auth_err, Address, BytesN, Env, IntoVal as _};
 
-use crate::event::{MinterAddedEvent, MinterRemovedEvent};
+use crate::event::{
+    ApproveEvent, BurnEvent, MintEvent, MinterAddedEvent, MinterRemovedEvent, TransferEvent,
+};
 use crate::{InterchainToken, InterchainTokenClient};
 
 fn setup_token_metadata(env: &Env, name: &str, symbol: &str, decimal: u32) -> TokenMetadata {
@@ -52,6 +53,8 @@ fn register_interchain_token() {
             token_metadata.clone(),
         ),
     );
+
+    goldie::assert!(fmt_last_emitted_event::<MinterAddedEvent>(&env));
 
     let token = InterchainTokenClient::new(&env, &contract_id);
 
@@ -139,7 +142,7 @@ fn set_admin_fails_when_not_owner() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #6)")] // NegativeAmount
+#[should_panic(expected = "HostError: Error(Contract, #3)")] // InvalidAmount
 fn transfer_fails_with_negative_amount() {
     let env = Env::default();
 
@@ -153,7 +156,7 @@ fn transfer_fails_with_negative_amount() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #9)")] // InsufficientBalance
+#[should_panic(expected = "HostError: Error(Contract, #6)")] // InsufficientBalance
 fn transfer_fails_with_insufficient_balance() {
     let env = Env::default();
 
@@ -180,12 +183,15 @@ fn transfer() {
     assert_eq!(token.balance(&user1), amount);
 
     assert_auth!(user1, token.transfer(&user1, &user2, &600_i128));
+
+    goldie::assert!(fmt_last_emitted_event::<TransferEvent>(&env));
+
     assert_eq!(token.balance(&user1), 400_i128);
     assert_eq!(token.balance(&user2), 600_i128);
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #6)")] // NegativeAmount
+#[should_panic(expected = "HostError: Error(Contract, #3)")] // InvalidAmount
 fn transfer_from_fails_with_negative_amount() {
     let env = Env::default();
 
@@ -213,7 +219,7 @@ fn transfer_from_fails_with_negative_amount() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #8)")] // InsufficientAllowance
+#[should_panic(expected = "HostError: Error(Contract, #5)")] // InsufficientAllowance
 fn transfer_from_fails_without_approval() {
     let env = Env::default();
 
@@ -232,7 +238,7 @@ fn transfer_from_fails_without_approval() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #8)")] // InsufficientAllowance
+#[should_panic(expected = "HostError: Error(Contract, #5)")] // InsufficientAllowance
 fn transfer_from_fails_with_insufficient_allowance() {
     let env = Env::default();
 
@@ -259,7 +265,7 @@ fn transfer_from_fails_with_insufficient_allowance() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #8)")] // InsufficientAllowance
+#[should_panic(expected = "HostError: Error(Contract, #5)")] // InsufficientAllowance
 fn transfer_from_fails_with_expired_allowance() {
     let env = Env::default();
 
@@ -313,6 +319,9 @@ fn transfer_from_succeeds() {
         user2,
         token.transfer_from(&user2, &user1, &user3, &400_i128)
     );
+
+    goldie::assert!(fmt_last_emitted_event::<TransferEvent>(&env));
+
     assert_eq!(token.balance(&user1), 600_i128);
     assert_eq!(token.balance(&user2), 0_i128);
     assert_eq!(token.balance(&user3), 400_i128);
@@ -328,9 +337,14 @@ fn mint_succeeds() {
     let (token, _) = setup_token(&env);
 
     assert_auth!(token.owner(), token.mint(&user, &amount));
+
+    goldie::assert!(fmt_last_emitted_event::<MintEvent>(&env));
+
     assert_eq!(token.balance(&user), amount);
 
-    token.mock_all_auths().remove_minter(&token.owner());
+    if token.is_minter(&token.owner()) {
+        token.mock_all_auths().remove_minter(&token.owner());
+    }
 
     // Owner can mint without being a minter
     assert_auth!(token.owner(), token.mint(&user, &amount));
@@ -347,6 +361,9 @@ fn mint_from_succeeds() {
     let (token, minter) = setup_token(&env);
 
     assert_auth!(minter, token.mint_from(&minter, &user, &amount));
+
+    goldie::assert!(fmt_last_emitted_event::<MintEvent>(&env));
+
     assert_eq!(token.balance(&user), amount);
 
     assert_auth!(token.owner(), token.mint(&user, &amount));
@@ -381,6 +398,20 @@ fn add_minter_fails_without_owner_auth() {
 }
 
 #[test]
+#[should_panic(expected = "HostError: Error(Contract, #8)")] // MinterAlreadyExists
+fn add_minter_fails_minter_already_exists() {
+    let env = Env::default();
+
+    let minter = Address::generate(&env);
+
+    let (token, _) = setup_token(&env);
+
+    assert_auth!(token.owner(), token.add_minter(&minter));
+
+    token.mock_all_auths().add_minter(&minter);
+}
+
+#[test]
 fn add_minter_succeeds() {
     let env = Env::default();
 
@@ -403,16 +434,17 @@ fn remove_minter_succeeds() {
     let env = Env::default();
 
     let amount = 1000;
-    let minter1 = Address::generate(&env);
+    let minter = Address::generate(&env);
     let user = Address::generate(&env);
 
     let (token, _) = setup_token(&env);
 
-    assert_auth!(token.owner(), token.remove_minter(&minter1));
+    assert_auth!(token.owner(), token.add_minter(&minter));
+    assert_auth!(token.owner(), token.remove_minter(&minter));
 
     goldie::assert!(fmt_last_emitted_event::<MinterRemovedEvent>(&env));
 
-    assert_auth_err!(minter1, token.mint_from(&minter1, &user, &amount));
+    assert_auth_err!(minter, token.mint_from(&minter, &user, &amount));
 }
 
 #[test]
@@ -428,6 +460,21 @@ fn remove_minter_fails_without_minter_auth() {
 }
 
 #[test]
+#[should_panic(expected = "HostError: Error(Contract, #2)")] // NotMinter
+fn remove_minter_fails_not_minter() {
+    let env = Env::default();
+
+    let minter = Address::generate(&env);
+
+    let (token, _) = setup_token(&env);
+
+    assert_auth!(token.owner(), token.add_minter(&minter));
+    assert_auth!(token.owner(), token.remove_minter(&minter));
+
+    token.mock_all_auths().remove_minter(&minter);
+}
+
+#[test]
 fn burn_succeeds() {
     let env = Env::default();
 
@@ -440,11 +487,14 @@ fn burn_succeeds() {
     assert_eq!(token.balance(&user), amount);
 
     assert_auth!(user, token.burn(&user, &amount));
+
+    goldie::assert!(fmt_last_emitted_event::<BurnEvent>(&env));
+
     assert_eq!(token.balance(&user), 0);
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #6)")] // NegativeAmount
+#[should_panic(expected = "HostError: Error(Contract, #3)")] // InvalidAmount
 fn burn_fails_with_negative_amount() {
     let env = Env::default();
 
@@ -462,7 +512,7 @@ fn burn_fails_with_negative_amount() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #9)")] // InsufficientBalance
+#[should_panic(expected = "HostError: Error(Contract, #6)")] // InsufficientBalance
 fn burn_fails_with_insufficient_balance() {
     let env = Env::default();
 
@@ -501,12 +551,15 @@ fn burn_from_succeeds() {
     assert_eq!(token.allowance(&user1, &user2), burn_amount);
 
     assert_auth!(user2, token.burn_from(&user2, &user1, &burn_amount));
+
+    goldie::assert!(fmt_last_emitted_event::<BurnEvent>(&env));
+
     assert_eq!(token.allowance(&user1, &user2), 0);
     assert_eq!(token.balance(&user1), (amount - burn_amount));
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #6)")] // NegativeAmount
+#[should_panic(expected = "HostError: Error(Contract, #3)")] // InvalidAmount
 fn burn_from_fails_with_negative_amount() {
     let env = Env::default();
 
@@ -522,7 +575,7 @@ fn burn_from_fails_with_negative_amount() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #8)")] // InsufficientAllowance
+#[should_panic(expected = "HostError: Error(Contract, #5)")] // InsufficientAllowance
 fn burn_from_fails_without_approval() {
     let env = Env::default();
 
@@ -591,6 +644,9 @@ fn allowance_returns_zero_when_expired() {
         user1,
         token.approve(&user1, &user2, &amount, &expiration_ledger)
     );
+
+    goldie::assert!(fmt_last_emitted_event::<ApproveEvent>(&env));
+
     assert_eq!(token.allowance(&user1, &user2), amount);
 
     // Move to ledger after expiration
@@ -601,7 +657,7 @@ fn allowance_returns_zero_when_expired() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #7)")] // InvalidExpirationLedger
+#[should_panic(expected = "HostError: Error(Contract, #4)")] // InvalidExpirationLedger
 fn approve_fails_with_expired_ledger() {
     let env = Env::default();
 
@@ -624,7 +680,7 @@ fn approve_fails_with_expired_ledger() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Contract, #7)")] // InvalidExpirationLedger
+#[should_panic(expected = "HostError: Error(Contract, #4)")] // InvalidExpirationLedger
 fn allowance_preserves_expiration_when_expired() {
     let env = Env::default();
     let user1 = Address::generate(&env);

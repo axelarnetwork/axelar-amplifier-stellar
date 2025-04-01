@@ -1,20 +1,21 @@
-use soroban_sdk::xdr::ToXdr;
-use soroban_sdk::{contract, contractimpl, Address, Bytes, BytesN, Env, String, Vec};
 use stellar_axelar_std::events::Event;
+use stellar_axelar_std::xdr::ToXdr;
 use stellar_axelar_std::{
-    ensure, interfaces, when_not_paused, Operatable, Ownable, Pausable, Upgradable,
+    contract, contractimpl, ensure, interfaces, soroban_sdk, when_not_paused, Address, Bytes,
+    BytesN, Env, Operatable, Ownable, Pausable, String, Upgradable, Vec,
 };
 
 use crate::error::ContractError;
 use crate::event::{ContractCalledEvent, MessageApprovedEvent, MessageExecutedEvent};
 use crate::interface::AxelarGatewayInterface;
 use crate::messaging_interface::AxelarGatewayMessagingInterface;
-use crate::storage::{MessageApprovalKey, MessageApprovalValue};
+use crate::storage::MessageApprovalValue;
 use crate::types::{CommandType, Message, Proof, WeightedSigners};
 use crate::{auth, storage};
 
 #[contract]
 #[derive(Operatable, Ownable, Pausable, Upgradable)]
+#[migratable]
 pub struct AxelarGateway;
 
 #[contractimpl]
@@ -74,10 +75,10 @@ impl AxelarGatewayMessagingInterface for AxelarGateway {
         payload_hash: BytesN<32>,
     ) -> bool {
         let message_approval =
-            Self::message_approval(&env, source_chain.clone(), message_id.clone());
+            storage::try_message_approval(&env, source_chain.clone(), message_id.clone());
 
         message_approval
-            == Self::message_approval_hash(
+            == Some(Self::message_approval_hash(
                 &env,
                 Message {
                     source_chain,
@@ -86,13 +87,13 @@ impl AxelarGatewayMessagingInterface for AxelarGateway {
                     contract_address,
                     payload_hash,
                 },
-            )
+            ))
     }
 
     fn is_message_executed(env: Env, source_chain: String, message_id: String) -> bool {
-        let message_approval = Self::message_approval(&env, source_chain, message_id);
+        let message_approval = storage::try_message_approval(&env, source_chain, message_id);
 
-        message_approval == MessageApprovalValue::Executed
+        message_approval == Some(MessageApprovalValue::Executed)
     }
 
     fn validate_message(
@@ -105,22 +106,23 @@ impl AxelarGatewayMessagingInterface for AxelarGateway {
     ) -> bool {
         caller.require_auth();
 
-        let key = MessageApprovalKey {
+        let message_approval =
+            storage::try_message_approval(&env, source_chain.clone(), message_id.clone());
+        let message = Message {
             source_chain: source_chain.clone(),
             message_id: message_id.clone(),
-        };
-        let message_approval = storage::try_message_approval(&env, key.clone())
-            .unwrap_or(MessageApprovalValue::NotApproved);
-        let message = Message {
-            source_chain,
-            message_id,
             source_address,
             contract_address: caller,
             payload_hash,
         };
 
-        if message_approval == Self::message_approval_hash(&env, message.clone()) {
-            storage::set_message_approval(&env, key, &MessageApprovalValue::Executed);
+        if message_approval == Some(Self::message_approval_hash(&env, message.clone())) {
+            storage::set_message_approval(
+                &env,
+                source_chain,
+                message_id,
+                &MessageApprovalValue::Executed,
+            );
 
             MessageExecutedEvent { message }.emit(&env);
 
@@ -161,21 +163,19 @@ impl AxelarGatewayInterface for AxelarGateway {
         ensure!(!messages.is_empty(), ContractError::EmptyMessages);
 
         for message in messages.into_iter() {
-            let message_approval_key = MessageApprovalKey {
-                source_chain: message.source_chain.clone(),
-                message_id: message.message_id.clone(),
-            };
-
             // Prevent replay if message is already approved/executed
-            let message_approval = storage::try_message_approval(env, message_approval_key.clone())
-                .unwrap_or(MessageApprovalValue::NotApproved);
-            if message_approval != MessageApprovalValue::NotApproved {
+            if storage::has_message_approval(
+                env,
+                message.source_chain.clone(),
+                message.message_id.clone(),
+            ) {
                 continue;
             }
 
             storage::set_message_approval(
                 env,
-                message_approval_key,
+                message.source_chain.clone(),
+                message.message_id.clone(),
                 &Self::message_approval_hash(env, message.clone()),
             );
 
@@ -231,20 +231,6 @@ impl AxelarGatewayInterface for AxelarGateway {
 }
 
 impl AxelarGateway {
-    /// Get the message approval value by `source_chain` and `message_id`, defaulting to `MessageNotApproved`
-    fn message_approval(
-        env: &Env,
-        source_chain: String,
-        message_id: String,
-    ) -> MessageApprovalValue {
-        let key = MessageApprovalKey {
-            source_chain,
-            message_id,
-        };
-
-        storage::try_message_approval(env, key).unwrap_or(MessageApprovalValue::NotApproved)
-    }
-
     fn message_approval_hash(env: &Env, message: Message) -> MessageApprovalValue {
         MessageApprovalValue::Approved(env.crypto().keccak256(&message.to_xdr(env)).into())
     }

@@ -1,11 +1,10 @@
-use soroban_sdk::testutils::Address as _;
-use soroban_sdk::token::{StellarAssetClient, TokenClient};
-use soroban_sdk::{vec, Address, Bytes, BytesN, Env, String};
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_gateway::testutils::approve_gateway_messages;
 use stellar_axelar_gateway::types::Message as GatewayMessage;
 use stellar_axelar_std::address::AddressExt;
-use stellar_axelar_std::{assert_contract_err, events};
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::token::{StellarAssetClient, TokenClient};
+use stellar_axelar_std::{assert_contract_err, events, vec, Address, Bytes, BytesN, Env, String};
 use stellar_interchain_token::InterchainTokenClient;
 
 use super::utils::{setup_env, TokenMetadataExt};
@@ -455,8 +454,9 @@ fn execute_fails_with_invalid_amount() {
     let original_source_chain = String::from_str(&env, "ethereum");
 
     let invalid_amount = 0;
+    let initial_supply = 1000;
     let deployer = Address::generate(&env);
-    let (token_id, _) = setup_its_token(&env, &client, &deployer, invalid_amount);
+    let (token_id, _) = setup_its_token(&env, &client, &deployer, initial_supply);
     client
         .mock_all_auths()
         .set_trusted_chain(&original_source_chain);

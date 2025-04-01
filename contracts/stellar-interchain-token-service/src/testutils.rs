@@ -1,17 +1,17 @@
-use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{Address, BytesN, Env, String};
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_gas_service::AxelarGasServiceClient;
 use stellar_axelar_gateway::AxelarGatewayClient;
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::{Address, BytesN, Env, String};
 
 use crate::{InterchainTokenService, InterchainTokenServiceClient};
 
 // Note: On changes to `interchain-token` and `token-manager` crates, recompile via `stellar contract build && ./optimize.sh`
 // and copy the built `target/wasm32-unknown-unknown/release/stellar_*.optimized.wasm` to ../testdata.
 pub const INTERCHAIN_TOKEN_WASM: &[u8] =
-    include_bytes!("./testdata/stellar_interchain_token.optimized.wasm");
+    include_bytes!("testdata/stellar_interchain_token_v1_0_0.optimized.wasm");
 pub const TOKEN_MANAGER_WASM: &[u8] =
-    include_bytes!("./testdata/stellar_token_manager.optimized.wasm");
+    include_bytes!("testdata/stellar_token_manager_v1_0_0.optimized.wasm");
 
 pub fn setup_its<'a>(
     env: &Env,
@@ -61,12 +61,13 @@ pub fn setup_its_token(
         decimal: 18,
     };
 
+    let minter: Option<Address> = None;
     let token_id = client.mock_all_auths().deploy_interchain_token(
         sender,
         &salt,
         &token_metadata,
         &supply,
-        &None,
+        &minter,
     );
 
     (token_id, token_metadata)
