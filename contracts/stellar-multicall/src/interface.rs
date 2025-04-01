@@ -1,6 +1,5 @@
 use stellar_axelar_std::{Env, Val, Vec};
 
-use crate::error::ContractError;
 use crate::types::FunctionCall;
 
 //#[contractclient(name = "MulticallClient")]
@@ -15,5 +14,5 @@ pub trait MulticallInterface {
     ///
     /// # Errors:
     /// - Propagates any error that occurs during the execution of the contract calls.
-    fn multicall(env: &Env, function_calls: Vec<FunctionCall>) -> Result<Vec<Val>, ContractError>;
+    fn multicall(env: &Env, function_calls: Vec<FunctionCall>) -> Vec<Val>;
 }

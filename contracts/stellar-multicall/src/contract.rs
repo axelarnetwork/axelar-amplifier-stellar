@@ -1,6 +1,5 @@
 use stellar_axelar_std::{contract, contractimpl, soroban_sdk, Env, Val, Vec};
 
-use crate::error::ContractError;
 use crate::interface::MulticallInterface;
 use crate::types::FunctionCall;
 
@@ -14,7 +13,7 @@ impl Multicall {
 
 #[contractimpl]
 impl MulticallInterface for Multicall {
-    fn multicall(env: &Env, function_calls: Vec<FunctionCall>) -> Result<Vec<Val>, ContractError> {
+    fn multicall(env: &Env, function_calls: Vec<FunctionCall>) -> Vec<Val> {
         let mut results = Vec::new(env);
 
         for FunctionCall {
@@ -31,6 +30,6 @@ impl MulticallInterface for Multicall {
             results.push_back(result);
         }
 
-        Ok(results)
+        results
     }
 }
