@@ -1,7 +1,6 @@
 use core::fmt::Debug;
 
-use soroban_sdk::{Address, Bytes, BytesN, String};
-use stellar_axelar_std::IntoEvent;
+use stellar_axelar_std::{Address, Bytes, BytesN, IntoEvent, String};
 
 use crate::types::TokenManagerType;
 
@@ -71,5 +70,5 @@ pub struct InterchainTransferReceivedEvent {
     pub destination_address: Address,
     pub amount: i128,
     #[data]
-    pub data: Option<Bytes>,
+    pub data_hash: Option<BytesN<32>>,
 }

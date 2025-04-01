@@ -1,5 +1,4 @@
-use soroban_sdk::Address;
-use stellar_axelar_std::IntoEvent;
+use stellar_axelar_std::{Address, IntoEvent};
 
 #[derive(Debug, PartialEq, Eq, IntoEvent)]
 pub struct MinterAddedEvent {

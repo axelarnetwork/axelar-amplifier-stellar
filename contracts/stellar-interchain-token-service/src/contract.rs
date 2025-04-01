@@ -1,18 +1,16 @@
-use soroban_sdk::token::StellarAssetClient;
-use soroban_sdk::xdr::ToXdr;
-use soroban_sdk::{
-    contract, contractimpl, vec, Address, Bytes, BytesN, Env, IntoVal, String, Symbol,
-};
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_gas_service::AxelarGasServiceClient;
 use stellar_axelar_gateway::executable::{AxelarExecutableInterface, CustomAxelarExecutable};
 use stellar_axelar_gateway::AxelarGatewayMessagingClient;
 use stellar_axelar_std::address::AddressExt;
 use stellar_axelar_std::events::Event;
+use stellar_axelar_std::token::StellarAssetClient;
 use stellar_axelar_std::types::Token;
+use stellar_axelar_std::xdr::ToXdr;
 use stellar_axelar_std::{
-    ensure, interfaces, only_operator, only_owner, when_not_paused, AxelarExecutable, Operatable,
-    Ownable, Pausable, Upgradable,
+    contract, contractimpl, ensure, interfaces, only_operator, only_owner, soroban_sdk, vec,
+    when_not_paused, Address, AxelarExecutable, Bytes, BytesN, Env, IntoVal, Operatable, Ownable,
+    Pausable, String, Symbol, Upgradable, Val,
 };
 use stellar_interchain_token::InterchainTokenClient;
 
@@ -28,13 +26,14 @@ use crate::token_metadata::TokenMetadataExt;
 use crate::types::{
     DeployInterchainToken, HubMessage, InterchainTransfer, Message, TokenManagerType,
 };
-use crate::{deployer, flow_limit, token_handler, token_id, token_metadata};
+use crate::{deployer, flow_limit, migrate, token_handler, token_id, token_metadata};
 
 const ITS_HUB_CHAIN_NAME: &str = "axelar";
 const EXECUTE_WITH_INTERCHAIN_TOKEN: &str = "execute_with_interchain_token";
 
 #[contract]
 #[derive(Operatable, Ownable, Pausable, Upgradable, AxelarExecutable)]
+#[migratable]
 pub struct InterchainTokenService;
 
 #[contractimpl]
@@ -186,6 +185,10 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         caller.require_auth();
 
         ensure!(initial_supply >= 0, ContractError::InvalidInitialSupply);
+        ensure!(
+            initial_supply > 0 || minter.is_some(),
+            ContractError::InvalidTokenConfig
+        );
 
         let token_id = Self::interchain_token_id(env, caller.clone(), salt);
 
@@ -284,7 +287,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         token_handler::take_token(
             env,
             &caller,
-            Self::token_id_config_with_extended_ttl(env, token_id.clone())?,
+            Self::token_id_config(env, token_id.clone())?,
             amount,
         )?;
 
@@ -311,6 +314,16 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         Self::pay_gas_and_call_contract(env, caller, destination_chain, message, gas_token)?;
 
         Ok(())
+    }
+
+    #[only_owner]
+    fn migrate_token(
+        env: &Env,
+        token_id: BytesN<32>,
+        upgrader: Address,
+        new_version: String,
+    ) -> Result<(), ContractError> {
+        migrate::migrate_token(env, token_id, upgrader, new_version)
     }
 }
 
@@ -413,25 +426,6 @@ impl InterchainTokenService {
         storage::try_token_id_config(env, token_id).ok_or(ContractError::InvalidTokenId)
     }
 
-    /// Retrieves the configuration value for the specified token ID and extends its TTL.
-    ///
-    /// # Arguments
-    /// - `token_id`: A 32-byte unique identifier for the token.
-    ///
-    /// # Returns
-    /// - `Ok(TokenIdConfigValue)`: The configuration value if it exists.
-    ///
-    /// # Errors
-    /// - `ContractError::InvalidTokenId`: If the token ID does not exist in storage.
-    fn token_id_config_with_extended_ttl(
-        env: &Env,
-        token_id: BytesN<32>,
-    ) -> Result<TokenIdConfigValue, ContractError> {
-        let config = Self::token_id_config(env, token_id)?;
-
-        Ok(config)
-    }
-
     fn chain_name_hash(env: &Env) -> BytesN<32> {
         let chain_name = Self::chain_name(env);
         env.crypto().keccak256(&chain_name.to_xdr(env)).into()
@@ -516,7 +510,7 @@ impl InterchainTokenService {
 
         let destination_address = Address::from_string_bytes(&destination_address);
 
-        let token_config_value = Self::token_id_config_with_extended_ttl(env, token_id.clone())?;
+        let token_config_value = Self::token_id_config(env, token_id.clone())?;
         let token_address = token_config_value.token_address.clone();
 
         FlowDirection::In.add_flow(env, token_id.clone(), amount)?;
@@ -529,7 +523,7 @@ impl InterchainTokenService {
             source_address: source_address.clone(),
             destination_address: destination_address.clone(),
             amount,
-            data: data.clone(),
+            data_hash: data.as_ref().map(|d| env.crypto().keccak256(d).into()),
         }
         .emit(env);
 
@@ -562,8 +556,8 @@ impl InterchainTokenService {
         amount: i128,
     ) {
         // Due to limitations of the soroban-sdk, there is no type-safe client for contract execution.
-        // The invocation will panic on error, so we can safely cast the return value to `()` and discard it.
-        env.invoke_contract::<()>(
+        // The invocation might return a value, so we use Val as the return type to avoid panics
+        env.invoke_contract::<Val>(
             &destination_address,
             &Symbol::new(env, EXECUTE_WITH_INTERCHAIN_TOKEN),
             vec![
@@ -657,7 +651,10 @@ impl InterchainTokenService {
         );
 
         // Give minter role to the token manager
-        interchain_token_client.add_minter(&token_manager);
+        // Check if token_manager is already a minter before adding to avoid MinterAlreadyExists error
+        if !interchain_token_client.is_minter(&token_manager) {
+            interchain_token_client.add_minter(&token_manager);
+        }
 
         Ok(token_address)
     }
