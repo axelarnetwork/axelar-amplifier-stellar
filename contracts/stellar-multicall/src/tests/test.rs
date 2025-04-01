@@ -1,12 +1,12 @@
 #![cfg(test)]
 extern crate std;
 
+use stellar_axelar_std::events::fmt_last_emitted_event;
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::{mock_auth, soroban_sdk, vec, Address, Env, IntoVal, Vec};
+
 use crate::types::FunctionCall;
 use crate::{Multicall, MulticallClient};
-use stellar_axelar_std::events::fmt_last_emitted_event;
-use stellar_axelar_std::mock_auth;
-use stellar_axelar_std::testutils::Address as _;
-use stellar_axelar_std::{soroban_sdk, vec, Address, Env, IntoVal, Vec};
 
 #[macro_export]
 macro_rules! function_call {
@@ -21,9 +21,9 @@ macro_rules! function_call {
 }
 
 mod test_bank {
-    use stellar_axelar_std::{contract, contractimpl, Address, Env};
-    use stellar_axelar_std::{contracterror, soroban_sdk};
-    use stellar_axelar_std::{interfaces, Ownable};
+    use stellar_axelar_std::{
+        contract, contracterror, contractimpl, interfaces, soroban_sdk, Address, Env, Ownable,
+    };
 
     #[contracterror]
     #[derive(Debug, Eq, PartialEq)]
@@ -37,8 +37,7 @@ mod test_bank {
     pub struct TestBankContract;
 
     mod storage {
-        use stellar_axelar_std::contractstorage;
-        use stellar_axelar_std::soroban_sdk;
+        use stellar_axelar_std::{contractstorage, soroban_sdk};
         #[contractstorage]
         enum DataKey {
             #[instance]
@@ -84,9 +83,10 @@ mod test_bank {
 
 mod test_target {
     use stellar_axelar_std::events::Event;
-    use stellar_axelar_std::{contract, contractimpl, Address, Env, Val};
-    use stellar_axelar_std::{contracterror, soroban_sdk};
-    use stellar_axelar_std::{interfaces, IntoEvent, Ownable};
+    use stellar_axelar_std::{
+        contract, contracterror, contractimpl, interfaces, soroban_sdk, Address, Env, IntoEvent,
+        Ownable, Val,
+    };
 
     #[contracterror]
     #[derive(Debug, Eq, PartialEq)]
