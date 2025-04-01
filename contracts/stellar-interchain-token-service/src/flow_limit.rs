@@ -57,8 +57,8 @@ impl FlowDirection {
         ensure!(flow_amount >= 0, ContractError::InvalidAmount);
         ensure!(flow_amount <= flow_limit, ContractError::FlowLimitExceeded);
 
-        let flow_amount = u128::try_from(flow_amount).expect("expected positive");
-        let flow_limit = u128::try_from(flow_limit).expect("expected positive");
+        let flow_amount = u128::try_from(flow_amount).or(Err(ContractError::InvalidAmount))?;
+        let flow_limit = u128::try_from(flow_limit).or(Err(ContractError::InvalidFlowLimit))?;
 
         let new_flow = self.flow(env, token_id.clone()) + flow_amount;
         let max_allowed = self.reverse_flow(env, token_id.clone()) + flow_limit;
