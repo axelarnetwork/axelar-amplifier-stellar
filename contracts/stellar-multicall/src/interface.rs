@@ -1,4 +1,4 @@
-use soroban_sdk::{Env, Val, Vec};
+use stellar_axelar_std::{Env, Val, Vec};
 
 use crate::error::ContractError;
 use crate::types::FunctionCall;

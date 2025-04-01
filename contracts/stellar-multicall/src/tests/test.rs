@@ -3,10 +3,10 @@ extern crate std;
 
 use crate::types::FunctionCall;
 use crate::{Multicall, MulticallClient};
-use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{vec, Address, Env, IntoVal, Vec};
 use stellar_axelar_std::events::fmt_last_emitted_event;
 use stellar_axelar_std::mock_auth;
+use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::{soroban_sdk, vec, Address, Env, IntoVal, Vec};
 
 #[macro_export]
 macro_rules! function_call {
@@ -21,8 +21,8 @@ macro_rules! function_call {
 }
 
 mod test_bank {
-    use soroban_sdk::contracterror;
-    use soroban_sdk::{contract, contractimpl, Address, Env};
+    use stellar_axelar_std::{contract, contractimpl, Address, Env};
+    use stellar_axelar_std::{contracterror, soroban_sdk};
     use stellar_axelar_std::{interfaces, Ownable};
 
     #[contracterror]
@@ -38,6 +38,7 @@ mod test_bank {
 
     mod storage {
         use stellar_axelar_std::contractstorage;
+        use stellar_axelar_std::soroban_sdk;
         #[contractstorage]
         enum DataKey {
             #[instance]
@@ -82,9 +83,9 @@ mod test_bank {
 }
 
 mod test_target {
-    use soroban_sdk::contracterror;
-    use soroban_sdk::{contract, contractimpl, Address, Env, Val};
     use stellar_axelar_std::events::Event;
+    use stellar_axelar_std::{contract, contractimpl, Address, Env, Val};
+    use stellar_axelar_std::{contracterror, soroban_sdk};
     use stellar_axelar_std::{interfaces, IntoEvent, Ownable};
 
     #[contracterror]
@@ -117,7 +118,7 @@ mod test_target {
             panic!("This method should fail");
         }
 
-        pub const fn failing_with_error(_env: &Env) -> Result<Val, TestTargetError> {
+        pub fn failing_with_error(_env: &Env) -> Result<Val, TestTargetError> {
             Err(TestTargetError::TestError)
         }
     }

@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, Address, Symbol, Val, Vec};
+use stellar_axelar_std::{contracttype, soroban_sdk, Address, Symbol, Val, Vec};
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq, Eq)]

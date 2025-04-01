@@ -1,4 +1,4 @@
-use soroban_sdk::{contract, contractimpl, Env, Val, Vec};
+use stellar_axelar_std::{contract, contractimpl, soroban_sdk, Env, Val, Vec};
 
 use crate::error::ContractError;
 use crate::interface::MulticallInterface;
@@ -9,7 +9,7 @@ pub struct Multicall;
 
 #[contractimpl]
 impl Multicall {
-    pub const fn __constructor(_env: &Env) {}
+    pub fn __constructor(_env: &Env) {}
 }
 
 #[contractimpl]
