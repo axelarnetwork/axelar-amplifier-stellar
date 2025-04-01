@@ -2,10 +2,10 @@
 #[contractimpl]
 impl Contract {
     pub fn with_ref_env(env: &Env, arg: String) -> u32 {
+        stellar_axelar_std::ttl::extend_instance_ttl(env);
         if stellar_axelar_std::interfaces::is_migrating(&env) {
             panic!("contract migration in progress");
         }
-        stellar_axelar_std::ttl::extend_instance_ttl(env);
         42
     }
 }
@@ -15,10 +15,10 @@ impl Contract {
 #[contractimpl]
 impl Contract {
     pub fn with_value_env(env: Env, arg: String) -> u32 {
+        stellar_axelar_std::ttl::extend_instance_ttl(&env);
         if stellar_axelar_std::interfaces::is_migrating(&env) {
             panic!("contract migration in progress");
         }
-        stellar_axelar_std::ttl::extend_instance_ttl(&env);
         42
     }
 }

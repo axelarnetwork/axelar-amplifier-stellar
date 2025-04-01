@@ -5,26 +5,26 @@ impl Contract {
         env: &Env,
         arg: String,
     ) -> Result<u32, ContractError> {
+        stellar_axelar_std::ttl::extend_instance_ttl(env);
         if stellar_axelar_std::interfaces::is_migrating(&env) {
             return Err(ContractError::MigrationInProgress);
         }
-        stellar_axelar_std::ttl::extend_instance_ttl(env);
         Ok(3)
     }
     pub fn should_panic(env: &Env, arg: String) {
+        stellar_axelar_std::ttl::extend_instance_ttl(env);
         if stellar_axelar_std::interfaces::is_migrating(&env) {
             panic!("contract migration in progress");
         }
-        stellar_axelar_std::ttl::extend_instance_ttl(env);
     }
     pub fn should_panic_because_not_contract_error(
         env: &Env,
         arg: String,
     ) -> Result<u32, OtherError> {
+        stellar_axelar_std::ttl::extend_instance_ttl(env);
         if stellar_axelar_std::interfaces::is_migrating(&env) {
             panic!("contract migration in progress");
         }
-        stellar_axelar_std::ttl::extend_instance_ttl(env);
         Ok(5)
     }
     pub fn should_have_no_check_because_not_stateful() {}

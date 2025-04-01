@@ -9,17 +9,9 @@ use syn::{
 use crate::utils::{parse_env_identifier, PrependStatement};
 
 pub fn contractimpl(impl_block: &mut ItemImpl) -> Result<proc_macro2::TokenStream, syn::Error> {
-    let all_contract_endpoints = all_contract_endpoints(impl_block);
+    // this needs to be defined before the iteration, because during it, we can't get a reference to the impl block
     let any_stateful_endpoints = any_stateful_endpoints(impl_block);
-
-    impl_block
-        .items
-        .iter_mut()
-        .filter_map(all_contract_endpoints)
-        .try_for_each(|method| {
-            instance_ttl_extension(method)?;
-            Ok::<_, syn::Error>(())
-        })?;
+    let all_contract_endpoints = all_contract_endpoints(impl_block);
 
     impl_block
         .items
@@ -35,6 +27,15 @@ pub fn contractimpl(impl_block: &mut ItemImpl) -> Result<proc_macro2::TokenStrea
             } else {
                 method.try_for_each(block_during_migration)?
             }
+            Ok::<_, syn::Error>(())
+        })?;
+
+    impl_block
+        .items
+        .iter_mut()
+        .filter_map(all_contract_endpoints)
+        .try_for_each(|method| {
+            instance_ttl_extension(method)?;
             Ok::<_, syn::Error>(())
         })?;
 
