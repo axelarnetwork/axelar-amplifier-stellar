@@ -1,0 +1,6 @@
+enum DataKey {
+
+    #[instance]
+    #[value(u32)]
+    Balance,
+}
