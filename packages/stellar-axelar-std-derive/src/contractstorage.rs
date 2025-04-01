@@ -491,7 +491,7 @@ mod tests {
             }
         };
 
-        let storage_module = crate::storage::contract_storage(&enum_input);
+        let storage_module = crate::contractstorage::contract_storage(&enum_input);
         let storage_module_file: syn::File = syn::parse2(storage_module).unwrap();
         let formatted_storage_module = prettyplease::unparse(&storage_module_file)
             .replace("pub fn ", "\npub fn ")
@@ -508,7 +508,7 @@ mod tests {
             }
         };
 
-        crate::storage::contract_storage(&input);
+        crate::contractstorage::contract_storage(&input);
     }
 
     #[test]
@@ -522,7 +522,7 @@ mod tests {
             }
         };
 
-        crate::storage::contract_storage(&input);
+        crate::contractstorage::contract_storage(&input);
     }
 
     #[test]
@@ -537,7 +537,7 @@ mod tests {
             }
         };
 
-        crate::storage::contract_storage(&input);
+        crate::contractstorage::contract_storage(&input);
     }
 
     #[test]
@@ -550,7 +550,7 @@ mod tests {
             }
         };
 
-        crate::storage::contract_storage(&input);
+        crate::contractstorage::contract_storage(&input);
     }
 
     #[test]
@@ -587,7 +587,7 @@ mod tests {
             }
         };
 
-        crate::storage::contract_storage(&input);
+        crate::contractstorage::contract_storage(&input);
     }
 
     #[test]
@@ -601,7 +601,7 @@ mod tests {
             }
         };
 
-        crate::storage::contract_storage(&input);
+        crate::contractstorage::contract_storage(&input);
     }
 
     #[test]
@@ -615,7 +615,7 @@ mod tests {
             }
         };
 
-        crate::storage::contract_storage(&input);
+        crate::contractstorage::contract_storage(&input);
     }
 
     #[test]
@@ -631,6 +631,6 @@ mod tests {
             }
         };
 
-        crate::storage::contract_storage(&input);
+        crate::contractstorage::contract_storage(&input);
     }
 }

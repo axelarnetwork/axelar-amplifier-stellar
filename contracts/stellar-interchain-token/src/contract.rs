@@ -198,7 +198,7 @@ impl token::Interface for InterchainToken {
         Self::spend_balance(&env, from.clone(), amount);
         Self::receive_balance(&env, to.clone(), amount);
 
-        TokenUtils::new(&env).events().transfer(from, to, amount)
+        TokenUtils::new(&env).events().transfer(from, to, amount);
     }
 
     fn burn(env: Env, from: Address, amount: i128) {
@@ -217,7 +217,7 @@ impl token::Interface for InterchainToken {
         Self::spend_allowance(&env, from.clone(), spender, amount);
         Self::spend_balance(&env, from.clone(), amount);
 
-        TokenUtils::new(&env).events().burn(from, amount)
+        TokenUtils::new(&env).events().burn(from, amount);
     }
 
     fn decimals(env: Env) -> u32 {
