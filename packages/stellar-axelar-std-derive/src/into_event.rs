@@ -88,51 +88,28 @@ pub fn into_event(input: &DeriveInput) -> proc_macro2::TokenStream {
         }
     };
 
-    let schema_impl = if has_datum {
-        quote! {
-            fn schema(env: &stellar_axelar_std::Env) -> &'static str {
-                concat!(
-                    #event_name, " {\n",
-                    #(
-                        "    #[topic] ",
-                        stringify!(#topic_field_idents),
-                        ": ",
-                        stringify!(#topic_types),
-                        ",\n",
-                    )*
-                    #(
-                        "    #[datum] ",
-                        stringify!(#data_field_idents),
-                        ": ",
-                        stringify!(#data_types),
-                        ",\n",
-                    )*
-                    "}"
-                )
-            }
-        }
-    } else {
-        quote! {
-            fn schema(env: &stellar_axelar_std::Env) -> &'static str {
-                concat!(
-                    #event_name, " {\n",
-                    #(
-                        "    #[topic] ",
-                        stringify!(#topic_field_idents),
-                        ": ",
-                        stringify!(#topic_types),
-                        ",\n",
-                    )*
-                    #(
-                        "    #[data]  ",
-                        stringify!(#data_field_idents),
-                        ": ",
-                        stringify!(#data_types),
-                        ",\n",
-                    )*
-                    "}"
-                )
-            }
+    let attribute_name = if has_datum { "#[datum] " } else { "#[data]  " };
+
+    let schema_impl = quote! {
+        fn schema(env: &stellar_axelar_std::Env) -> &'static str {
+            concat!(
+                #event_name, " {\n",
+                #(
+                    "    #[topic] ",
+                    stringify!(#topic_field_idents),
+                    ": ",
+                    stringify!(#topic_types),
+                    ",\n",
+                )*
+                #(
+                    "    ", #attribute_name,
+                    stringify!(#data_field_idents),
+                    ": ",
+                    stringify!(#data_types),
+                    ",\n",
+                )*
+                "}"
+            )
         }
     };
 
