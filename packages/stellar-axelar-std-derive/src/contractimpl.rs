@@ -10,7 +10,8 @@ use crate::utils::{parse_env_identifier, PrependStatement};
 pub fn contractimpl(impl_block: &mut ItemImpl) -> Result<proc_macro2::TokenStream, syn::Error> {
     for method in impl_block.items.iter_mut() {
         if let ImplItem::Fn(method_fn) = method {
-            let is_contract_endpoint = impl_block.trait_.is_some() || is_pub_fn(method_fn);
+            let is_contract_endpoint =
+                impl_block.trait_.is_some() || matches!(method_fn.vis, Visibility::Public(_));
             let is_stateful = has_args(&method_fn);
 
             if is_stateful && is_contract_endpoint {
@@ -64,10 +65,6 @@ fn remove_allow_during_migration_attribute(method: &mut ImplItemFn) {
     method
         .attrs
         .retain(|attr| !attr.path().is_ident("allow_during_migration"))
-}
-
-fn is_pub_fn(fn_: &ImplItemFn) -> bool {
-    matches!(fn_.vis, Visibility::Public(_))
 }
 
 fn has_args(fn_: &&mut ImplItemFn) -> bool {
