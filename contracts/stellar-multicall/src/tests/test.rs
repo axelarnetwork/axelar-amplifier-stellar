@@ -61,9 +61,7 @@ mod test_bank {
             let owner = Self::owner(env);
             owner.require_auth();
 
-            let current_balance = storage::balance(env);
-            let new_balance = current_balance + amount;
-            storage::set_balance(env, &new_balance);
+            storage::set_balance(env, &(storage::balance(env) + amount));
         }
 
         pub fn withdraw(env: &Env, amount: u32) -> Result<(), TestBankError> {
@@ -74,8 +72,7 @@ mod test_bank {
             if current_balance < amount {
                 return Err(TestBankError::InsufficientBalance);
             }
-            let new_balance = current_balance - amount;
-            storage::set_balance(env, &new_balance);
+            storage::set_balance(env, &(current_balance - amount));
             Ok(())
         }
     }
