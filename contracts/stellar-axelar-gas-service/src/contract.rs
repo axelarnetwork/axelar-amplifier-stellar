@@ -1,5 +1,4 @@
 use stellar_axelar_std::events::Event;
-use stellar_axelar_std::ttl::extend_instance_ttl;
 use stellar_axelar_std::types::Token;
 use stellar_axelar_std::{
     contract, contractimpl, ensure, interfaces, only_operator, soroban_sdk, token, Address, Bytes,
@@ -102,8 +101,6 @@ impl AxelarGasServiceInterface for AxelarGasService {
         token_client.transfer(&env.current_contract_address(), &receiver, &token.amount);
 
         GasCollectedEvent { receiver, token }.emit(&env);
-
-        extend_instance_ttl(&env);
 
         Ok(())
     }

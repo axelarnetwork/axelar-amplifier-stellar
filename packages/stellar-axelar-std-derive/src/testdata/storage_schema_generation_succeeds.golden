@@ -11,24 +11,17 @@ enum DataKey {
 
 pub fn counter(env: &stellar_axelar_std::Env) -> u32 {
     let key = DataKey::Counter;
-    let value = env.storage().instance().get::<_, u32>(&key).unwrap();
-    stellar_axelar_std::ttl::extend_instance_ttl(env);
-    value
+    env.storage().instance().get::<_, u32>(&key).unwrap()
 }
 
 pub fn try_counter(env: &stellar_axelar_std::Env) -> Option<u32> {
     let key = DataKey::Counter;
-    let value = env.storage().instance().get::<_, u32>(&key);
-    if value.is_some() {
-        stellar_axelar_std::ttl::extend_instance_ttl(env);
-    }
-    value
+    env.storage().instance().get::<_, u32>(&key)
 }
 
 pub fn set_counter(env: &stellar_axelar_std::Env, value: &u32) {
     let key = DataKey::Counter;
     env.storage().instance().set(&key, value);
-    stellar_axelar_std::ttl::extend_instance_ttl(env);
 }
 
 pub fn remove_counter(env: &stellar_axelar_std::Env) {
@@ -94,8 +87,7 @@ pub fn has_message(env: &stellar_axelar_std::Env, sender: Address) -> bool {
 
 pub fn last_caller(env: &stellar_axelar_std::Env, timestamp: u64) -> Address {
     let key = DataKey::LastCaller(timestamp);
-    let value = env.storage().temporary().get::<_, Address>(&key).unwrap();
-    value
+    env.storage().temporary().get::<_, Address>(&key).unwrap()
 }
 
 pub fn try_last_caller(
@@ -103,9 +95,7 @@ pub fn try_last_caller(
     timestamp: u64,
 ) -> Option<Address> {
     let key = DataKey::LastCaller(timestamp);
-    let value = env.storage().temporary().get::<_, Address>(&key);
-    if value.is_some() {}
-    value
+    env.storage().temporary().get::<_, Address>(&key)
 }
 
 pub fn set_last_caller(env: &stellar_axelar_std::Env, timestamp: u64, value: &Address) {
@@ -236,17 +226,12 @@ pub fn has_optional_message(env: &stellar_axelar_std::Env, id: u32) -> bool {
 
 pub fn is_initialized(env: &stellar_axelar_std::Env) -> bool {
     let key = DataKey::Initialized;
-    let value = env.storage().instance().has(&key);
-    if value {
-        stellar_axelar_std::ttl::extend_instance_ttl(env);
-    }
-    value
+    env.storage().instance().has(&key)
 }
 
 pub fn set_initialized_status(env: &stellar_axelar_std::Env) {
     let key = DataKey::Initialized;
     env.storage().instance().set(&key, &());
-    stellar_axelar_std::ttl::extend_instance_ttl(env);
 }
 
 pub fn remove_initialized_status(env: &stellar_axelar_std::Env) {
