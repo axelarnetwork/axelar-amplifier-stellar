@@ -45,11 +45,11 @@ enum DataKey {
     FlowLimit { token_id: BytesN<32> },
 
     #[temporary]
-    #[value(i128)]
+    #[value(u128)]
     FlowOut { token_id: BytesN<32>, epoch: u64 },
 
     #[temporary]
-    #[value(i128)]
+    #[value(u128)]
     FlowIn { token_id: BytesN<32>, epoch: u64 },
 }
 

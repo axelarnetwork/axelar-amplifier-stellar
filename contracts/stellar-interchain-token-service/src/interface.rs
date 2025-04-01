@@ -107,11 +107,11 @@ pub trait InterchainTokenServiceInterface:
 
     /// Returns the amount that has flowed out of the chain to other chains during the current epoch
     /// for the token associated with the specified token ID.
-    fn flow_out_amount(env: &Env, token_id: BytesN<32>) -> i128;
+    fn flow_out_amount(env: &Env, token_id: BytesN<32>) -> u128;
 
     /// Retrieves the amount that has flowed into the chain from other chains during the current epoch
     /// for the token associated with the specified token ID.
-    fn flow_in_amount(env: &Env, token_id: BytesN<32>) -> i128;
+    fn flow_in_amount(env: &Env, token_id: BytesN<32>) -> u128;
 
     /// Sets or updates the flow limit for a token.
     ///

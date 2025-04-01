@@ -156,11 +156,11 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         flow_limit::flow_limit(env, token_id)
     }
 
-    fn flow_out_amount(env: &Env, token_id: BytesN<32>) -> i128 {
+    fn flow_out_amount(env: &Env, token_id: BytesN<32>) -> u128 {
         flow_limit::flow_out_amount(env, token_id)
     }
 
-    fn flow_in_amount(env: &Env, token_id: BytesN<32>) -> i128 {
+    fn flow_in_amount(env: &Env, token_id: BytesN<32>) -> u128 {
         flow_limit::flow_in_amount(env, token_id)
     }
 

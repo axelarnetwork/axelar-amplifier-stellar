@@ -15,21 +15,21 @@ pub enum FlowDirection {
 }
 
 impl FlowDirection {
-    fn flow(&self, env: &Env, token_id: BytesN<32>) -> i128 {
+    fn flow(&self, env: &Env, token_id: BytesN<32>) -> u128 {
         match self {
             Self::In => flow_in_amount(env, token_id),
             Self::Out => flow_out_amount(env, token_id),
         }
     }
 
-    fn reverse_flow(&self, env: &Env, token_id: BytesN<32>) -> i128 {
+    fn reverse_flow(&self, env: &Env, token_id: BytesN<32>) -> u128 {
         match self {
             Self::In => flow_out_amount(env, token_id),
             Self::Out => flow_in_amount(env, token_id),
         }
     }
 
-    fn update_flow(&self, env: &Env, token_id: BytesN<32>, new_flow: i128) {
+    fn update_flow(&self, env: &Env, token_id: BytesN<32>, new_flow: u128) {
         match self {
             Self::In => storage::set_flow_in(env, token_id, current_epoch(env), &new_flow),
             Self::Out => storage::set_flow_out(env, token_id, current_epoch(env), &new_flow),
@@ -54,16 +54,14 @@ impl FlowDirection {
             return Ok(());
         };
 
+        ensure!(flow_amount >= 0, ContractError::InvalidAmount);
         ensure!(flow_amount <= flow_limit, ContractError::FlowLimitExceeded);
 
-        let new_flow = self
-            .flow(env, token_id.clone())
-            .checked_add(flow_amount)
-            .ok_or(ContractError::FlowAmountOverflow)?;
-        let max_allowed = self
-            .reverse_flow(env, token_id.clone())
-            .checked_add(flow_limit)
-            .ok_or(ContractError::FlowAmountOverflow)?;
+        let flow_amount = u128::try_from(flow_amount).expect("expected positive");
+        let flow_limit = u128::try_from(flow_limit).expect("expected positive");
+
+        let new_flow = self.flow(env, token_id.clone()) + flow_amount;
+        let max_allowed = self.reverse_flow(env, token_id.clone()) + flow_limit;
 
         // Equivalent to flow_amount + flow - reverse_flow <= flow_limit
         ensure!(new_flow <= max_allowed, ContractError::FlowLimitExceeded);
@@ -104,10 +102,10 @@ pub fn set_flow_limit(
     Ok(())
 }
 
-pub fn flow_out_amount(env: &Env, token_id: BytesN<32>) -> i128 {
+pub fn flow_out_amount(env: &Env, token_id: BytesN<32>) -> u128 {
     storage::try_flow_out(env, token_id, current_epoch(env)).unwrap_or(0)
 }
 
-pub fn flow_in_amount(env: &Env, token_id: BytesN<32>) -> i128 {
+pub fn flow_in_amount(env: &Env, token_id: BytesN<32>) -> u128 {
     storage::try_flow_in(env, token_id, current_epoch(env)).unwrap_or(0)
 }
