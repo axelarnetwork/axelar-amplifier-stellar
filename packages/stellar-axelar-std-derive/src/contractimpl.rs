@@ -1,64 +1,36 @@
-use itertools::Itertools;
 use proc_macro2::Ident;
 use quote::quote;
 use syn::{
-    parse_quote, AngleBracketedGenericArguments, GenericArgument, ImplItem, ImplItemFn,
-    ItemImpl, PathArguments, PathSegment, ReturnType, Stmt, Type, TypePath, Visibility,
+    parse_quote, AngleBracketedGenericArguments, GenericArgument, ImplItem, ImplItemFn, ItemImpl,
+    PathArguments, PathSegment, ReturnType, Stmt, Type, TypePath, Visibility,
 };
 
 use crate::utils::{parse_env_identifier, PrependStatement};
 
 pub fn contractimpl(impl_block: &mut ItemImpl) -> Result<proc_macro2::TokenStream, syn::Error> {
-    // this needs to be defined before the iteration, because during it, we can't get a reference to the impl block
-    let any_stateful_endpoints = any_stateful_endpoints(impl_block);
-    let all_contract_endpoints = all_contract_endpoints(impl_block);
+    for method in impl_block.items.iter_mut() {
+        if let ImplItem::Fn(method_fn) = method {
+            let is_contract_endpoint = impl_block.trait_.is_some() || is_pub_fn(method_fn);
+            let is_stateful = has_args(&method_fn);
 
-    impl_block
-        .items
-        .iter_mut()
-        .filter_map(any_stateful_endpoints)
-        .chunk_by(is_allowed_during_migration)
-        .into_iter()
-        .try_for_each(|(is_allowed, mut method)| {
-            if is_allowed {
-                // if this the attribute is not removed, the compiler will try to resolve it,
-                // and it will need to be defined as a standalone attribute macro
-                method.for_each(remove_allow_during_migration_attribute);
-            } else {
-                method.try_for_each(block_during_migration)?
+            if is_stateful && is_contract_endpoint {
+                if is_allowed_during_migration(&method_fn) {
+                    remove_allow_during_migration_attribute(method_fn);
+                } else {
+                    block_during_migration(method_fn)?;
+                }
             }
-            Ok::<_, syn::Error>(())
-        })?;
 
-    impl_block
-        .items
-        .iter_mut()
-        .filter_map(all_contract_endpoints)
-        .try_for_each(|method| {
-            instance_ttl_extension(method)?;
-            Ok::<_, syn::Error>(())
-        })?;
+            if is_contract_endpoint && has_env_param(&method_fn) {
+                instance_ttl_extension(method_fn)?;
+            }
+        }
+    }
 
     Ok(quote! {
         #[soroban_sdk::contractimpl]
         #impl_block
     })
-}
-
-fn all_contract_endpoints(
-    impl_block: &ItemImpl,
-) -> impl Fn(&mut ImplItem) -> Option<&mut ImplItemFn> {
-    let any_contract_endpoint = if impl_block.trait_.is_some() {
-        any
-    } else {
-        any_pub_fn
-    };
-
-    move |item| {
-        any_fn(item)
-            .and_then(any_contract_endpoint)
-            .filter(has_env_param)
-    }
 }
 
 fn instance_ttl_extension(method: &mut ImplItemFn) -> Result<(), syn::Error> {
@@ -74,25 +46,6 @@ fn instance_ttl_extension(method: &mut ImplItemFn) -> Result<(), syn::Error> {
 
 fn has_env_param(fn_: &&mut ImplItemFn) -> bool {
     parse_env_identifier(&fn_.sig.inputs).is_ok()
-}
-
-/// If a function doesn't have any arguments it cannot modify the environment, so it's safe to be called during migration
-fn any_stateful_endpoints(
-    impl_block: &ItemImpl,
-) -> impl Fn(&mut ImplItem) -> Option<&mut ImplItemFn> {
-    // if the block implements a trait, all of its functions are implicitly public, otherwise we only need to match public functions
-    // to help the compiler resolve lifetimes, this is defined first and moved into the closure
-    let any_contract_endpoint = if impl_block.trait_.is_some() {
-        any
-    } else {
-        any_pub_fn
-    };
-
-    move |item| {
-        any_fn(item)
-            .and_then(any_contract_endpoint)
-            .filter(has_args)
-    }
 }
 
 fn block_during_migration(method: &mut ImplItemFn) -> Result<(), syn::Error> {
@@ -113,25 +66,8 @@ fn remove_allow_during_migration_attribute(method: &mut ImplItemFn) {
         .retain(|attr| !attr.path().is_ident("allow_during_migration"))
 }
 
-fn any_fn(item: &mut ImplItem) -> Option<&mut ImplItemFn> {
-    match item {
-        ImplItem::Fn(fn_) => Some(fn_),
-        _ => None,
-    }
-}
-
-fn any<T>(item: &mut T) -> Option<&mut T> {
-    Some(item)
-}
-
-fn any_pub_fn(fn_: &mut ImplItemFn) -> Option<&mut ImplItemFn> {
-    match fn_ {
-        ImplItemFn {
-            vis: Visibility::Public(_),
-            ..
-        } => Some(fn_),
-        _ => None,
-    }
+fn is_pub_fn(fn_: &ImplItemFn) -> bool {
+    matches!(fn_.vis, Visibility::Public(_))
 }
 
 fn has_args(fn_: &&mut ImplItemFn) -> bool {
