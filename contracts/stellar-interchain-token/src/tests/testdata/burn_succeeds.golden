@@ -7,5 +7,5 @@ Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4)
 
 burn {
     #[topic] from: Address,
-    #[data]  amount: i128,
+    #[datum] amount: i128,
 }

@@ -9,5 +9,5 @@ Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4)
 mint {
     #[topic] owner: Address,
     #[topic] to: Address,
-    #[data]  amount: i128,
+    #[datum] amount: i128,
 }
