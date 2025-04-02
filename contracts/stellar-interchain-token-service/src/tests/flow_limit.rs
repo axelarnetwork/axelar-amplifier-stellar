@@ -505,3 +505,55 @@ fn add_flow_fails_invalid_amount() {
         );
     }
 }
+
+#[test]
+fn add_flow_fails_on_overflow() {
+    // Add reverse flow using interchain transfer
+    let (env, client, gateway, token) = setup();
+    let gas_token = setup_gas_token(&env, &token.deployer);
+
+    client
+        .mock_all_auths()
+        .set_flow_limit(&token.id, &Some(i128::MAX));
+
+    let flow_out_amount = i128::MAX;
+    let (destination_chain, destination_address, data) = dummy_transfer_params(&env);
+    client
+        .mock_all_auths()
+        .set_trusted_chain(&destination_chain);
+
+    client.mock_all_auths().interchain_transfer(
+        &token.deployer,
+        &token.id,
+        &destination_chain,
+        &destination_address,
+        &flow_out_amount,
+        &data,
+        &Some(gas_token),
+    );
+
+    // Add incoming flow using execute to cause overflow
+    let flow_in_amount = i128::MAX;
+    let msg = approve_its_transfer(&env, &client, &gateway, &token.id, flow_in_amount);
+
+    client.execute(
+        &msg.source_chain,
+        &msg.message_id,
+        &msg.source_address,
+        &msg.payload,
+    );
+
+    execute_its_transfer(&env, &client, &gateway, &token.id, flow_in_amount);
+
+    let msg = approve_its_transfer(&env, &client, &gateway, &token.id, flow_in_amount);
+
+    assert_contract_err!(
+        client.try_execute(
+            &msg.source_chain,
+            &msg.message_id,
+            &msg.source_address,
+            &msg.payload
+        ),
+        ContractError::FlowAmountOverflow
+    );
+}
