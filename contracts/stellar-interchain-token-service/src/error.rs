@@ -37,4 +37,5 @@ pub enum ContractError {
     MigrationInProgress = 31,
     InvalidTokenConfig = 32,
     InvalidFlowKey = 33,
+    FlowAmountExceededLimit = 34,
 }

@@ -194,7 +194,7 @@ fn zero_flow_limit_effectively_freezes_token() {
             &msg.source_address,
             &msg.payload,
         ),
-        ContractError::FlowLimitExceeded
+        ContractError::FlowAmountExceededLimit
     );
 
     let (destination_chain, destination_address, data) = dummy_transfer_params(&env);
@@ -213,7 +213,7 @@ fn zero_flow_limit_effectively_freezes_token() {
             &data,
             &Some(gas_token),
         ),
-        ContractError::FlowLimitExceeded
+        ContractError::FlowAmountExceededLimit
     );
 }
 
