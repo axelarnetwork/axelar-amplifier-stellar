@@ -20,7 +20,6 @@ cfg_if::cfg_if! {
         mod migrate;
 
         pub use contract::{AxelarOperators, AxelarOperatorsClient};
-        // TODO: Exported to avoid dead_code warnings
         pub use interface::AxelarOperatorsInterface;
     }
 }

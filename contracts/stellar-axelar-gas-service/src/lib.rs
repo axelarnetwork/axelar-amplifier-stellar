@@ -24,5 +24,6 @@ cfg_if::cfg_if! {
         mod contract;
 
         pub use contract::{AxelarGasService, AxelarGasServiceClient};
+        pub use interface::AxelarGasServiceInterface;
     }
 }

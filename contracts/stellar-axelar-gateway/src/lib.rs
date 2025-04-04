@@ -33,5 +33,6 @@ cfg_if::cfg_if! {
         mod migrate;
 
         pub use contract::{AxelarGateway, AxelarGatewayClient};
+        pub use interface::AxelarGatewayInterface;
     }
 }

@@ -31,5 +31,6 @@ cfg_if::cfg_if! {
         mod migrate;
 
         pub use contract::{InterchainTokenService, InterchainTokenServiceClient};
+        pub use interface::InterchainTokenServiceInterface;
     }
 }

@@ -15,6 +15,10 @@ jobs:
   soroban-compilation:
     name: Soroban Compilation
     runs-on: blacksmith-4vcpu-ubuntu-2204
+    env:
+      RUST_BACKTRACE: 1
+      RUSTFLAGS: "-D warnings"
+
     steps:
       - uses: actions/checkout@v4
 
@@ -28,11 +32,12 @@ jobs:
         uses: useblacksmith/rust-cache@v3.0.1
         with:
           shared-key: "cache-compilation"
-      
-      - name: Run build
-        run: RUSTFLAGS="-D warnings" cargo build --locked --release
-        env:
-          RUST_BACKTRACE: 1
+
+      - name: Build contracts
+        run: for C in contracts/*; do cd $C; cargo build --locked --release; cd ../../ ; done
+
+      - name: Build packages
+        run: for C in packages/*; do cd $C; cargo build --locked --release; cd ../../ ; done
 
       - name: Build wasm release
         run: cargo wasm

@@ -7,8 +7,7 @@ extern crate std;
 extern crate alloc;
 
 pub mod error;
-
-pub mod interface;
+mod interface;
 
 #[cfg(any(test, feature = "testutils"))]
 pub mod testutils;
@@ -23,5 +22,6 @@ cfg_if::cfg_if! {
         mod contract;
 
         pub use contract::{Upgrader, UpgraderClient};
+        pub use interface::UpgraderInterface;
     }
 }
