@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   compile:
-    name: 🧱 Compile
+    name: Compile
     runs-on: blacksmith-4vcpu-ubuntu-2204
     env:
       RUST_BACKTRACE: 1
@@ -43,7 +43,7 @@ jobs:
         run: cargo wasm
 
   test:
-    name: ✅ Test Suite
+    name: Test Suite
     needs: compile
     runs-on: blacksmith-8vcpu-ubuntu-2204
     env:
