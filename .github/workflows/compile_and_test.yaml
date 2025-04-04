@@ -1,19 +1,54 @@
-name: Test
+name: Compile and Test
 
 on:
-  workflow_run:
-    workflows: ["Compile"]
-    types:
-      - completed
+  pull_request:
+  push:
+    branches:
+      - main
+      - releases/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  compile:
+    name: 🧱 Compile
+    runs-on: blacksmith-4vcpu-ubuntu-2204
+    env:
+      RUST_BACKTRACE: 1
+      RUSTFLAGS: "-D warnings"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.81.0
+          targets: wasm32-unknown-unknown
+
+      - name: Rust Cache
+        uses: useblacksmith/rust-cache@v3.0.1
+        with:
+          shared-key: "cache-compilation"
+
+      - name: Build contracts
+        run: for C in contracts/*; do cd $C; cargo build --locked --release; cd ../../ ; done
+
+      - name: Build packages
+        run: for C in packages/*; do cd $C; cargo build --locked --release; cd ../../ ; done
+
+      - name: Build wasm release
+        run: cargo wasm
+
   test:
-    name: Test Suite
+    name: ✅ Test Suite
+    needs: compile
     runs-on: blacksmith-8vcpu-ubuntu-2204
+    env:
+      RUST_BACKTRACE: 1
+
     steps:
       - uses: actions/checkout@v4
 
@@ -29,15 +64,11 @@ jobs:
 
       - name: Run tests for contracts
         run: for C in contracts/*; do cd $C; RUSTFLAGS="-D warnings" cargo test --locked; cd ../../ ; done
-        env:
-          RUST_BACKTRACE: 1
 
       - name: Run tests for packages
         run: for C in packages/*; do cd $C; RUSTFLAGS="-D warnings" cargo test --locked; cd ../../ ; done
-        env:
-          RUST_BACKTRACE: 1
 
-      - name: Remove all golden files
+      - name: Remove golden files
         run: find . -name "*.golden" -exec rm -rf {} \;
 
       - name: Regenerate golden files
