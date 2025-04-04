@@ -26,6 +26,10 @@ Changes:
 {% endfor -%}
 """
 
+[[package]]
+name = "dummy-contract-after-upgrade"
+release = false # don't process this package
+
 [changelog]
 header = """# Changelog
 
