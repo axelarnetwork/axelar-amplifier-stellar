@@ -149,25 +149,44 @@ fn execute_its_transfer(
     )
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Flow {
     In(i128),
     Out(i128),
 }
 
-#[derive(Debug)]
+impl Flow {
+    const fn flip(self) -> Self {
+        match self {
+            Self::In(amount) => Self::Out(amount),
+            Self::Out(amount) => Self::In(amount),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 struct TestCase {
     flow_limit: i128,
     flows: std::vec::Vec<Flow>,
-    expected_error: Option<ContractError>,
 }
 
-fn execute_flows(
+impl TestCase {
+    /// Flips the direction of the flows in the test case. The test case should still logically behave in the same way.
+    fn flip(self) -> Self {
+        Self {
+            flow_limit: self.flow_limit,
+            flows: self.flows.into_iter().map(|flow| flow.flip()).collect(),
+        }
+    }
+}
+
+fn execute_test_case(
     env: &Env,
     client: &InterchainTokenServiceClient,
     gateway: &GatewayConfig,
     token: &TokenConfig,
     test_case: TestCase,
+    expected_error: Option<ContractError>,
 ) {
     println!("Executing test case: {:?}", test_case);
 
@@ -222,11 +241,25 @@ fn execute_flows(
                 }
             };
 
-            match (is_last, test_case.expected_error) {
+            match (is_last, expected_error) {
                 (true, Some(expected_error)) => assert_contract_err!(result, expected_error),
                 _ => assert_ok!(assert_ok!(result)),
             }
         });
+}
+
+fn execute_test_cases(test_cases: std::vec::Vec<TestCase>, expected_error: Option<ContractError>) {
+    // Flipped test cases should produce the same expected error
+    let all_test_cases = test_cases
+        .clone()
+        .into_iter()
+        .chain(test_cases.into_iter().map(|test_case| test_case.flip()));
+
+    for test_case in all_test_cases {
+        let (env, client, gateway, token) = setup();
+
+        execute_test_case(&env, &client, &gateway, &token, test_case, expected_error);
+    }
 }
 
 #[test]
@@ -261,46 +294,6 @@ fn set_flow_limit_to_none_succeeds() {
 }
 
 #[test]
-fn zero_flow_limit_effectively_freezes_token() {
-    let (env, client, gateway, token) = setup();
-    let gas_token = setup_gas_token(&env, &token.deployer);
-
-    client.mock_all_auths().set_flow_limit(&token.id, &Some(0));
-
-    let amount = 1;
-    let msg = approve_its_transfer(&env, &client, &gateway, &token.id, amount);
-
-    assert_contract_err!(
-        client.try_execute(
-            &msg.source_chain,
-            &msg.message_id,
-            &msg.source_address,
-            &msg.payload,
-        ),
-        ContractError::FlowAmountExceededLimit
-    );
-
-    let (destination_chain, destination_address, data) = dummy_transfer_params(&env);
-
-    client
-        .mock_all_auths()
-        .set_trusted_chain(&destination_chain);
-
-    assert_contract_err!(
-        client.mock_all_auths().try_interchain_transfer(
-            &token.deployer,
-            &token.id,
-            &destination_chain,
-            &destination_address,
-            &amount,
-            &data,
-            &Some(gas_token),
-        ),
-        ContractError::FlowAmountExceededLimit
-    );
-}
-
-#[test]
 fn set_flow_limit_fails_on_negative_limit() {
     let (env, client, _, _, _) = setup_env();
     let token_id = BytesN::from_array(&env, &[1; 32]);
@@ -332,221 +325,145 @@ fn flow_limit_resets_after_epoch() {
 }
 
 #[test]
-fn add_flow_in_fails_on_flow_amount_exceeding_limit() {
-    let (env, client, gateway, token) = setup();
-
-    let amount = dummy_flow_limit() + 1;
-
-    let msg = approve_its_transfer(&env, &client, &gateway, &token.id, amount);
-
-    assert_contract_err!(
-        client.try_execute(
-            &msg.source_chain,
-            &msg.message_id,
-            &msg.source_address,
-            &msg.payload
-        ),
-        ContractError::FlowAmountExceededLimit
-    );
-}
-
-#[test]
-fn add_flow_in_fails_on_exceeding_flow_limit() {
-    let (env, client, gateway, token) = setup();
-
-    let amount = dummy_flow_limit();
-
-    execute_its_transfer(&env, &client, &gateway, &token.id, amount);
-
-    assert_eq!(client.flow_in_amount(&token.id), amount);
-
-    let amount = 1;
-    let msg = approve_its_transfer(&env, &client, &gateway, &token.id, amount);
-
-    assert_contract_err!(
-        client.try_execute(
-            &msg.source_chain,
-            &msg.message_id,
-            &msg.source_address,
-            &msg.payload
-        ),
-        ContractError::FlowLimitExceeded
-    );
-}
-
-#[test]
 fn add_flow_succeeds() {
     let test_cases = std::vec![
         TestCase {
+            flow_limit: 1,
+            flows: std::vec![Flow::In(1)],
+        },
+        TestCase {
             flow_limit: 1000,
             flows: std::vec![Flow::In(1000)],
-            expected_error: None,
-        },
-        TestCase {
-            flow_limit: 1000,
-            flows: std::vec![Flow::Out(1000)],
-            expected_error: None,
-        },
-        TestCase {
-            flow_limit: 1000,
-            flows: std::vec![Flow::In(1000), Flow::Out(1000)],
-            expected_error: None,
         },
         TestCase {
             flow_limit: i128::MAX,
             flows: std::vec![Flow::In(i128::MAX)],
-            expected_error: None,
+        },
+        TestCase {
+            flow_limit: 1,
+            flows: std::vec![Flow::In(1), Flow::Out(1), Flow::In(1)],
+        },
+        TestCase {
+            flow_limit: 10,
+            flows: std::vec![
+                Flow::In(5),
+                Flow::In(5),
+                Flow::Out(10),
+                Flow::Out(10),
+                Flow::In(1),
+                Flow::In(10),
+                Flow::In(9)
+            ],
         },
         TestCase {
             flow_limit: i128::MAX,
-            flows: std::vec![Flow::Out(i128::MAX)],
-            expected_error: None,
+            flows: std::vec![Flow::In(1), Flow::Out(1), Flow::In(1)],
+        },
+        TestCase {
+            flow_limit: i128::MAX,
+            flows: std::vec![Flow::In(i128::MAX - 1), Flow::Out(i128::MAX), Flow::In(1)],
         },
     ];
 
-    for test_case in test_cases {
-        let (env, client, gateway, token) = setup();
-
-        execute_flows(&env, &client, &gateway, &token, test_case);
-    }
+    execute_test_cases(test_cases, None);
 }
 
 #[test]
-fn add_flow_out_fails_on_flow_amount_exceeding_limit() {
-    let (env, client, _, token) = setup();
-    let gas_token = setup_gas_token(&env, &token.deployer);
-
-    let amount = dummy_flow_limit() + 1;
-    let (destination_chain, destination_address, data) = dummy_transfer_params(&env);
-
-    client
-        .mock_all_auths()
-        .set_trusted_chain(&destination_chain);
-
-    assert_contract_err!(
-        client.mock_all_auths().try_interchain_transfer(
-            &token.deployer,
-            &token.id,
-            &destination_chain,
-            &destination_address,
-            &amount,
-            &data,
-            &Some(gas_token),
-        ),
-        ContractError::FlowAmountExceededLimit
-    );
-}
-
-#[test]
-fn add_flow_out_fails_on_exceeding_flow_limit() {
-    let (env, client, _, token) = setup();
-    let gas_token = setup_gas_token(&env, &token.deployer);
-
-    let amount = dummy_flow_limit();
-    let (destination_chain, destination_address, data) = dummy_transfer_params(&env);
-
-    client
-        .mock_all_auths()
-        .set_trusted_chain(&destination_chain);
-
-    client.mock_all_auths().interchain_transfer(
-        &token.deployer,
-        &token.id,
-        &destination_chain,
-        &destination_address,
-        &amount,
-        &data,
-        &Some(gas_token.clone()),
-    );
-
-    assert_eq!(client.flow_out_amount(&token.id), amount);
-
-    let second_amount = 1;
-
-    assert_contract_err!(
-        client.mock_all_auths().try_interchain_transfer(
-            &token.deployer,
-            &token.id,
-            &destination_chain,
-            &destination_address,
-            &second_amount,
-            &data,
-            &Some(gas_token),
-        ),
-        ContractError::FlowLimitExceeded
-    );
-}
-
-// #[test]
-fn add_flow_fails_on_flow_comparison_overflow() {
-    let cases = std::vec![
-        (i128::MAX - 50, i128::MAX - 51, 2),
-        (i128::MAX - 100, i128::MAX - 101, 2),
-        (i128::MAX / 2 + 1, i128::MAX / 2 + 1, 2),
+fn zero_flow_limit_effectively_freezes_token() {
+    let test_cases = std::vec![
+        TestCase {
+            flow_limit: 0,
+            flows: std::vec![Flow::In(1)],
+        },
+        TestCase {
+            flow_limit: 0,
+            flows: std::vec![Flow::In(i128::MAX)],
+        },
     ];
 
-    for (flow_limit, flow_in, flow_out) in &cases {
-        let (env, client, gateway, token) = setup();
-        let gas_token = setup_gas_token(&env, &token.deployer);
+    execute_test_cases(test_cases, Some(ContractError::FlowAmountExceededLimit));
+}
 
-        client
-            .mock_all_auths()
-            .set_flow_limit(&token.id, &Some(*flow_limit));
+#[test]
+fn add_flow_fails_on_flow_amount_exceeded_limit() {
+    let test_cases = std::vec![
+        TestCase {
+            flow_limit: 1,
+            flows: std::vec![Flow::In(2)],
+        },
+        TestCase {
+            flow_limit: i128::MAX - 1,
+            flows: std::vec![Flow::In(i128::MAX)],
+        },
+        TestCase {
+            flow_limit: 1,
+            flows: std::vec![Flow::In(1), Flow::Out(2)],
+        },
+        TestCase {
+            flow_limit: i128::MAX - 1,
+            flows: std::vec![Flow::In(1), Flow::Out(i128::MAX)],
+        },
+        TestCase {
+            flow_limit: 1,
+            flows: std::vec![Flow::In(1), Flow::Out(1), Flow::Out(1), Flow::In(2)],
+        },
+    ];
 
-        let (destination_chain, destination_address, data) = dummy_transfer_params(&env);
-        client
-            .mock_all_auths()
-            .set_trusted_chain(&destination_chain);
+    execute_test_cases(test_cases, Some(ContractError::FlowAmountExceededLimit));
+}
 
-        execute_its_transfer(&env, &client, &gateway, &token.id, *flow_in);
+#[test]
+fn add_flow_fails_on_flow_amount_overflow() {
+    let test_cases = std::vec![
+        TestCase {
+            flow_limit: i128::MAX,
+            flows: std::vec![Flow::In(i128::MAX), Flow::In(1)],
+        },
+        TestCase {
+            flow_limit: i128::MAX - 1,
+            flows: std::vec![Flow::In(1), Flow::Out(2), Flow::Out(i128::MAX - 1)],
+        },
+        TestCase {
+            flow_limit: i128::MAX - 1,
+            flows: std::vec![Flow::In(10), Flow::Out(1), Flow::In(i128::MAX - 2)],
+        },
+        TestCase {
+            flow_limit: i128::MAX / 2 + 2,
+            flows: std::vec![
+                Flow::In(i128::MAX / 2),
+                Flow::Out(i128::MAX / 2),
+                Flow::In((i128::MAX / 2) + 2),
+            ],
+        },
+    ];
 
-        assert_contract_err!(
-            client.mock_all_auths().try_interchain_transfer(
-                &token.deployer,
-                &token.id,
-                &destination_chain,
-                &destination_address,
-                flow_out,
-                &data,
-                &Some(gas_token)
-            ),
-            ContractError::FlowAmountOverflow
-        );
-    }
+    execute_test_cases(test_cases, Some(ContractError::FlowAmountOverflow));
+}
 
-    for (flow_limit, flow_out, flow_in) in cases {
-        let (env, client, gateway, token) = setup();
-        let gas_token = setup_gas_token(&env, &token.deployer);
+#[test]
+fn add_flow_fails_on_flow_limit_exceeded() {
+    let test_cases = std::vec![
+        TestCase {
+            flow_limit: 1,
+            flows: std::vec![Flow::In(1), Flow::In(1)],
+        },
+        TestCase {
+            flow_limit: 10,
+            flows: std::vec![Flow::In(10), Flow::Out(10), Flow::In(1), Flow::In(10)],
+        },
+        TestCase {
+            flow_limit: i128::MAX - 1,
+            flows: std::vec![Flow::In(i128::MAX - 1), Flow::In(1)],
+        },
+        TestCase {
+            flow_limit: i128::MAX - 2,
+            flows: std::vec![Flow::In(1), Flow::Out(i128::MAX - 2), Flow::Out(2)],
+        },
+        TestCase {
+            flow_limit: i128::MAX / 2,
+            flows: std::vec![Flow::In(i128::MAX / 2), Flow::Out(1), Flow::In(2)],
+        },
+    ];
 
-        client
-            .mock_all_auths()
-            .set_flow_limit(&token.id, &Some(flow_limit));
-
-        let (destination_chain, destination_address, data) = dummy_transfer_params(&env);
-        client
-            .mock_all_auths()
-            .set_trusted_chain(&destination_chain);
-
-        client.mock_all_auths().interchain_transfer(
-            &token.deployer,
-            &token.id,
-            &destination_chain,
-            &destination_address,
-            &flow_out,
-            &data,
-            &Some(gas_token),
-        );
-
-        let msg = approve_its_transfer(&env, &client, &gateway, &token.id, flow_in);
-
-        assert_contract_err!(
-            client.try_execute(
-                &msg.source_chain,
-                &msg.message_id,
-                &msg.source_address,
-                &msg.payload
-            ),
-            ContractError::FlowAmountOverflow
-        );
-    }
+    execute_test_cases(test_cases, Some(ContractError::FlowLimitExceeded));
 }
