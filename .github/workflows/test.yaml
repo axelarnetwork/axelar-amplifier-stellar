@@ -1,11 +1,10 @@
 name: Test
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
-      - releases/**
+  workflow_run:
+    workflows: ["Compile"]
+    types:
+      - completed
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
