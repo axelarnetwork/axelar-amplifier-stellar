@@ -175,7 +175,7 @@ impl TestCase {
     fn flip(self) -> Self {
         Self {
             flow_limit: self.flow_limit,
-            flows: self.flows.into_iter().map(|flow| flow.flip()).collect(),
+            flows: self.flows.into_iter().map(Flow::flip).collect(),
         }
     }
 }
