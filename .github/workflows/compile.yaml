@@ -28,9 +28,23 @@ jobs:
         uses: useblacksmith/rust-cache@v3.0.1
         with:
           shared-key: "cache-compilation"
-      
+
       - name: Run build
         run: RUSTFLAGS="-D warnings" cargo build --locked --release
+        env:
+          RUST_BACKTRACE: 1
+
+      - name: Build and test all packages and contracts separately
+        run: |
+          set -e
+          for group in contracts packages; do
+            for dir in $group/*; do
+              if [ -d "$dir" ] && [ -f "$dir/Cargo.toml" ]; then
+                echo "==> Building and testing $dir"
+                (cd "$dir" && cargo build && cargo test)
+              fi
+            done
+          done
         env:
           RUST_BACKTRACE: 1
 
