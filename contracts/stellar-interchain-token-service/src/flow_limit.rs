@@ -42,8 +42,8 @@ impl FlowDirection {
     ///
     /// Checks that:
     /// - Flow amount doesn't exceed the flow limit
-    /// - Adding flows won't cause overflow
-    /// - Net flow (outgoing minus incoming flow) doesn't exceed the limit
+    /// - The flow in each direction doesn't exceed `i128::MAX`
+    /// - Net flow (outgoing minus incoming flow) doesn't exceed the flow limit, i.e |flow - reverse_flow| <= flow_limit
     pub fn add_flow(
         &self,
         env: &Env,
@@ -54,19 +54,28 @@ impl FlowDirection {
             return Ok(());
         };
 
-        ensure!(flow_amount <= flow_limit, ContractError::FlowLimitExceeded);
+        ensure!(
+            flow_amount <= flow_limit,
+            ContractError::FlowAmountExceededLimit
+        );
 
-        let new_flow = self
-            .flow(env, token_id.clone())
+        let flow = self.flow(env, token_id.clone());
+        let reverse_flow = self.reverse_flow(env, token_id.clone());
+
+        let new_flow = flow
             .checked_add(flow_amount)
             .ok_or(ContractError::FlowAmountOverflow)?;
-        let max_allowed = self
-            .reverse_flow(env, token_id.clone())
-            .checked_add(flow_limit)
-            .ok_or(ContractError::FlowAmountOverflow)?;
 
-        // Equivalent to flow_amount + flow - reverse_flow <= flow_limit
-        ensure!(new_flow <= max_allowed, ContractError::FlowLimitExceeded);
+        // Since `new_flow` and `reverse_flow` are both positive, there won't be any overflow
+        let net_flow = new_flow
+            .checked_sub(reverse_flow)
+            .expect("unexpected overflow");
+
+        // `net_flow.abs()` can't overflow since `net_flow` can never be `i128::MIN` through subtracting two non-negative values
+        ensure!(
+            net_flow.abs() <= flow_limit,
+            ContractError::FlowLimitExceeded
+        );
 
         self.update_flow(env, token_id, new_flow);
 
