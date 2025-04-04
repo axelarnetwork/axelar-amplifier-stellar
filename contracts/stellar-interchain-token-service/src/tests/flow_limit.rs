@@ -196,7 +196,6 @@ fn execute_test_case(
 
     let (destination_chain, destination_address, data) = dummy_transfer_params(env);
     let token_address = client.registered_token_address(&token.id);
-    let len = test_case.flows.len();
 
     if !client.is_trusted_chain(&destination_chain) {
         client
@@ -204,15 +203,16 @@ fn execute_test_case(
             .set_trusted_chain(&destination_chain);
     }
 
-    test_case
+    #[allow(clippy::manual_try_fold)]
+    let result = test_case
         .flows
         .into_iter()
-        .enumerate()
-        .map(|(i, flow)| (i == len - 1, flow))
-        .for_each(|(is_last, flow)| {
+        .fold(Ok(Ok(())), |previous_result, flow| {
+            assert_ok!(assert_ok!(previous_result));
+
             println!("Executing flow: {:?}", flow);
 
-            let result = match flow {
+            match flow {
                 Flow::In(amount) => {
                     let msg = approve_its_transfer(env, client, gateway, &token.id, amount);
 
@@ -239,13 +239,14 @@ fn execute_test_case(
                         &Some(gas_token),
                     )
                 }
-            };
-
-            match (is_last, expected_error) {
-                (true, Some(expected_error)) => assert_contract_err!(result, expected_error),
-                _ => assert_ok!(assert_ok!(result)),
             }
         });
+
+    if let Some(expected_error) = expected_error {
+        assert_contract_err!(result, expected_error)
+    } else {
+        assert_ok!(assert_ok!(result));
+    }
 }
 
 fn execute_test_cases(test_cases: std::vec::Vec<TestCase>, expected_error: Option<ContractError>) {
