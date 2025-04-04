@@ -7,6 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-interchain-token-service-v1.0.0...stellar-interchain-token-service-v1.1.0)
+
+### ⛰️ Features
+
+- *(interchain-token-service)* Allow operator to manage trusted chains ([#306](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/306)) - ([312c930](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/312c9303ab127e76d9d5a7f2a0a2cc85a013d5a9))
+- *(interchain-token-service)* Make gas token optional for its and example ([#261](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/261)) - ([d61862f](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/d61862f91324a30dca56c26f1d07cc36e9cb01e7))
+- Optimize token metadata to skip external calls for native token ([#301](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/301)) - ([d215dbe](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/d215dbe18a0b50bf46efc22eac0b177fe90d1253))
+- Block regular contract endpoints during migration ([#279](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/279)) - ([cb79a78](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/cb79a7884e6a28c6f41b94c4cbf73e0cba2a8756))
+- Add custom executable interface for AxelarExecutableInterface for ease of use ([#265](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/265)) - ([18fb30e](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/18fb30eb84dc0b7e0251d24dc0a31479f07a8183))
+- Add only_owner and only_operator macros ([#240](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/240)) - ([458c97d](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/458c97d65b6e62ea0be2595f1d1ff792f75f747d))
+
+### 🐛 Bug Fixes
+
+- *(axelar-std-derive)* Enforce contractstorage enums are private ([#267](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/267)) - ([86e62f3](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/86e62f3a2470ddd4d14601f5a6e56ec5021d2233))
+- *(interchain-token)* Validate minter existence in add_minter and remove_minter ([#298](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/298)) - ([ff2ad3b](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/ff2ad3b1537fba2ea7ef080c2ae1cc80a3f846c2))
+- *(interchain-token-service)* Handle large flow limits ([#313](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/313)) - ([50204ac](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/50204ac7cb8b9e1e234af7150444f5de69f8484e))
+- *(interchain-token-service)* Ensure deploy interchain token requires non zero supply or a minter ([#299](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/299)) - ([5365567](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/5365567f0348293bc141ae57d22a63725a07a4ee))
+- *(interchain-token-service)* Cast execute_contract_with_token to Val to prevent stuck funds ([#302](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/302)) - ([be594f4](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/be594f4b3e56673bff1aa6d633e66f6703f9bf2a))
+- *(interchain-token-service)* Emit data_hash instead of data in InterchainTransferReceivedEvent ([#296](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/296)) - ([dbbdd11](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/dbbdd11ca0ab9988d2cd3358b5fd6947836ead44))
+- *(interchain-token-service)* Remove redundant token_id_config_with_extended_ttl function ([#297](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/297)) - ([60dcf31](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/60dcf312afcd27cc7ca726754708f8df2c9a451c))
+- *(interchain-token-service)* Ensure token metadata has valid ASCII encoding ([#263](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/263)) - ([f9896b0](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/f9896b0433efa2ef7893fee679244806600677cb))
+- *(interchain-token-service)* Validate token metadata on registerCanonicalToken ([#260](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/260)) - ([321cccb](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/321cccbca4382f77124c469d400841bd346dae26))
+- Rename its token address and manager queries ([#273](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/273)) - ([0ac68ec](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/0ac68ec63ba34d5fd01a2acc253c623805853fb8))
+- Remove redundant ttl extensions ([#259](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/259)) - ([57fa6b5](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/57fa6b5b42d5441bc8155ab87981f16cd35eba7c))
+- Avoid ignoring dead_code warnings ([#257](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/257)) - ([b4ada12](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/b4ada1297f2ee1f32da3472b6f37f2b9f607df0c))
+
+### 🚜 Refactor
+
+- *(axelar-std-derive)* Simplify upgradable macro ([#256](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/256)) - ([5d328c0](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/5d328c0a0eed997d0a3b4efeb5dcfc76516fdeee))
+- *(interchain-token-service)* Migrate token-manager, interchain-token & destruct flow keys ([#280](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/280)) - ([e629755](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/e6297559ca061f7fccb1625d1f25d3b7b99a40ec))
+- *(interchain-token-service)* Remove soroban-sdk ([#291](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/291)) - ([3029c42](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/3029c421c440fa3aa3fef11ac41c90f5872b38fa))
+- *(interchain-token-service)* Use contractstorage ([#246](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/246)) - ([94b47ef](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/94b47ef469c84048eb3b56e7adc951effc3f3733))
+- Move the run_migration function into a clearly defined interface ([#239](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/239)) - ([7bd306d](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/7bd306d9d2d4f1045814decd569188c29486d924))
+
+### 📚 Documentation
+
+- *(interchain-token-service)* Add INTEGRATION.md ([#235](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/235)) - ([b399d4f](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/b399d4f88d9986a3be4e687be9c98a1756e2191b))
+- Fix docs publish action ([#236](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/236)) - ([cbbc410](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/cbbc41005435baf20809c892b196f468c55b84d1))
+
+### 🎨 Styling
+
+- *(interchain-token-service)* Get token_id_config from storage ([#250](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/250)) - ([3de1f3c](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/3de1f3c40e7e629021c9e576b2630116a91edcdd))
+
+### ⚙️ Miscellaneous Tasks
+
+- Update auth invocation macros ([#269](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/269)) - ([be8d3b9](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/be8d3b9d2763c1862dad3d99b04fabcd48fe1b76))
+- Remove all unused derive macros ([#258](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/258)) - ([3a172e1](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/3a172e17f413e68f80da7c8284b5c48ff70da745))
+
+### Contributors
+
+* @milapsheth
+* @AttissNgo
+* @ahramy
+* @TanvirDeol
+* @nbayindirli
+* @cgorenflo
+
 ## [1.0.0](https://github.com/axelarnetwork/axelar-cgp-stellar/compare/stellar-interchain-token-service-v0.3.1...stellar-interchain-token-service-v1.0.0)
 
 ### ⚙️ Miscellaneous Tasks
