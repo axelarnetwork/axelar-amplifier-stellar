@@ -60,8 +60,8 @@ pub fn setup_its_token(
         symbol: String::from_str(env, "TEST"),
         decimal: 18,
     };
+    let minter = Some(sender.clone());
 
-    let minter: Option<Address> = None;
     let token_id = client.mock_all_auths().deploy_interchain_token(
         sender,
         &salt,
