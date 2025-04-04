@@ -9,7 +9,7 @@ use crate::error::ContractError;
 use crate::tests::utils::format_auths;
 use crate::types::TokenManagerType;
 
-const NEW_VERSION: &str = "1.1.0";
+const NEW_VERSION: &str = "0.0.0"; // Avoids Upgrader::ContractError::SameVersion during release.
 
 mod testutils {
     use stellar_axelar_std::interfaces::CustomMigratableInterface;
@@ -17,6 +17,7 @@ mod testutils {
     use stellar_upgrader::testutils::setup_upgrader;
     use stellar_upgrader::UpgraderClient;
 
+    use super::NEW_VERSION;
     use crate::flow_limit::current_epoch;
     use crate::migrate::{legacy_storage, CustomMigrationData};
     use crate::tests::utils::setup_env;
@@ -26,12 +27,10 @@ mod testutils {
 
     const NEW_INTERCHAIN_TOKEN_SERVICE_WASM: &[u8] =
         include_bytes!("testdata/stellar_interchain_token_service.optimized.wasm");
-    const TOKEN_MANAGER_WASM_V1_1_0: &[u8] =
-        include_bytes!("testdata/stellar_token_manager_v1_1_0.optimized.wasm");
-    const INTERCHAIN_TOKEN_WASM_V1_1_0: &[u8] =
-        include_bytes!("testdata/stellar_interchain_token_v1_1_0.optimized.wasm");
-
-    const NEW_VERSION: &str = "1.1.0";
+    const TOKEN_MANAGER_WASM_V0_0_0: &[u8] =
+        include_bytes!("testdata/stellar_token_manager-v0.0.0.optimized.wasm"); // Avoids Upgrader::ContractError::SameVersion during release.
+    const INTERCHAIN_TOKEN_WASM_V0_0_0: &[u8] =
+        include_bytes!("testdata/stellar_interchain_token-v0.0.0.optimized.wasm"); // Avoids Upgrader::ContractError::SameVersion during release.
 
     pub struct MigrateTestConfig<'a> {
         pub env: Env,
@@ -71,10 +70,10 @@ mod testutils {
             .upload_contract_wasm(NEW_INTERCHAIN_TOKEN_SERVICE_WASM);
         let new_token_manager_wasm_hash = env
             .deployer()
-            .upload_contract_wasm(TOKEN_MANAGER_WASM_V1_1_0);
+            .upload_contract_wasm(TOKEN_MANAGER_WASM_V0_0_0);
         let new_interchain_token_wasm_hash = env
             .deployer()
-            .upload_contract_wasm(INTERCHAIN_TOKEN_WASM_V1_1_0);
+            .upload_contract_wasm(INTERCHAIN_TOKEN_WASM_V0_0_0);
 
         let current_epoch = current_epoch(&env);
 
