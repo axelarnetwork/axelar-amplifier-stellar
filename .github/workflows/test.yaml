@@ -14,10 +14,7 @@ concurrency:
 jobs:
   test:
     name: Test Suite
-    needs: compile
     runs-on: blacksmith-8vcpu-ubuntu-2204
-    env:
-      RUST_BACKTRACE: 1
 
     steps:
       - uses: actions/checkout@v4
@@ -34,11 +31,15 @@ jobs:
 
       - name: Run tests for contracts
         run: for C in contracts/*; do cd $C; RUSTFLAGS="-D warnings" cargo test --locked; cd ../../ ; done
+        env:
+          RUST_BACKTRACE: 1
 
       - name: Run tests for packages
         run: for C in packages/*; do cd $C; RUSTFLAGS="-D warnings" cargo test --locked; cd ../../ ; done
+        env:
+          RUST_BACKTRACE: 1
 
-      - name: Remove golden files
+      - name: Remove all golden files
         run: find . -name "*.golden" -exec rm -rf {} \;
 
       - name: Regenerate golden files

@@ -1,4 +1,4 @@
-name: Compile and Test
+name: Compile
 
 on:
   pull_request:
@@ -12,8 +12,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  compile:
-    name: Compile
+  soroban-compilation:
+    name: Soroban Compilation
     runs-on: blacksmith-4vcpu-ubuntu-2204
     env:
       RUST_BACKTRACE: 1
