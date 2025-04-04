@@ -4,6 +4,7 @@ use stellar_axelar_std::{contractclient, soroban_sdk, Address, BytesN, Env};
 
 use crate::error::ContractError;
 
+#[allow(dead_code)]
 #[contractclient(name = "InterchainTokenClient")]
 pub trait InterchainTokenInterface:
     token::Interface + StellarAssetInterface + OwnableInterface + UpgradableInterface
