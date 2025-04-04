@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-axelar-operators-v1.0.0...stellar-axelar-operators-v2.0.0)
+
+### ⛰️ Features
+
+- Block regular contract endpoints during migration ([#279](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/279)) - ([cb79a78](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/cb79a7884e6a28c6f41b94c4cbf73e0cba2a8756))
+- Add only_owner and only_operator macros ([#240](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/240)) - ([458c97d](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/458c97d65b6e62ea0be2595f1d1ff792f75f747d))
+
+### 🐛 Bug Fixes
+
+- *(axelar-std-derive)* Enforce contractstorage enums are private ([#267](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/267)) - ([86e62f3](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/86e62f3a2470ddd4d14601f5a6e56ec5021d2233))
+- Remove redundant ttl extensions ([#259](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/259)) - ([57fa6b5](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/57fa6b5b42d5441bc8155ab87981f16cd35eba7c))
+- Avoid ignoring dead_code warnings ([#257](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/257)) - ([b4ada12](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/b4ada1297f2ee1f32da3472b6f37f2b9f607df0c))
+
+### 🚜 Refactor
+
+- *(axelar-operators)* Remove soroban-sdk ([#293](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/293)) - ([246bfbe](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/246bfbeec84b7ea961c6fcd8ef8d55a9f7fab9f6))
+- *(axelar-operators)* Migrate Operators to Operator ([#252](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/252)) - ([6682292](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/66822927410d94f1ad6238899cf6029479754fac))
+- *(axelar-operators)* [**breaking**] Rename Operators status to Operator ([#249](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/249)) - ([c7d4386](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/c7d43860a21d80cbd7145071b2993d1d45ebe2ad))
+- *(axelar-operators)* Use contractstorage ([#244](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/244)) - ([aa1f167](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/aa1f16704d1d2841b0e382443d8b1b42db341f3d))
+- *(axelar-std-derive)* Simplify upgradable macro ([#256](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/256)) - ([5d328c0](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/5d328c0a0eed997d0a3b4efeb5dcfc76516fdeee))
+- Move the run_migration function into a clearly defined interface ([#239](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/239)) - ([7bd306d](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/7bd306d9d2d4f1045814decd569188c29486d924))
+
+### 📚 Documentation
+
+- Fix docs publish action ([#236](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/236)) - ([cbbc410](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/cbbc41005435baf20809c892b196f468c55b84d1))
+
+### ⚙️ Miscellaneous Tasks
+
+- Remove all unused derive macros ([#258](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/258)) - ([3a172e1](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/3a172e17f413e68f80da7c8284b5c48ff70da745))
+
+### Contributors
+
+* @cgorenflo
+* @nbayindirli
+* @TanvirDeol
+* @milapsheth
+
 ## [1.0.0](https://github.com/axelarnetwork/axelar-cgp-stellar/compare/stellar-axelar-operators-v0.2.3...stellar-axelar-operators-v1.0.0)
 
 ### ⚙️ Miscellaneous Tasks

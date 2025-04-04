@@ -2071,7 +2071,7 @@ dependencies = [
 
 [[package]]
 name = "stellar-axelar-gas-service"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "cfg-if",
  "goldie",
@@ -2081,7 +2081,7 @@ dependencies = [
 
 [[package]]
 name = "stellar-axelar-gateway"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "cfg-if",
  "ed25519-dalek",
@@ -2096,7 +2096,7 @@ dependencies = [
 
 [[package]]
 name = "stellar-axelar-operators"
-version = "1.0.0"
+version = "2.0.0"
 dependencies = [
  "cfg-if",
  "goldie",
@@ -2106,7 +2106,7 @@ dependencies = [
 
 [[package]]
 name = "stellar-axelar-std"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "goldie",
  "hex",
@@ -2118,7 +2118,7 @@ dependencies = [
 
 [[package]]
 name = "stellar-axelar-std-derive"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "goldie",
  "heck",
@@ -2131,7 +2131,7 @@ dependencies = [
 
 [[package]]
 name = "stellar-interchain-token"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "cfg-if",
  "goldie",
@@ -2142,7 +2142,7 @@ dependencies = [
 
 [[package]]
 name = "stellar-interchain-token-service"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "alloy-primitives",
  "alloy-sol-types",
@@ -2181,7 +2181,7 @@ dependencies = [
 
 [[package]]
 name = "stellar-token-manager"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "cfg-if",
  "goldie",
@@ -2191,7 +2191,7 @@ dependencies = [
 
 [[package]]
 name = "stellar-upgrader"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "cfg-if",
  "dummy-contract",

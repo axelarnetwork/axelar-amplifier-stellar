@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-axelar-gas-service-v1.0.0...stellar-axelar-gas-service-v1.1.0)
+
+### ⛰️ Features
+
+- *(axelar-std-derive)* Globally extend instance TTL on all contract endpoints ([#310](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/310)) - ([010a505](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/010a505376f92a5771f0ca942c1ebd7448f406ae))
+- Block regular contract endpoints during migration ([#279](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/279)) - ([cb79a78](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/cb79a7884e6a28c6f41b94c4cbf73e0cba2a8756))
+- Add only_owner and only_operator macros ([#240](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/240)) - ([458c97d](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/458c97d65b6e62ea0be2595f1d1ff792f75f747d))
+
+### 🐛 Bug Fixes
+
+- Remove all unused error codes ([#281](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/281)) - ([09b2913](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/09b2913781902947dfd2f96b4d0bced84e15fd69))
+
+### 🚜 Refactor
+
+- *(axelar-gas-service)* Remove soroban-sdk ([#289](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/289)) - ([1b127c0](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/1b127c0c55b4f1c9b25a56a340cbebbf4a7f7162))
+- *(axelar-std-derive)* Simplify upgradable macro ([#256](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/256)) - ([5d328c0](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/5d328c0a0eed997d0a3b4efeb5dcfc76516fdeee))
+- Move the run_migration function into a clearly defined interface ([#239](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/239)) - ([7bd306d](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/7bd306d9d2d4f1045814decd569188c29486d924))
+
+### 📚 Documentation
+
+- Fix docs publish action ([#236](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/236)) - ([cbbc410](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/cbbc41005435baf20809c892b196f468c55b84d1))
+
+### ⚙️ Miscellaneous Tasks
+
+- Update auth invocation macros ([#269](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/269)) - ([be8d3b9](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/be8d3b9d2763c1862dad3d99b04fabcd48fe1b76))
+
+### Contributors
+
+* @nbayindirli
+* @cgorenflo
+* @ahramy
+* @TanvirDeol
+* @milapsheth
+
 ## [1.0.0](https://github.com/axelarnetwork/axelar-cgp-stellar/compare/stellar-axelar-gas-service-v0.3.0...stellar-axelar-gas-service-v1.0.0)
 
 ### ⚙️ Miscellaneous Tasks
