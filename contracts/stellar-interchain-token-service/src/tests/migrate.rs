@@ -17,14 +17,13 @@ mod testutils {
     use stellar_upgrader::testutils::setup_upgrader;
     use stellar_upgrader::UpgraderClient;
 
+    use super::NEW_VERSION;
     use crate::flow_limit::current_epoch;
     use crate::migrate::{legacy_storage, CustomMigrationData};
     use crate::tests::utils::setup_env;
     use crate::testutils::setup_its_token;
     use crate::types::TokenManagerType;
     use crate::{InterchainTokenService, InterchainTokenServiceClient};
-
-    use super::NEW_VERSION;
 
     const NEW_INTERCHAIN_TOKEN_SERVICE_WASM: &[u8] =
         include_bytes!("testdata/stellar_interchain_token_service.optimized.wasm");
