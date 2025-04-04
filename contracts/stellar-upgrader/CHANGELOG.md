@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-upgrader-v1.0.0...stellar-upgrader-v1.1.0)
+
+### ⛰️ Features
+
+- Check authorization at the root in the upgrader contract ([#294](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/294)) - ([ce4edb7](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/ce4edb7c7e63176e801d2eddb808a68e087cb4fd))
+- Block regular contract endpoints during migration ([#279](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/279)) - ([7444057](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/7444057f85f73ff8a65eedbd5ae0aad77c2e7ad4))
+- Add only_owner and only_operator macros ([#240](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/240)) - ([bf26705](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/bf267059dd047475c7efb7e9bee47b40eaec4bbd))
+
+### 🐛 Bug Fixes
+
+- *(axelar-std-derive)* Enforce contractstorage enums are private ([#267](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/267)) - ([b9c5688](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/b9c568830c5207f68104bf9c9156e0c851722b98))
+- *(upgrader)* Cast upgrader contract invoke_contract to val ([#305](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/305)) - ([114340f](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/114340fb8623e45622d7df5b2f16a75bfef9b38c))
+
+### 🚜 Refactor
+
+- *(axelar-operators)* Migrate Operators to Operator ([#252](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/252)) - ([dc76cb3](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/dc76cb3b6b11f13e906c54d1179c2fa157a4449d))
+- *(interchain-token-service)* Migrate token-manager, interchain-token & destruct flow keys ([#280](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/280)) - ([8990431](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/89904314cf900e161241c516b98e923cb1ee605e))
+- *(upgrader)* Remove soroban-sdk ([#295](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/295)) - ([473fb39](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/473fb390e142e2452343f91baa19b93924640389))
+- *(upgrader)* Use contractstorage ([#247](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/247)) - ([71a8cae](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/71a8cae51792ec812f2cca073a44836b825a97d0))
+
+### ⚙️ Miscellaneous Tasks
+
+- Update auth invocation macros ([#269](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/269)) - ([8161812](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/816181212d2cf9c4794f4faf5c754f0832047092))
+
+### Contributors
+
+* @TanvirDeol
+* @nbayindirli
+* @cgorenflo
+* @ahramy
+
 ## [1.0.0](https://github.com/axelarnetwork/axelar-cgp-stellar/compare/stellar-upgrader-v0.2.4...stellar-upgrader-v1.0.0)
 
 ### ⚙️ Miscellaneous Tasks
