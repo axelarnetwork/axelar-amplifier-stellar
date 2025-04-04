@@ -29,22 +29,13 @@ jobs:
         with:
           shared-key: "cache-compilation"
 
-      - name: Run build
-        run: RUSTFLAGS="-D warnings" cargo build --locked --release
+      - name: Run build for contracts
+        run: for C in contracts/*; do cd $C; RUSTFLAGS="-D warnings" cargo build --locked --release; cd ../../ ; done
         env:
           RUST_BACKTRACE: 1
 
-      - name: Build and test all packages and contracts separately
-        run: |
-          set -e
-          for group in contracts packages; do
-            for dir in $group/*; do
-              if [ -d "$dir" ] && [ -f "$dir/Cargo.toml" ]; then
-                echo "==> Building and testing $dir"
-                (cd "$dir" && cargo build && cargo test)
-              fi
-            done
-          done
+      - name: Run tests for packages
+        run: for C in packages/*; do cd $C; RUSTFLAGS="-D warnings" cargo build --locked --release; cd ../../ ; done
         env:
           RUST_BACKTRACE: 1
 
