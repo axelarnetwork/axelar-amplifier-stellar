@@ -242,10 +242,9 @@ fn execute_test_case(
             }
         });
 
-    if let Some(expected_error) = expected_error {
-        assert_contract_err!(result, expected_error)
-    } else {
-        assert_ok!(assert_ok!(result));
+    match expected_error {
+        Some(error) => assert_contract_err!(result, error),
+        None => assert_ok!(assert_ok!(result)),
     }
 }
 
