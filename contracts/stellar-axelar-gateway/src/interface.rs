@@ -5,7 +5,6 @@ use crate::error::ContractError;
 use crate::types::{Message, Proof, WeightedSigners};
 use crate::AxelarGatewayMessagingInterface;
 
-#[allow(dead_code)]
 #[contractclient(name = "AxelarGatewayClient")]
 pub trait AxelarGatewayInterface:
     AxelarGatewayMessagingInterface + UpgradableInterface + OwnableInterface + OperatableInterface
