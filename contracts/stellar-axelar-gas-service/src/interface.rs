@@ -3,7 +3,7 @@ use stellar_axelar_std::types::Token;
 use stellar_axelar_std::{contractclient, soroban_sdk, Address, Bytes, Env, String};
 
 use crate::error::ContractError;
-#[allow(dead_code)]
+
 #[contractclient(name = "AxelarGasServiceClient")]
 pub trait AxelarGasServiceInterface: OperatableInterface {
     /// Pay for gas using a token for sending a message on a destination chain.

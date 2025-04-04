@@ -15,6 +15,10 @@ jobs:
   soroban-compilation:
     name: Soroban Compilation
     runs-on: blacksmith-4vcpu-ubuntu-2204
+    env:
+      RUST_BACKTRACE: 1
+      RUSTFLAGS: "-D warnings -A dead_code"
+
     steps:
       - uses: actions/checkout@v4
 
@@ -30,14 +34,10 @@ jobs:
           shared-key: "cache-compilation"
 
       - name: Run build for contracts
-        run: for C in contracts/*; do cd $C; RUSTFLAGS="-D warnings" cargo build --locked --release; cd ../../ ; done
-        env:
-          RUST_BACKTRACE: 1
+        run: for C in contracts/*; do cd $C; cargo build --locked --release; cd ../../ ; done
 
       - name: Run tests for packages
-        run: for C in packages/*; do cd $C; RUSTFLAGS="-D warnings" cargo build --locked --release; cd ../../ ; done
-        env:
-          RUST_BACKTRACE: 1
+        run: for C in packages/*; do cd $C; cargo build --locked --release; cd ../../ ; done
 
       - name: Build wasm release
         run: cargo wasm
