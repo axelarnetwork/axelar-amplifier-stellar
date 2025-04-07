@@ -26,7 +26,7 @@ impl TimeLock {
 
         let min_delay = storage::minimum_time_delay(env);
         let current_time = env.ledger().timestamp();
-        let minimum_eta = current_time + min_delay.try_into().unwrap_or(0);
+        let minimum_eta = current_time + min_delay;
 
         let final_eta = if eta < minimum_eta { minimum_eta } else { eta };
 
@@ -62,7 +62,6 @@ impl TimeLock {
 
     fn get_time_lock_eta(env: &Env, hash: Bytes) -> u64 {
         storage::try_proposal_time_lock(env, hash)
-            .map(|eta| eta.try_into().unwrap_or(0))
             .unwrap_or(0)
     }
 
