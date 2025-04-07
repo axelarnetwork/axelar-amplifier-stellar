@@ -1,0 +1,104 @@
+# This workflow builds the contract provided as input and uploads it to CF R2.
+
+name: Upload to R2
+
+on:
+  workflow_dispatch:
+    inputs:
+      contract-name:
+        description: "Name of the contract to release (e.g. stellar-axelar-gateway)"
+        required: true
+        type: string
+      version:
+        description: "Version to release (e.g. 1.1.0). If not provided, the latest version from Cargo.toml will be used."
+        required: false
+        type: string
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  prepare-release:
+    name: Prepare release metadata
+
+    runs-on: blacksmith-4vcpu-ubuntu-2204
+
+    outputs:
+      releases: ${{ steps.prepare-matrix.outputs.releases }}
+      commit_hash: ${{ steps.get-commit-hash.outputs.hash }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Prepare release matrix from input
+        id: prepare-matrix
+        run: |
+          name="${{ github.event.inputs.contract-name }}"
+          version="${{ github.event.inputs.version }}"
+          cargo_toml="contracts/$name/Cargo.toml"
+
+          if [ ! -f "$cargo_toml" ]; then
+            echo "Contract not found at contracts/$name"
+            exit 1
+          fi
+
+          if [ -z "$version" ]; then
+            echo "No version provided. Detecting version from Cargo.toml..."
+            version=$(grep -E '^version\s*=' "$cargo_toml" | sed -E 's/.*=\s*"(.*)"/\1/' | head -1)
+          fi
+
+          tag="${name}-v${version}"
+
+          release="{\"package_name\":\"$name\",\"prs\":[],\"tag\":\"$tag\",\"version\":\"$version\"}"
+          releases_json=$(echo "[$release]" | jq -c '.')
+
+          echo "Parsed release: $releases_json"
+          echo "releases=$releases_json" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_ENV"
+          echo "tag=$tag" >> "$GITHUB_ENV"
+
+      - name: Checkout release tag
+        run: |
+          echo "Checking out tag: $tag"
+          git fetch --tags
+          git checkout "$tag"
+
+      - name: Get commit hash
+        id: get-commit-hash
+        run: |
+          commit_hash=$(git rev-parse HEAD)
+          echo "Using commit hash: $commit_hash"
+          echo "hash=$commit_hash" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: prepare-release
+    uses: ./.github/workflows/reusable-build.yaml
+    with:
+      commit-hash: ${{ needs.prepare-release.outputs.commit_hash }}
+
+  upload:
+    needs: [prepare-release, build]
+    strategy:
+      matrix:
+        releases: ${{ fromJson(needs.prepare-release.outputs.releases) }}
+
+    uses: ./.github/workflows/reusable-upload.yaml
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      package-name: ${{ matrix.releases.package_name }}
+      package-version: ${{ matrix.releases.version }}
+      package-git-tag: ${{ matrix.releases.tag }}
+      artifact-name: ${{ needs.build.outputs.artifact-name }}
+      artifact-path: ${{ needs.build.outputs.artifact-path }}
+      cf-bucket-name: ${{ vars.CF_BUCKET_NAME }}
+      cf-config-bucket-root-key: ${{ vars.CF_BUCKET_ROOT_KEY }}
+      github-release: true
+    secrets:
+      github-token: ${{ secrets.PAT_TOKEN }}
+      cf-endpoint-url: ${{ secrets.CF_ENDPOINT_URL }}
+      cf-bucket-access-key-id: ${{ secrets.CF_BUCKET_ACCESS_KEY_ID }}
+      cf-bucket-secret-access-key: ${{ secrets.CF_BUCKET_SECRET_ACCESS_KEY }}
