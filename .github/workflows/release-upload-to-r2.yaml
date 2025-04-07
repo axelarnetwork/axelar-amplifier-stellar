@@ -27,14 +27,10 @@ jobs:
       commit_hash: ${{ steps.get-commit-hash.outputs.hash }}
 
     steps:
-      - name: Checkout repo at tag
+      - name: Checkout repository (default)
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT_TOKEN }}
-
-      - name: Get commit hash
-        id: get-commit-hash
-        run: echo "hash=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Prepare release matrix from input
         id: prepare-matrix
@@ -48,21 +44,27 @@ jobs:
             exit 1
           fi
 
+          tag="${name}-v${version}"
+
           # Checkout if the version was explicitly provided
           if [ -n "$version" ]; then
             git fetch --tags
-            git checkout "${name}-v${version}"
+            git checkout "$tag"
           else
+            echo "No version provided. Detecting version from Cargo.toml..."
             version=$(grep -E '^version\s*=' "$cargo_toml" | sed -E 's/.*=\s*"(.*)"/\1/' | head -1)
-            echo "Detected version from Cargo.toml: $version"
+            tag="${name}-v${version}"
           fi
 
-          tag="${name}-v${version}"
+          commit_hash=$(git rev-parse HEAD)
+          echo "Using commit hash: $commit_hash"
+
           release="{\"package_name\":\"$name\",\"prs\":[],\"tag\":\"$tag\",\"version\":\"$version\"}"
           releases_json=$(echo "[$release]" | jq -c '.')
 
           echo "Parsed release from input: $releases_json"
           echo "releases=$releases_json" >> "$GITHUB_OUTPUT"
+          echo "commit_hash=$commit_hash" >> "$GITHUB_OUTPUT"
 
   build:
     needs: prepare-release
