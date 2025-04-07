@@ -46,7 +46,8 @@ jobs:
 
           tag="${name}-v${version}"
 
-          # Checkout if the version was explicitly provided
+          # If version is provided, checkout the corresponding git tag.
+          # Otherwise, extract the version from Cargo.toml and update the tag.
           if [ -n "$version" ]; then
             git fetch --tags
             git checkout "$tag"
