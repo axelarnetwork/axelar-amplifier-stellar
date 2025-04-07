@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Contributors
 
-- @ahramy
+* @ahramy
 
 ## [0.2.3](https://github.com/axelarnetwork/axelar-cgp-stellar/compare/stellar-axelar-operators-v0.2.2...stellar-axelar-operators-v0.2.3)
 
@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Contributors
 
-- @TanvirDeol
+* @TanvirDeol
 
 ## [0.2.2](https://github.com/axelarnetwork/axelar-cgp-stellar/compare/stellar-axelar-operators-v0.2.1...stellar-axelar-operators-v0.2.2)
 
@@ -35,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Contributors
 
-- @AttissNgo
+* @AttissNgo
 
 ## [0.2.1](https://github.com/axelarnetwork/axelar-cgp-stellar/compare/stellar-axelar-operators-v0.2.0...stellar-axelar-operators-v0.2.1)
 
@@ -45,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Contributors
 
-- @ahramy
+* @ahramy
 
 ## [0.2.0](https://github.com/axelarnetwork/axelar-cgp-stellar/compare/stellar-axelar-operators-v0.1.0...stellar-axelar-operators-v0.2.0)
 
@@ -55,17 +55,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Contributors
 
-- @ahramy
+* @ahramy
 
 ## [0.1.0]
 
 ### ⛰️ Features
 
-- _(Operators)_ Execute method ([#15](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/15)) - ([20bbf95](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/20bbf95a6ba486f48c6ec116e31d34110f912880))
-- _(axelar-gateway)_ Increase gateway coverage and add coverage report ([#25](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/25)) - ([2c6f9f9](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/2c6f9f96f59b74d521aec090d9e31908ab307134))
-- _(axelar-operators)_ Improve error handling ([#24](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/24)) - ([c063879](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/c063879442a39a0ea43beb5387516a10aee96670))
-- _(interchain-token)_ Update interchain token ([#71](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/71)) - ([6440cf8](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/6440cf86ea665ed72e8515c0fb01d4fc93f2f63d))
-- _(operators)_ Add contract constructor ([#69](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/69)) - ([8db4014](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/8db4014376ea5e2fc00c4a7d39e56e4952b01a9e))
+- *(Operators)* Execute method ([#15](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/15)) - ([20bbf95](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/20bbf95a6ba486f48c6ec116e31d34110f912880))
+- *(axelar-gateway)* Increase gateway coverage and add coverage report ([#25](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/25)) - ([2c6f9f9](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/2c6f9f96f59b74d521aec090d9e31908ab307134))
+- *(axelar-operators)* Improve error handling ([#24](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/24)) - ([c063879](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/c063879442a39a0ea43beb5387516a10aee96670))
+- *(interchain-token)* Update interchain token ([#71](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/71)) - ([6440cf8](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/6440cf86ea665ed72e8515c0fb01d4fc93f2f63d))
+- *(operators)* Add contract constructor ([#69](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/69)) - ([8db4014](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/8db4014376ea5e2fc00c4a7d39e56e4952b01a9e))
 - Add extend ttl to all contracts ([#124](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/124)) - ([ab4361c](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/ab4361c58daffebd099ab386910b55a4d56d152f))
 - Add macros for shared interfaces ([#105](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/105)) - ([4f513f9](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/4f513f933d290cc9cc5944e5e39bcda13a136906))
 - Add upgrade capabilities to all contracts ([#87](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/87)) - ([9785e8b](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/9785e8bebea93e987af664cedea3234241675d96))
@@ -74,8 +74,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🚜 Refactor
 
-- _(axelar-gateway)_ [**breaking**] Use more readable event symbols ([#41](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/41)) - ([3e7d28a](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/3e7d28a8806fec2c689989b2e50de1860587190c))
-- _(gas-service,operators)_ Move out of `axelar-soroban-interfaces` ([#43](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/43)) - ([c7a9d9f](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/c7a9d9f6b2f346efa4b1f836f00bd591eea84be8))
+- *(axelar-gateway)* [**breaking**] Use more readable event symbols ([#41](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/41)) - ([3e7d28a](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/3e7d28a8806fec2c689989b2e50de1860587190c))
+- *(gas-service,operators)* Move out of `axelar-soroban-interfaces` ([#43](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/43)) - ([c7a9d9f](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/c7a9d9f6b2f346efa4b1f836f00bd591eea84be8))
 - Rename assert_auth macros ([#138](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/138)) - ([8239e41](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/8239e4126cdccb4156f737dd6e20fad5c2bfc239))
 - [**breaking**] Update package name and references for release ([#145](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/145)) - ([bb19538](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/bb195386eeda9c75d4da33eb0cf29fd9cb9b621c))
 - Restrict exports to contract and contract clients ([#103](https://github.com/axelarnetwork/axelar-cgp-stellar/pull/103)) - ([4c25023](https://github.com/axelarnetwork/axelar-cgp-stellar/commit/4c250237afce95fcd687f74e350b6b272a3d295d))
@@ -96,12 +96,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Contributors
 
-- @milapsheth
-- @TanvirDeol
-- @ahramy
-- @cgorenflo
-- @AttissNgo
-- @hydrobeam
-- @apolikamixitos
-- @re1ro
-- @deanamiel
+* @milapsheth
+* @TanvirDeol
+* @ahramy
+* @cgorenflo
+* @AttissNgo
+* @hydrobeam
+* @apolikamixitos
+* @re1ro
+* @deanamiel
