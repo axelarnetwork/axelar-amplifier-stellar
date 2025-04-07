@@ -2130,6 +2130,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "stellar-governance"
+version = "1.0.0"
+dependencies = [
+ "cfg-if",
+ "goldie",
+ "stellar-axelar-std",
+]
+
+[[package]]
 name = "stellar-interchain-token"
 version = "1.0.0"
 dependencies = [
