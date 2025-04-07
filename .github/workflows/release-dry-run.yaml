@@ -3,7 +3,7 @@
 name: Dry-Run Release
 
 on:
-  workflow_dispatch: # Manual trigger only
+  workflow_dispatch:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
