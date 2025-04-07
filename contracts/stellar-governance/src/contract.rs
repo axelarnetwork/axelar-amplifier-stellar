@@ -113,10 +113,10 @@ impl StellarGovernance {
                     TimeLock::schedule_time_lock(env, proposal_hash.clone(), eta).unwrap();
 
                 ProposalScheduledEvent {
-                    target: target.clone(),
+                    target,
                     eta: scheduled_eta,
-                    proposal_hash: proposal_hash.clone(),
-                    call_data: call_data.clone(),
+                    proposal_hash,
+                    call_data,
                 }
                 .emit(env);
             }
@@ -124,9 +124,9 @@ impl StellarGovernance {
                 let _ = TimeLock::cancel_time_lock(env, proposal_hash.clone());
 
                 ProposalCancelledEvent {
-                    target: target.clone(),
-                    proposal_hash: proposal_hash.clone(),
-                    call_data: call_data.clone(),
+                    target,
+                    proposal_hash,
+                    call_data,
                 }
                 .emit(env);
             }
@@ -134,9 +134,9 @@ impl StellarGovernance {
                 storage::set_operator_approval(env, proposal_hash.clone(), &true);
 
                 OperatorProposalApprovedEvent {
-                    target: target.clone(),
-                    proposal_hash: proposal_hash.clone(),
-                    call_data: call_data.clone(),
+                    target,
+                    proposal_hash,
+                    call_data,
                 }
                 .emit(env);
             }
@@ -144,9 +144,9 @@ impl StellarGovernance {
                 storage::set_operator_approval(env, proposal_hash.clone(), &false);
 
                 OperatorProposalCancelledEvent {
-                    target: target.clone(),
-                    proposal_hash: proposal_hash.clone(),
-                    call_data: call_data.clone(),
+                    target,
+                    proposal_hash,
+                    call_data,
                 }
                 .emit(env);
             }
@@ -169,8 +169,8 @@ impl StellarGovernance {
             function.to_val(),
             native_value.into_val(env),
         ];
-        let hash = Vec::to_xdr(data, env);
-        hash
+        
+        Vec::to_xdr(data, env)
     }
 
     fn call_target(
@@ -189,7 +189,7 @@ impl StellarGovernance {
                     return Err(ContractError::InsufficientBalance);
                 }
 
-                token.transfer(&env.current_contract_address(), target, &value.into());
+                token.transfer(&env.current_contract_address(), target, &value);
             }
         }
 
@@ -210,7 +210,7 @@ impl StellarGovernanceInterface for StellarGovernance {
         governance_address: String,
         minimum_time_delay: u64,
     ) -> Result<(), ContractError> {
-        if governance_chain.len() == 0 || governance_address.len() == 0 {
+        if governance_chain.is_empty() || governance_address.is_empty() {
             return Err(ContractError::InvalidAddress);
         }
 
@@ -276,7 +276,7 @@ impl StellarGovernanceInterface for StellarGovernance {
     #[only_operator]
     #[only_owner]
     fn transfer_operatorship_wrapper(env: &Env, new_operator: Address) {
-        stellar_axelar_std::interfaces::set_operator(&env, &new_operator);
+        stellar_axelar_std::interfaces::set_operator(env, &new_operator);
     }
 
     fn get_proposal_eta(
@@ -287,9 +287,9 @@ impl StellarGovernanceInterface for StellarGovernance {
         native_value: i128,
     ) -> u64 {
         let proposal_hash =
-            Self::get_proposal_hash(&env, target.clone(), call_data, function, native_value);
-        let eta = TimeLock::get_time_lock(&env, proposal_hash);
-        eta
+            Self::get_proposal_hash(&env, target, call_data, function, native_value);
+        
+        TimeLock::get_time_lock(&env, proposal_hash)
     }
 
     fn execute_proposal(

@@ -1,6 +1,6 @@
 use core::fmt::Debug;
 
-use stellar_axelar_std::{ Address, Bytes, IntoEvent};
+use stellar_axelar_std::{Address, Bytes, IntoEvent};
 
 #[derive(Debug, PartialEq, Eq, IntoEvent)]
 pub struct ProposalScheduledEvent {

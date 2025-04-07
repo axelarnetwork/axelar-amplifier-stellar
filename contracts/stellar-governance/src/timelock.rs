@@ -16,7 +16,7 @@ impl TimeLock {
     }
 
     pub fn schedule_time_lock(env: &Env, hash: Bytes, eta: u64) -> Result<u64, ContractError> {
-        if hash.len() == 0 {
+        if hash.is_empty() {
             return Err(ContractError::InvalidTimeLockHash);
         }
 
@@ -36,7 +36,7 @@ impl TimeLock {
     }
 
     pub fn cancel_time_lock(env: &Env, hash: Bytes) -> Result<(), ContractError> {
-        if hash.len() == 0 {
+        if hash.is_empty() {
             return Err(ContractError::InvalidTimeLockHash);
         }
         Self::set_time_lock_eta(env, hash, 0);
@@ -46,7 +46,7 @@ impl TimeLock {
     pub fn finalize_time_lock(env: &Env, hash: Bytes) -> Result<(), ContractError> {
         let eta = Self::get_time_lock(env, hash.clone());
 
-        if hash.len() == 0 || eta == 0 {
+        if hash.is_empty() || eta == 0 {
             return Err(ContractError::InvalidTimeLockHash);
         }
 
@@ -67,6 +67,6 @@ impl TimeLock {
     }
 
     fn set_time_lock_eta(env: &Env, hash: Bytes, eta: u64) {
-        storage::set_proposal_time_lock(env, hash, &eta.into());
+        storage::set_proposal_time_lock(env, hash, &eta);
     }
 }
