@@ -52,11 +52,11 @@ jobs:
       - name: Prepare JSON output to be a matrix GHA format
         id: prepare-matrix
         run: |
-          echo "releases=$(echo '${{ steps.publish-release.outputs.releases }}' | jq -c '.')" >> $GITHUB_OUTPUT
           if [ "${{ steps.publish-release.outputs.releases }}" == "[]" ]; then
             echo "release-plz output contains an empty release list — exiting early."
             exit 1
           fi
+          echo "releases=$(echo '${{ steps.publish-release.outputs.releases }}' | jq -c '.')" >> $GITHUB_OUTPUT
 
   build:
     needs: publish-release
