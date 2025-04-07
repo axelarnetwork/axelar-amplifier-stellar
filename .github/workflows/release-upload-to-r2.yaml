@@ -1,16 +1,17 @@
-# This workflow only build and upload to CF R2 for a specific contract name passed as input.
-name: Manual Release (Only build and upload to CF R2)
+# This workflow builds the contract provided as input and uploads it to CF R2.
+
+name: Upload to R2
 
 on:
   workflow_dispatch:
     inputs:
-      contract-path:
-        description: "Path of the contract to release (e.g. contracts)"
-        required: true
-        type: string
       contract-name:
         description: "Name of the contract to release (e.g. stellar-axelar-gateway)"
         required: true
+        type: string
+      version:
+        description: "Version to release (e.g. 1.1.0). If not provided, the latest version from Cargo.toml will be used."
+        required: false
         type: string
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
@@ -26,7 +27,7 @@ jobs:
       commit_hash: ${{ steps.get-commit-hash.outputs.hash }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo at tag
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT_TOKEN }}
@@ -38,18 +39,25 @@ jobs:
       - name: Prepare release matrix from input
         id: prepare-matrix
         run: |
-          path="${{ github.event.inputs.contract-path }}"
           name="${{ github.event.inputs.contract-name }}"
-          cargo_toml="$path/$name/Cargo.toml"
+          version="${{ github.event.inputs.version }}"
+          cargo_toml="contracts/$name/Cargo.toml"
 
           if [ ! -f "$cargo_toml" ]; then
-            echo "Contract not found at $path/$name"
+            echo "Contract not found at contracts/$name"
             exit 1
           fi
 
-          version=$(grep -E '^version\s*=' "$cargo_toml" | sed -E 's/.*=\s*"(.*)"/\1/' | head -1)
-          tag="${name}-v${version}"
+          # Checkout if the version was explicitly provided
+          if [ -n "$version" ]; then
+            git fetch --tags
+            git checkout "${name}-v${version}"
+          else
+            version=$(grep -E '^version\s*=' "$cargo_toml" | sed -E 's/.*=\s*"(.*)"/\1/' | head -1)
+            echo "Detected version from Cargo.toml: $version"
+          fi
 
+          tag="${name}-v${version}"
           release="{\"package_name\":\"$name\",\"prs\":[],\"tag\":\"$tag\",\"version\":\"$version\"}"
           releases_json=$(echo "[$release]" | jq -c '.')
 

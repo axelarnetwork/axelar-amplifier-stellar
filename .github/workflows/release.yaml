@@ -1,15 +1,8 @@
 # This workflow creates a github release using release-plz, and publishes it as a rust crates and also create the necessary artifacts (wasm).
-# It's triggered once a release PR (created by the create-release-pr workflow) gets merged to other release branches.
+
 name: Release
 on:
-  # Once the PR gets merged to `main` or other `releases` branches
-  pull_request:
-    branches:
-      - main
-      - "releases/**"
-    types: [closed]
-
-  workflow_dispatch:
+  workflow_dispatch: # Manual trigger only
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -17,11 +10,6 @@ jobs:
   # Publishes a release in case the release isn't published
   publish-release:
     name: Publish releases
-
-    # Add checks to see if the merged PR is a release.
-    if: |
-      ((github.event.pull_request.merged == true) &&
-      contains(github.event.pull_request.labels.*.name, 'release'))
 
     runs-on: blacksmith-2vcpu-ubuntu-2204
 
@@ -34,9 +22,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT_TOKEN }}
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
 
       - name: Get commit hash
         id: get-commit-hash
