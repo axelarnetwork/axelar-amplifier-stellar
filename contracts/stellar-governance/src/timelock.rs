@@ -61,8 +61,7 @@ impl TimeLock {
     }
 
     fn get_time_lock_eta(env: &Env, hash: Bytes) -> u64 {
-        storage::try_proposal_time_lock(env, hash)
-            .unwrap_or(0)
+        storage::try_proposal_time_lock(env, hash).unwrap_or(0)
     }
 
     fn set_time_lock_eta(env: &Env, hash: Bytes, eta: u64) {
