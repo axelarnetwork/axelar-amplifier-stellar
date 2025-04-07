@@ -25,7 +25,7 @@ soroban-token-sdk = { version = "22.0.6" }
 stellar-axelar-example = { version = "^1.0.0", path = "contracts/stellar-axelar-example" }
 stellar-axelar-gas-service = { version = "^1.1.0", path = "contracts/stellar-axelar-gas-service" }
 stellar-axelar-gateway = { version = "^1.1.0", path = "contracts/stellar-axelar-gateway" }
-stellar-axelar-operators = { version = "^1.1.0", path = "contracts/stellar-axelar-operators" }
+stellar-axelar-operators = { version = "^1.0.0", path = "contracts/stellar-axelar-operators" }
 stellar-axelar-std = { version = "^1.1.0", path = "packages/stellar-axelar-std", features = ["derive"] }
 stellar-axelar-std-derive = { version = "^1.1.0", path = "packages/stellar-axelar-std-derive" }
 stellar-interchain-token = { version = "^1.1.0", path = "contracts/stellar-interchain-token" }
