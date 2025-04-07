@@ -1,0 +1,88 @@
+# This workflow only build and upload to CF R2 for a specific contract name passed as input.
+name: Manual Release (Only build and upload to CF R2)
+
+on:
+  workflow_dispatch:
+    inputs:
+      contract-path:
+        description: "Path of the contract to release (e.g. contracts)"
+        required: true
+        type: string
+      contract-name:
+        description: "Name of the contract to release (e.g. stellar-axelar-gateway)"
+        required: true
+        type: string
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  prepare-release:
+    name: Prepare release metadata
+
+    runs-on: blacksmith-4vcpu-ubuntu-2204
+
+    outputs:
+      releases: ${{ steps.prepare-matrix.outputs.releases }}
+      commit_hash: ${{ steps.get-commit-hash.outputs.hash }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Get commit hash
+        id: get-commit-hash
+        run: echo "hash=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare release matrix from input
+        id: prepare-matrix
+        run: |
+          path="${{ github.event.inputs.contract-path }}"
+          name="${{ github.event.inputs.contract-name }}"
+          cargo_toml="$path/$name/Cargo.toml"
+
+          if [ ! -f "$cargo_toml" ]; then
+            echo "Contract not found at $path/$name"
+            exit 1
+          fi
+
+          version=$(grep -E '^version\s*=' "$cargo_toml" | sed -E 's/.*=\s*"(.*)"/\1/' | head -1)
+          tag="${name}-v${version}"
+
+          release="{\"package_name\":\"$name\",\"prs\":[],\"tag\":\"$tag\",\"version\":\"$version\"}"
+          releases_json=$(echo "[$release]" | jq -c '.')
+
+          echo "Parsed release from input: $releases_json"
+          echo "releases=$releases_json" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: prepare-release
+    uses: ./.github/workflows/reusable-build.yaml
+    with:
+      commit-hash: ${{ needs.prepare-release.outputs.commit_hash }}
+
+  upload:
+    needs: [prepare-release, build]
+    strategy:
+      matrix:
+        releases: ${{ fromJson(needs.prepare-release.outputs.releases) }}
+
+    uses: ./.github/workflows/reusable-upload.yaml
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      package-name: ${{ matrix.releases.package_name }}
+      package-version: ${{ matrix.releases.version }}
+      package-git-tag: ${{ matrix.releases.tag }}
+      artifact-name: ${{ needs.build.outputs.artifact-name }}
+      artifact-path: ${{ needs.build.outputs.artifact-path }}
+      cf-bucket-name: ${{ vars.CF_BUCKET_NAME }}
+      cf-config-bucket-root-key: ${{ vars.CF_BUCKET_ROOT_KEY }}
+      github-release: true
+    secrets:
+      github-token: ${{ secrets.PAT_TOKEN }}
+      cf-endpoint-url: ${{ secrets.CF_ENDPOINT_URL }}
+      cf-bucket-access-key-id: ${{ secrets.CF_BUCKET_ACCESS_KEY_ID }}
+      cf-bucket-secret-access-key: ${{ secrets.CF_BUCKET_SECRET_ACCESS_KEY }}
