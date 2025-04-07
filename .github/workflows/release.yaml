@@ -58,6 +58,7 @@ jobs:
           fi
           echo "releases=$(echo '${{ steps.publish-release.outputs.releases }}' | jq -c '.')" >> $GITHUB_OUTPUT
 
+
   build:
     needs: publish-release
     uses: ./.github/workflows/reusable-build.yaml
