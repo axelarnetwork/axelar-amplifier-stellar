@@ -10,12 +10,12 @@ pub mod testutils;
 #[cfg(test)]
 mod tests;
 
-pub mod traits;
-pub mod string;
-pub mod types;
 pub mod error;
-pub mod ttl;
 pub mod events;
+pub mod string;
+pub mod traits;
+pub mod ttl;
+pub mod types;
 
 #[cfg(any(test, feature = "derive"))]
 pub mod interfaces;
