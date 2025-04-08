@@ -23,6 +23,9 @@ jobs:
         with:
           token: ${{ secrets.PAT_TOKEN }}
 
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Get commit hash
         id: get-commit-hash
         run: echo "hash=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
