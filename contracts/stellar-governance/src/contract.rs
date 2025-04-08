@@ -140,7 +140,7 @@ impl StellarGovernance {
         }
 
         //let args = vec![env, call_data.to_val()];
-        let args = Vec::new(&env);
+        let args = Vec::new(env);
         let result = env.invoke_contract::<Val>(target, function, args);
         Ok(result)
     }

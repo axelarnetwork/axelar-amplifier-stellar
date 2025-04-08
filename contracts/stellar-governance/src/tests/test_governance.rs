@@ -1,28 +1,25 @@
 #![cfg(test)]
-use stellar_axelar_std::ledger::Ledger;
 use stellar_axelar_std::testutils::Address as _;
-use stellar_axelar_std::token::{StellarAssetClient, TokenClient};
+use stellar_axelar_std::token::StellarAssetClient;
 use stellar_axelar_std::types::Token;
-use stellar_axelar_std::xdr::{FromXdr, ToXdr};
+use stellar_axelar_std::xdr::ToXdr;
 use stellar_axelar_std::{
-    mock_auth, soroban_sdk, token, vec, Address, Bytes, Env, IntoVal, String, Symbol, Val, Vec,
+    vec, Address, Bytes, Env, IntoVal, String, Symbol, Val, Vec,
 };
-use test_target::{TestTarget, TestTargetClient};
+use test_target::TestTarget;
 
 use crate::contract::{StellarGovernance, StellarGovernanceClient};
-use crate::error::ContractError;
 use crate::interface::StellarGovernanceInterface;
-use crate::types::CommandType;
 
 mod test_target {
-    use stellar_axelar_std::{contract, contractimpl, soroban_sdk, Env};
+    use stellar_axelar_std::{contract, contractimpl, soroban_sdk};
 
     #[contract]
     pub struct TestTarget;
 
     #[contractimpl]
     impl TestTarget {
-        pub fn call_target() -> bool {
+        pub const fn call_target() -> bool {
             true
         }
     }
@@ -59,8 +56,8 @@ fn constructor_initialization_succeeds() {
             &gateway,
             &owner,
             &operator,
-            governance_chain.clone(),
-            governance_address.clone(),
+            governance_chain,
+            governance_address,
             &minimum_time_delay,
         ),
     );
@@ -189,7 +186,7 @@ fn withdraw_currency_succeeds() {
     let client = StellarGovernanceClient::new(&env, &contract_id);
 
     let amount = 1000i128;
-    let Token { address, .. } = setup_token(&env, &contract_id, amount);
+    let Token {  .. } = setup_token(&env, &contract_id, amount);
     // let token = Token {
     //     address,
     //     amount: amount,
