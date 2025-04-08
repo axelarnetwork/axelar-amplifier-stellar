@@ -3,9 +3,7 @@ use stellar_axelar_std::testutils::Address as _;
 use stellar_axelar_std::token::StellarAssetClient;
 use stellar_axelar_std::types::Token;
 use stellar_axelar_std::xdr::ToXdr;
-use stellar_axelar_std::{
-    vec, Address, Bytes, Env, IntoVal, String, Symbol, Val, Vec,
-};
+use stellar_axelar_std::{vec, Address, Bytes, Env, IntoVal, String, Symbol, Val, Vec};
 use test_target::TestTarget;
 
 use crate::contract::{StellarGovernance, StellarGovernanceClient};
@@ -186,7 +184,7 @@ fn withdraw_currency_succeeds() {
     let client = StellarGovernanceClient::new(&env, &contract_id);
 
     let amount = 1000i128;
-    let Token {  .. } = setup_token(&env, &contract_id, amount);
+    let Token { .. } = setup_token(&env, &contract_id, amount);
     // let token = Token {
     //     address,
     //     amount: amount,
