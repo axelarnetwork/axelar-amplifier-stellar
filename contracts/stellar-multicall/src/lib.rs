@@ -4,7 +4,6 @@
 extern crate std;
 
 pub mod interface;
-
 pub mod types;
 
 #[cfg(test)]

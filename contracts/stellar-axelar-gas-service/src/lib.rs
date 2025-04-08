@@ -4,7 +4,6 @@
 extern crate std;
 
 pub mod error;
-
 mod interface;
 
 #[cfg(all(target_family = "wasm", feature = "testutils"))]

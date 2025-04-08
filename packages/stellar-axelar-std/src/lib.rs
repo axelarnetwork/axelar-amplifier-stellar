@@ -11,15 +11,10 @@ pub mod testutils;
 mod tests;
 
 pub mod traits;
-
 pub mod string;
-
 pub mod types;
-
 pub mod error;
-
 pub mod ttl;
-
 pub mod events;
 
 #[cfg(any(test, feature = "derive"))]

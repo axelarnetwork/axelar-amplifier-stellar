@@ -442,3 +442,4 @@ impl<T> MapTranspose<T> for Option<T> {
         self.map(f).transpose()
     }
 }
+ 
