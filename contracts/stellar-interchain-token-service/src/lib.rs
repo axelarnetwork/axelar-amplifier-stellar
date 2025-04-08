@@ -5,6 +5,7 @@ extern crate std;
 
 pub mod error;
 pub mod executable;
+
 mod interface;
 pub mod types;
 
@@ -34,4 +35,3 @@ cfg_if::cfg_if! {
         pub use interface::InterchainTokenServiceInterface;
     }
 }
- 

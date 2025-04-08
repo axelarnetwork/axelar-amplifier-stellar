@@ -7,6 +7,7 @@ extern crate std;
 extern crate alloc;
 
 pub mod error;
+
 mod interface;
 
 #[cfg(any(test, feature = "testutils"))]
@@ -25,4 +26,3 @@ cfg_if::cfg_if! {
         pub use interface::UpgraderInterface;
     }
 }
- 
