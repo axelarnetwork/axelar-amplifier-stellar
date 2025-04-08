@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-multicall-v1.0.0...stellar-multicall-v1.0.1)
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump up patch versions ([#331](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/331)) - ([75a25c2](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/75a25c23e2103baa0c9a723380c716ebad6e8798))
+
+### Contributors
+
+* @ahramy
+
 ## [1.0.0]
 
 ### ⛰️ Features
