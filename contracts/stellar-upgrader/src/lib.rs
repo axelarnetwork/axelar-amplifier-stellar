@@ -7,7 +7,6 @@ extern crate std;
 extern crate alloc;
 
 pub mod error;
-
 mod interface;
 
 #[cfg(any(test, feature = "testutils"))]

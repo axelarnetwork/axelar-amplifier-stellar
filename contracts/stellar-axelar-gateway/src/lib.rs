@@ -10,6 +10,7 @@ pub mod executable;
 mod messaging_interface;
 pub mod types;
 pub use messaging_interface::{AxelarGatewayMessagingClient, AxelarGatewayMessagingInterface};
+
 mod interface;
 
 #[cfg(all(target_family = "wasm", feature = "testutils"))]

@@ -4,6 +4,7 @@
 extern crate std;
 
 pub mod error;
+
 mod interface;
 
 #[cfg(test)]
