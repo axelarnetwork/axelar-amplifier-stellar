@@ -20,7 +20,7 @@ paste = { workspace = true }
 stellar-axelar-std = { workspace = true, features = ["testutils"] }
 
 [features]
-library = [] # Only export the contract interface
+library = [] # Exports only the contract interface
 testutils = ["stellar-axelar-std/testutils"]
 
 [lints]

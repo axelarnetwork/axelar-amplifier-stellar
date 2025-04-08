@@ -32,7 +32,7 @@ stellar-interchain-token = { workspace = true, features = ["testutils"] }
 stellar-upgrader = { workspace = true, features = ["testutils"] }
 
 [features]
-library = []
+library = [] # Exports only the contract interface
 testutils = ["stellar-axelar-std/testutils"]
 
 [lints]

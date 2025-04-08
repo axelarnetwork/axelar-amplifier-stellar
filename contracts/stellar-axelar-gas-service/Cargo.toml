@@ -22,5 +22,5 @@ stellar-axelar-std = { workspace = true, features = ["testutils"] }
 workspace = true
 
 [features]
-library = [] # Only export the contract interface
+library = [] # Exports only the contract interface
 testutils = []
