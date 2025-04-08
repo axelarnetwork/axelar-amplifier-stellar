@@ -21,6 +21,7 @@ pub fn operatable(name: &Ident) -> TokenStream2 {
         }
     }
 }
+
 pub fn only_operator_impl(mut input_fn: ItemFn) -> Result<TokenStream, syn::Error> {
     let env_ident = parse_env_identifier(&input_fn.sig.inputs)?;
     let auth_stmt = parse_quote!(Self::operator(&#env_ident).require_auth(););

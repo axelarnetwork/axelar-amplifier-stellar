@@ -18,7 +18,7 @@ goldie = { workspace = true }
 stellar-axelar-std = { workspace = true, features = ["testutils"] }
 
 [features]
-library = []
+library = [] # Exports only the contract interface
 testutils = ["stellar-axelar-std/testutils"]
 
 [lints]
