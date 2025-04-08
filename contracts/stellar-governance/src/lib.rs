@@ -20,8 +20,7 @@ cfg_if::cfg_if! {
         mod storage;
         mod timelock;
 
-        pub use crate::contract::StellarGovernance;
-        pub use crate::error::ContractError;
+        pub use crate::contract::{StellarGovernance, StellarGovernanceClient};
         pub use crate::interface::StellarGovernanceInterface;
     }
 }

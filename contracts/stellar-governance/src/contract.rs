@@ -21,60 +21,6 @@ use crate::types::CommandType;
 pub struct StellarGovernance;
 
 impl StellarGovernance {
-    pub fn execute(
-        env: &Env,
-        source_chain: String,
-        source_address: String,
-        payload: Bytes,
-    ) -> Result<(), ContractError> {
-        Self::only_governance(env, source_chain, source_address)?;
-        let params: Vec<Val> = Vec::from_xdr(env, &payload).unwrap();
-
-        let command_type_num: u32 = assert_some!(params.get(0))
-            .try_into_val(env)
-            .expect("Failed to convert to u32");
-
-        let target: Address = assert_some!(params.get(1))
-            .try_into_val(env)
-            .expect("Failed to convert to Address");
-
-        let call_data: Bytes = assert_some!(params.get(2))
-            .try_into_val(env)
-            .expect("Failed to convert to Bytes");
-
-        let function: Symbol = assert_some!(params.get(3))
-            .try_into_val(env)
-            .expect("Failed to convert to Symbol");
-
-        let native_value: i128 = assert_some!(params.get(3))
-            .try_into_val(env)
-            .expect("Failed to convert to i128");
-
-        let eta: u64 = assert_some!(params.get(4))
-            .try_into_val(env)
-            .expect("Failed to convert to u64");
-
-        let command_type = match command_type_num {
-            0 => CommandType::ScheduleTimeLockProposal,
-            1 => CommandType::CancelTimeLockProposal,
-            2 => CommandType::ApproveOperatorProposal,
-            3 => CommandType::CancelOperatorApproval,
-            _ => return Err(ContractError::InvalidCommandType),
-        };
-
-        Self::process_command(
-            env,
-            command_type,
-            target,
-            call_data,
-            function,
-            native_value,
-            eta,
-        )?;
-
-        Ok(())
-    }
-
     fn only_governance(
         env: &Env,
         source_chain: String,
@@ -193,7 +139,8 @@ impl StellarGovernance {
             }
         }
 
-        let args = vec![env, call_data.to_val()];
+        //let args = vec![env, call_data.to_val()];
+        let args = Vec::new(&env);
         let result = env.invoke_contract::<Val>(target, function, args);
         Ok(result)
     }
@@ -325,5 +272,61 @@ impl StellarGovernanceInterface for StellarGovernance {
     fn withdraw(env: Env, recipient: Address, amount: i128) {
         let token = soroban_sdk::token::Client::new(&env, &env.current_contract_address());
         token.transfer(&env.current_contract_address(), &recipient, &amount);
+    }
+
+    fn execute(
+        env: &Env,
+        source_chain: String,
+        source_address: String,
+        payload: Bytes,
+    ) -> Result<(), ContractError> {
+        Self::only_governance(env, source_chain, source_address)?;
+        let params: Vec<Val> = Vec::from_xdr(env, &payload).unwrap();
+
+        let command_type_num: u32 = assert_some!(params.get(0))
+            .try_into_val(env)
+            .expect("Failed to convert to u32");
+
+        let target: Address = assert_some!(params.get(1))
+            .try_into_val(env)
+            .expect("Failed to convert to Address");
+
+        let call_data: Bytes = assert_some!(params.get(2))
+            .try_into_val(env)
+            .expect("Failed to convert to Bytes");
+
+        let function: Symbol = assert_some!(params.get(3))
+            .try_into_val(env)
+            .expect("Failed to convert to Symbol");
+
+        let native_value: i128 = assert_some!(params.get(4))
+            .try_into_val(env)
+            .expect("Failed to convert to i128");
+
+        let eta: u64 = assert_some!(params.get(5))
+            .try_into_val(env)
+            .expect("Failed to convert to u64");
+
+        // TODO: add check for if target is valid
+
+        let command_type = match command_type_num {
+            0 => CommandType::ScheduleTimeLockProposal,
+            1 => CommandType::CancelTimeLockProposal,
+            2 => CommandType::ApproveOperatorProposal,
+            3 => CommandType::CancelOperatorApproval,
+            _ => return Err(ContractError::InvalidCommandType),
+        };
+
+        Self::process_command(
+            env,
+            command_type,
+            target,
+            call_data,
+            function,
+            native_value,
+            eta,
+        )?;
+
+        Ok(())
     }
 }

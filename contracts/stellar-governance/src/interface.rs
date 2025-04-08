@@ -121,4 +121,17 @@ pub trait StellarGovernanceInterface: OwnableInterface + OperatableInterface {
     /// # Authorization
     /// - [`OwnableInterface::owner`] must authorize.
     fn withdraw(env: Env, recipient: Address, amount: i128);
+
+    /// Executes a command
+    ///
+    /// # Arguments
+    /// * `source_chain` - The source chain of the command
+    /// * `source_address` - The source address of the command
+    /// * `payload` - The payload of the command
+    fn execute(
+        env: &Env,
+        source_chain: String,
+        source_address: String,
+        payload: Bytes,
+    ) -> Result<(), ContractError>;
 }
