@@ -84,9 +84,6 @@ pub fn migrate_token(
             },
             sub_invocations: vec![env],
         }),
-    ]);
-    env.authorize_as_current_contract(vec![
-        env,
         InvokerContractAuthEntry::Contract(SubContractInvocation {
             context: ContractContext {
                 contract: token_manager.clone(),
@@ -119,9 +116,6 @@ pub fn migrate_token(
                 },
                 sub_invocations: vec![env],
             }),
-        ]);
-        env.authorize_as_current_contract(vec![
-            env,
             InvokerContractAuthEntry::Contract(SubContractInvocation {
                 context: ContractContext {
                     contract: interchain_token.clone(),
