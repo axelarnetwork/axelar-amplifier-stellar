@@ -138,9 +138,12 @@ impl StellarGovernance {
                 token.transfer(&env.current_contract_address(), target, &value);
             }
         }
+        let mut args = Vec::new(env);
 
-        //let args = vec![env, call_data.to_val()];
-        let args = Vec::new(env);
+        if !call_data.is_empty() {
+            args = vec![env, call_data.to_val()];
+        }
+
         let result = env.invoke_contract::<Val>(target, function, args);
         Ok(result)
     }
@@ -266,12 +269,6 @@ impl StellarGovernanceInterface for StellarGovernance {
         let _ = Self::call_target(&env, &target, &function, &call_data, Some(native_value))?;
 
         Ok(())
-    }
-
-    #[only_owner]
-    fn withdraw(env: Env, recipient: Address, amount: i128) {
-        let token = soroban_sdk::token::Client::new(&env, &env.current_contract_address());
-        token.transfer(&env.current_contract_address(), &recipient, &amount);
     }
 
     fn execute(

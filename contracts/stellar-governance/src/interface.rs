@@ -112,16 +112,6 @@ pub trait StellarGovernanceInterface: OwnableInterface + OperatableInterface {
         native_value: i128,
     ) -> Result<(), ContractError>;
 
-    /// Withdraws native token from the contract
-    ///
-    /// # Arguments
-    /// * `recipient` - The address to send the native token to
-    /// * `amount` - The amount of native token to send
-    ///
-    /// # Authorization
-    /// - [`OwnableInterface::owner`] must authorize.
-    fn withdraw(env: Env, recipient: Address, amount: i128);
-
     /// Executes a command
     ///
     /// # Arguments
