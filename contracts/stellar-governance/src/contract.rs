@@ -138,11 +138,11 @@ impl StellarGovernance {
                 token.transfer(&env.current_contract_address(), target, &value);
             }
         }
-        let mut args = Vec::new(env);
-
-        if !call_data.is_empty() {
-            args = vec![env, call_data.to_val()];
-        }
+        let args = if !call_data.is_empty() {
+            vec![env, call_data.to_val()]
+        } else {
+            Vec::new(env)
+        };
 
         let result = env.invoke_contract::<Val>(target, function, args);
         Ok(result)
