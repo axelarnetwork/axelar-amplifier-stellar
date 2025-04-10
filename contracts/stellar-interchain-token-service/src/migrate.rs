@@ -1,6 +1,9 @@
 use stellar_axelar_std::auth::{ContractContext, InvokerContractAuthEntry, SubContractInvocation};
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
-use stellar_axelar_std::{contracttype, soroban_sdk, vec, Address, BytesN, Env, String, Symbol};
+use stellar_axelar_std::{
+    contracttype, create_contract_invocation, soroban_sdk, vec, Address, BytesN, Env, String,
+    Symbol,
+};
 use stellar_upgrader::UpgraderClient;
 
 use crate::error::ContractError;
@@ -55,6 +58,33 @@ impl CustomMigratableInterface for InterchainTokenService {
     }
 }
 
+fn create_upgrade_auth_entries(
+    env: &Env,
+    upgrader: &Address,
+    contract: &Address,
+    wasm_hash: &BytesN<32>,
+) -> soroban_sdk::Vec<InvokerContractAuthEntry> {
+    let upgrade_symbol = "upgrade";
+    let migrate_symbol = "migrate";
+
+    vec![
+        env,
+        create_contract_invocation!(
+            env,
+            upgrader.clone(),
+            upgrade_symbol,
+            vec![env, wasm_hash.clone().into()]
+        ),
+        create_contract_invocation!(
+            env,
+            contract.clone(),
+            upgrade_symbol,
+            vec![env, wasm_hash.clone().into()]
+        ),
+        create_contract_invocation!(env, contract.clone(), migrate_symbol, vec![env, ().into()]),
+    ]
+}
+
 pub fn migrate_token(
     env: &Env,
     token_id: BytesN<32>,
@@ -69,33 +99,14 @@ pub fn migrate_token(
         token_manager_type,
     } = storage::try_token_id_config(env, token_id.clone()).ok_or(ContractError::InvalidTokenId)?;
 
-    env.authorize_as_current_contract(vec![
+    let token_manager_wasm_hash = storage::token_manager_wasm_hash(env);
+
+    env.authorize_as_current_contract(create_upgrade_auth_entries(
         env,
-        InvokerContractAuthEntry::Contract(SubContractInvocation {
-            context: ContractContext {
-                contract: upgrader.clone(),
-                fn_name: Symbol::new(env, "upgrade"),
-                args: vec![env, storage::token_manager_wasm_hash(env).into()],
-            },
-            sub_invocations: vec![env],
-        }),
-        InvokerContractAuthEntry::Contract(SubContractInvocation {
-            context: ContractContext {
-                contract: token_manager.clone(),
-                fn_name: Symbol::new(env, "upgrade"),
-                args: vec![env, storage::token_manager_wasm_hash(env).into()],
-            },
-            sub_invocations: vec![env],
-        }),
-        InvokerContractAuthEntry::Contract(SubContractInvocation {
-            context: ContractContext {
-                contract: token_manager.clone(),
-                fn_name: Symbol::new(env, "migrate"),
-                args: vec![env, ().into()],
-            },
-            sub_invocations: vec![env],
-        }),
-    ]);
+        &upgrader,
+        &token_manager,
+        &token_manager_wasm_hash,
+    ));
 
     upgrader_client.upgrade(
         &token_manager,
@@ -104,35 +115,15 @@ pub fn migrate_token(
         &vec![env, ().into()],
     );
 
-    /* Only tokens deployed via ITS may be upgraded. */
     if token_manager_type == TokenManagerType::NativeInterchainToken {
-        env.authorize_as_current_contract(vec![
+        let interchain_token_wasm_hash = storage::interchain_token_wasm_hash(env);
+
+        env.authorize_as_current_contract(create_upgrade_auth_entries(
             env,
-            InvokerContractAuthEntry::Contract(SubContractInvocation {
-                context: ContractContext {
-                    contract: upgrader.clone(),
-                    fn_name: Symbol::new(env, "upgrade"),
-                    args: vec![env, storage::interchain_token_wasm_hash(env).into()],
-                },
-                sub_invocations: vec![env],
-            }),
-            InvokerContractAuthEntry::Contract(SubContractInvocation {
-                context: ContractContext {
-                    contract: interchain_token.clone(),
-                    fn_name: Symbol::new(env, "upgrade"),
-                    args: vec![env, storage::interchain_token_wasm_hash(env).into()],
-                },
-                sub_invocations: vec![env],
-            }),
-            InvokerContractAuthEntry::Contract(SubContractInvocation {
-                context: ContractContext {
-                    contract: interchain_token.clone(),
-                    fn_name: Symbol::new(env, "migrate"),
-                    args: vec![env, ().into()],
-                },
-                sub_invocations: vec![env],
-            }),
-        ]);
+            &upgrader,
+            &interchain_token,
+            &interchain_token_wasm_hash,
+        ));
 
         upgrader_client.upgrade(
             &interchain_token,

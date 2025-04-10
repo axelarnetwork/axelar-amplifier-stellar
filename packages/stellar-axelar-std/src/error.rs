@@ -234,3 +234,24 @@ macro_rules! mock_auth {
         $crate::mock_auth!($caller, $client.$method($($arg),*), &[])
     }};
 }
+
+/// Creates a SubContractInvocation for contract upgrades and migrations
+///
+/// # Arguments
+/// * `$env` - The environment reference
+/// * `$contract` - The contract address
+/// * `$fn_name` - The function name
+/// * `$args` - The arguments to pass to the function
+#[macro_export]
+macro_rules! create_contract_invocation {
+    ($env:expr, $contract:expr, $fn_name:expr, $args:expr) => {
+        InvokerContractAuthEntry::Contract(SubContractInvocation {
+            context: ContractContext {
+                contract: $contract,
+                fn_name: Symbol::new($env, $fn_name),
+                args: $args,
+            },
+            sub_invocations: vec![$env],
+        })
+    };
+}
