@@ -6,7 +6,6 @@ use testutils::{
 };
 
 use crate::error::ContractError;
-use crate::tests::utils::format_auths;
 use crate::types::TokenManagerType;
 
 const NEW_VERSION: &str = "0.0.0"; // Avoids Upgrader::ContractError::SameVersion during release.
@@ -164,8 +163,17 @@ mod testutils {
         upgrader_client: &UpgraderClient<'a>,
         token_id: BytesN<32>,
     ) {
+        let its_migrate_token_auth = mock_auth!(
+            its_client.owner(),
+            its_client.migrate_token(
+                &token_id,
+                &upgrader_client.address,
+                &String::from_str(env, NEW_VERSION)
+            )
+        );
+
         its_client
-            .mock_all_auths_allowing_non_root_auth()
+            .mock_auths(&[its_migrate_token_auth])
             .migrate_token(
                 &token_id,
                 &upgrader_client.address,
@@ -263,11 +271,6 @@ fn upgrade_and_migrate_native_interchain_token_succeeds() {
 
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
-    goldie::assert!(format_auths(
-        env.auths(),
-        "its.migrate_token(&its_client, &upgrader_client, token_id.clone())"
-    ));
-
     assert_migrate_storage(
         &its_client,
         migration_data,
@@ -342,10 +345,6 @@ fn migrate_lock_unlock_succeeds() {
     migrate(&env, &its_client, migration_data.clone());
 
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
-    goldie::assert!(format_auths(
-        env.auths(),
-        "its.migrate_token(&its_client, &upgrader_client, token_id.clone())"
-    ));
 
     assert_migrate_storage(
         &its_client,
