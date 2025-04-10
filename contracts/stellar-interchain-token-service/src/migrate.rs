@@ -1,8 +1,6 @@
 use stellar_axelar_std::auth::{ContractContext, InvokerContractAuthEntry, SubContractInvocation};
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
-use stellar_axelar_std::{
-    contracttype, soroban_sdk, vec, Address, BytesN, Env, String, Symbol,
-};
+use stellar_axelar_std::{contracttype, soroban_sdk, vec, Address, BytesN, Env, String, Symbol};
 use stellar_upgrader::UpgraderClient;
 
 use crate::error::ContractError;
@@ -77,10 +75,7 @@ pub fn migrate_token(
             context: ContractContext {
                 contract: upgrader.clone(),
                 fn_name: Symbol::new(env, "upgrade"),
-                args: vec![
-                    env,
-                    storage::token_manager_wasm_hash(env).into(),
-                ],
+                args: vec![env, storage::token_manager_wasm_hash(env).into()],
             },
             sub_invocations: vec![env],
         }),
@@ -88,10 +83,7 @@ pub fn migrate_token(
             context: ContractContext {
                 contract: token_manager.clone(),
                 fn_name: Symbol::new(env, "upgrade"),
-                args: vec![
-                    env,
-                    storage::token_manager_wasm_hash(env).into(),
-                ],
+                args: vec![env, storage::token_manager_wasm_hash(env).into()],
             },
             sub_invocations: vec![env],
         }),
@@ -120,10 +112,7 @@ pub fn migrate_token(
                 context: ContractContext {
                     contract: upgrader.clone(),
                     fn_name: Symbol::new(env, "upgrade"),
-                    args: vec![
-                        env,
-                        storage::interchain_token_wasm_hash(env).into(),
-                    ],
+                    args: vec![env, storage::interchain_token_wasm_hash(env).into()],
                 },
                 sub_invocations: vec![env],
             }),
@@ -131,10 +120,7 @@ pub fn migrate_token(
                 context: ContractContext {
                     contract: interchain_token.clone(),
                     fn_name: Symbol::new(env, "upgrade"),
-                    args: vec![
-                        env,
-                        storage::interchain_token_wasm_hash(env).into(),
-                    ],
+                    args: vec![env, storage::interchain_token_wasm_hash(env).into()],
                 },
                 sub_invocations: vec![env],
             }),

@@ -164,9 +164,17 @@ mod testutils {
         upgrader_client: &UpgraderClient<'a>,
         token_id: BytesN<32>,
     ) {
+        let its_migrate_token_auth = mock_auth!(
+            its_client.owner(),
+            its_client.migrate_token(
+                &token_id,
+                &upgrader_client.address,
+                &String::from_str(env, NEW_VERSION)
+            )
+        );
+
         its_client
-            .mock_all_auths()
-            // .mock_all_auths_allowing_non_root_auth()
+            .mock_auths(&[its_migrate_token_auth])
             .migrate_token(
                 &token_id,
                 &upgrader_client.address,
