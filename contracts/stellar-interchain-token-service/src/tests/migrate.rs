@@ -1,3 +1,5 @@
+use std::println;
+
 use stellar_axelar_std::testutils::BytesN as _;
 use stellar_axelar_std::{assert_contract_err, BytesN, String};
 use testutils::{
@@ -12,7 +14,7 @@ use crate::types::TokenManagerType;
 const NEW_VERSION: &str = "0.0.0"; // Avoids Upgrader::ContractError::SameVersion during release.
 
 mod testutils {
-    use stellar_axelar_std::interfaces::CustomMigratableInterface;
+    use stellar_axelar_std::interfaces::{CustomMigratableInterface, UpgradableClient};
     use stellar_axelar_std::{assert_ok, mock_auth, vec, Address, BytesN, Env, IntoVal, String};
     use stellar_upgrader::testutils::setup_upgrader;
     use stellar_upgrader::UpgraderClient;
@@ -164,8 +166,46 @@ mod testutils {
         upgrader_client: &UpgraderClient<'a>,
         token_id: BytesN<32>,
     ) {
+        let token_manager = its_client.token_manager_address(&token_id);
+        let token_manager_client = UpgradableClient::new(&env, &token_manager);
+        let interchain_token = its_client.interchain_token_address(&token_id);
+        let interchain_token_client = UpgradableClient::new(&env, &interchain_token);
+
+        let its_migrate_token_auth = mock_auth!(
+            its_client.owner(),
+            its_client.migrate_token(
+                &token_id,
+                &upgrader_client.address,
+                &String::from_str(env, NEW_VERSION),
+            )
+        );
+
+        let tm_upgrade_auth = mock_auth!(
+            its_client.address,
+            token_manager_client.upgrade(&its_client.token_manager_wasm_hash(),)
+        );
+        let tm_migrate_auth = mock_auth!(
+            its_client.address,
+            token_manager_client.migrate(&vec![&env, ()],)
+        );
+        let it_upgrade_auth = mock_auth!(
+            its_client.address,
+            interchain_token_client.upgrade(&its_client.interchain_token_wasm_hash(),)
+        );
+        let it_migrate_auth = mock_auth!(
+            its_client.address,
+            interchain_token_client.migrate(&vec![&env, ()],)
+        );
+
         its_client
             .mock_all_auths_allowing_non_root_auth()
+            // .mock_auths(&[
+            //     its_migrate_token_auth,
+            //     tm_upgrade_auth,
+            //     tm_migrate_auth,
+            //     it_upgrade_auth,
+            //     it_migrate_auth,
+            // ])
             .migrate_token(
                 &token_id,
                 &upgrader_client.address,
@@ -304,6 +344,10 @@ fn migrate_native_interchain_token_succeeds() {
     );
     migrate(&env, &its_client, migration_data.clone());
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
+
+    println!("auths: {:?}", env.auths());
+
+    // panic!("Testing");
 
     assert_migrate_storage(
         &its_client,
