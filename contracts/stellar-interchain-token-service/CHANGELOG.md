@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-interchain-token-service-v1.1.1...stellar-interchain-token-service-v1.1.2)
+
+### 🐛 Bug Fixes
+
+- *(interchain-token-service)* Use authorize_as_current_contract in migrate_token for upgrade auth ([#334](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/334)) - ([53a2fee](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/53a2feefde1a6b715c55b7613bbbaf0ef0dac3e4))
+
+### Contributors
+
+* @nbayindirli
+
 ## [1.1.1](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-interchain-token-service-v1.1.0...stellar-interchain-token-service-v1.1.1)
 
 ### ⚙️ Miscellaneous Tasks
