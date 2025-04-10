@@ -14,7 +14,7 @@ use crate::types::TokenManagerType;
 const NEW_VERSION: &str = "0.0.0"; // Avoids Upgrader::ContractError::SameVersion during release.
 
 mod testutils {
-    use stellar_axelar_std::interfaces::{CustomMigratableInterface, UpgradableClient};
+    use stellar_axelar_std::interfaces::CustomMigratableInterface;
     use stellar_axelar_std::{assert_ok, mock_auth, vec, Address, BytesN, Env, IntoVal, String};
     use stellar_upgrader::testutils::setup_upgrader;
     use stellar_upgrader::UpgraderClient;
@@ -167,7 +167,8 @@ mod testutils {
         token_id: BytesN<32>,
     ) {
         its_client
-            .mock_all_auths_allowing_non_root_auth()
+            .mock_all_auths()
+            // .mock_all_auths_allowing_non_root_auth()
             .migrate_token(
                 &token_id,
                 &upgrader_client.address,
