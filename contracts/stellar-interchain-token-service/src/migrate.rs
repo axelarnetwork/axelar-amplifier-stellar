@@ -1,9 +1,6 @@
 use stellar_axelar_std::auth::{ContractContext, InvokerContractAuthEntry, SubContractInvocation};
 use stellar_axelar_std::interfaces::CustomMigratableInterface;
-use stellar_axelar_std::{
-    contracttype, create_contract_invocation, soroban_sdk, vec, Address, BytesN, Env, String,
-    Symbol,
-};
+use stellar_axelar_std::{contracttype, soroban_sdk, vec, Address, BytesN, Env, String, Symbol};
 use stellar_upgrader::UpgraderClient;
 
 use crate::error::ContractError;
