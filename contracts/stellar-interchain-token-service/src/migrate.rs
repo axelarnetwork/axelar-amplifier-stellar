@@ -115,6 +115,7 @@ pub fn migrate_token(
         &vec![env, ().into()],
     );
 
+    /* Only tokens deployed via ITS may be upgraded. */
     if token_manager_type == TokenManagerType::NativeInterchainToken {
         let interchain_token_wasm_hash = storage::interchain_token_wasm_hash(env);
 
