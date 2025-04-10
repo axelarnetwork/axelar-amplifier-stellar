@@ -79,7 +79,7 @@ pub fn migrate_token(
                 fn_name: Symbol::new(env, "upgrade"),
                 args: vec![
                     env,
-                    vec![env, storage::token_manager_wasm_hash(env)].into_val(env),
+                    storage::token_manager_wasm_hash(env).into(),
                 ],
             },
             sub_invocations: vec![env],
@@ -88,7 +88,7 @@ pub fn migrate_token(
             context: ContractContext {
                 contract: token_manager.clone(),
                 fn_name: Symbol::new(env, "migrate"),
-                args: vec![env, vec![env, ()].into_val(env)],
+                args: vec![env, ().into()],
             },
             sub_invocations: vec![env],
         }),
@@ -111,7 +111,7 @@ pub fn migrate_token(
                     fn_name: Symbol::new(env, "upgrade"),
                     args: vec![
                         env,
-                        vec![env, storage::interchain_token_wasm_hash(env)].into_val(env),
+                        storage::interchain_token_wasm_hash(env).into(),
                     ],
                 },
                 sub_invocations: vec![env],
@@ -120,7 +120,7 @@ pub fn migrate_token(
                 context: ContractContext {
                     contract: interchain_token.clone(),
                     fn_name: Symbol::new(env, "migrate"),
-                    args: vec![env, vec![env, ()].into_val(env)],
+                    args: vec![env, ().into()],
                 },
                 sub_invocations: vec![env],
             }),
