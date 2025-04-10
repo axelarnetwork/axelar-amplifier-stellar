@@ -25,11 +25,6 @@ mod contract_a {
     #[contractimpl]
     impl ContractA {
         pub fn call_b(env: Env, contract_b_address: Address, contract_c_address: Address) {
-            // This function authorizes sub-contract calls that are made from
-            // the next call A performs on behalf of the current contract.
-            // Note, that these *do not* contain direct calls because they are
-            // always authorized. So here we pre-authorize call of contract C
-            // that will be performed by contract B.
             env.authorize_as_current_contract(vec![
                 &env,
                 InvokerContractAuthEntry::Contract(SubContractInvocation {
@@ -38,8 +33,6 @@ mod contract_a {
                         fn_name: Symbol::new(&env, "authorized_fn_c"),
                         args: (env.current_contract_address(),).into_val(&env),
                     },
-                    // `sub_invocations` can be used to authorize even deeper
-                    // calls.
                     sub_invocations: vec![&env],
                 }),
             ]);
