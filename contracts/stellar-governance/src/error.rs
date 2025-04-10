@@ -20,7 +20,8 @@ pub enum ContractError {
     InvalidTimeLockHash = 14,
     TimeLockAlreadyScheduled = 15,
     TimeLockNotReady = 16,
-    InsufficientBalance = 17,
-    ExecutionFailed = 18,
-    InvalidContract = 19,
+    TimeLockNotScheduled = 17,
+    InsufficientBalance = 18,
+    ExecutionFailed = 19,
+    InvalidContract = 20,
 }

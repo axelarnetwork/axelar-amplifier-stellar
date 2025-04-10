@@ -1,6 +1,6 @@
-#![no_std]
+// #![no_std]
 
-#[cfg(test)]
+#[cfg(any(test, feature = "testutils"))]
 extern crate std;
 
 mod error;

@@ -2,6 +2,7 @@ use stellar_axelar_std::{contract, contractimpl, soroban_sdk, Bytes, Env};
 
 use crate::error::ContractError;
 use crate::storage;
+
 #[contract]
 pub struct TimeLock;
 
@@ -39,6 +40,11 @@ impl TimeLock {
         if hash.is_empty() {
             return Err(ContractError::InvalidTimeLockHash);
         }
+
+        if Self::get_time_lock_eta(env, hash.clone()) == 0 {
+            return Err(ContractError::TimeLockNotScheduled);
+        }
+
         Self::set_time_lock_eta(env, hash, 0);
         Ok(())
     }

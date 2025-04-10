@@ -55,8 +55,7 @@ impl StellarGovernance {
 
         match command_type {
             CommandType::ScheduleTimeLockProposal => {
-                let scheduled_eta =
-                    TimeLock::schedule_time_lock(env, proposal_hash.clone(), eta).unwrap();
+                let scheduled_eta = TimeLock::schedule_time_lock(env, proposal_hash.clone(), eta)?;
 
                 ProposalScheduledEvent {
                     target,
@@ -67,7 +66,7 @@ impl StellarGovernance {
                 .emit(env);
             }
             CommandType::CancelTimeLockProposal => {
-                let _ = TimeLock::cancel_time_lock(env, proposal_hash.clone());
+                let _ = TimeLock::cancel_time_lock(env, proposal_hash.clone())?;
 
                 ProposalCancelledEvent {
                     target,
@@ -224,7 +223,6 @@ impl StellarGovernanceInterface for StellarGovernance {
     }
 
     #[only_operator]
-    #[only_owner]
     fn transfer_operatorship_wrapper(env: &Env, new_operator: Address) {
         stellar_axelar_std::interfaces::set_operator(env, &new_operator);
     }

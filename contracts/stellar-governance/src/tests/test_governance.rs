@@ -2,7 +2,8 @@
 use stellar_axelar_std::testutils::Address as _;
 use stellar_axelar_std::xdr::ToXdr;
 use stellar_axelar_std::{
-    assert_contract_err, vec, Address, Bytes, Env, IntoVal, String, Symbol, Val, Vec,
+    assert_auth_err, assert_contract_err, vec, Address, Bytes, Env, IntoVal, String, Symbol, Val,
+    Vec,
 };
 use test_target::TestTarget;
 
@@ -247,6 +248,33 @@ fn execute_with_wrong_source_address_fails() {
 }
 
 #[test]
+#[should_panic(expected = "HostError: Error(Storage, MissingValue)")]
+fn execute_with_invalid_target_address_fails() {
+    let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
+
+    let invalid_target = Address::generate(&env);
+    let call_data = Bytes::new(&env);
+    let function = Symbol::new(&env, "call_target");
+    let native_value = 0i128;
+    let eta = env.ledger().timestamp() + minimum_time_delay;
+
+    let params: Vec<Val> = vec![
+        &env,
+        0u32.into_val(&env), // CommandType::ScheduleTimeLockProposal
+        invalid_target.into_val(&env),
+        call_data.into_val(&env),
+        function.into_val(&env),
+        native_value.into_val(&env),
+        eta.into_val(&env),
+    ];
+    let payload = params.to_xdr(&env);
+
+    client.execute(&governance_chain, &governance_address, &payload);
+
+    client.execute_proposal(&invalid_target, &call_data, &function, &native_value);
+}
+
+#[test]
 #[should_panic(expected = "HostError: Error(Context, MissingValue)")]
 fn execute_proposal_with_invalid_function_fails() {
     let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
@@ -271,4 +299,199 @@ fn execute_proposal_with_invalid_function_fails() {
     client.execute(&governance_chain, &governance_address, &payload);
 
     client.execute_proposal(&target, &call_data, &function, &native_value);
+}
+
+#[test]
+fn cancel_unscheduled_proposal_fails() {
+    let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
+
+    let target = env.register(TestTarget, ());
+    let call_data = Bytes::new(&env);
+    let function = Symbol::new(&env, "call_target");
+    let native_value = 0i128;
+    let eta = env.ledger().timestamp() + minimum_time_delay;
+
+    let params: Vec<Val> = vec![
+        &env,
+        1u32.into_val(&env), // CommandType::CancelTimeLockProposal
+        target.into_val(&env),
+        call_data.into_val(&env),
+        function.into_val(&env),
+        native_value.into_val(&env),
+        eta.into_val(&env),
+    ];
+    let payload = params.to_xdr(&env);
+
+    assert_contract_err!(
+        client.try_execute(&governance_chain, &governance_address, &payload),
+        ContractError::TimeLockNotScheduled
+    );
+}
+
+#[test]
+fn approve_and_execute_operator_proposal_succeeds() {
+    let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
+
+    let target = env.register(TestTarget, ());
+    let call_data = Bytes::new(&env);
+    let function = Symbol::new(&env, "call_target");
+    let native_value = 0i128;
+    let eta = env.ledger().timestamp() + minimum_time_delay;
+
+    // First approve the operator proposal
+    let approve_params: Vec<Val> = vec![
+        &env,
+        2u32.into_val(&env),
+        target.into_val(&env),
+        call_data.into_val(&env),
+        function.into_val(&env),
+        native_value.into_val(&env),
+        eta.into_val(&env),
+    ];
+    let approve_payload = approve_params.to_xdr(&env);
+
+    client.execute(&governance_chain, &governance_address, &approve_payload);
+
+    client.mock_all_auths().execute_operator_proposal(
+        &target,
+        &call_data,
+        &function,
+        &native_value,
+    );
+}
+
+#[test]
+fn operator_proposal_approval_status_changes() {
+    let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
+
+    let target = env.register(TestTarget, ());
+    let call_data = Bytes::new(&env);
+    let function = Symbol::new(&env, "call_target");
+    let native_value = 0i128;
+    let eta = env.ledger().timestamp() + minimum_time_delay;
+
+    let approve_params: Vec<Val> = vec![
+        &env,
+        2u32.into_val(&env),
+        target.into_val(&env),
+        call_data.into_val(&env),
+        function.into_val(&env),
+        native_value.into_val(&env),
+        eta.into_val(&env),
+    ];
+    let approve_payload = approve_params.to_xdr(&env);
+
+    client.execute(&governance_chain, &governance_address, &approve_payload);
+
+    assert!(client.is_operator_proposal_approved(&target, &call_data, &function, &native_value));
+
+    let cancel_params: Vec<Val> = vec![
+        &env,
+        3u32.into_val(&env),
+        target.into_val(&env),
+        call_data.into_val(&env),
+        function.into_val(&env),
+        native_value.into_val(&env),
+        eta.into_val(&env),
+    ];
+    let cancel_payload = cancel_params.to_xdr(&env);
+
+    client.execute(&governance_chain, &governance_address, &cancel_payload);
+
+    assert!(!client.is_operator_proposal_approved(&target, &call_data, &function, &native_value));
+}
+
+#[test]
+fn execute_unapproved_operator_proposal_fails() {
+    let (env, client, _governance_chain, _governance_address, _minimum_time_delay) = setup_client();
+
+    let target = env.register(TestTarget, ());
+    let call_data = Bytes::new(&env);
+    let function = Symbol::new(&env, "call_target");
+    let native_value = 0i128;
+
+    assert_contract_err!(
+        client.mock_all_auths().try_execute_operator_proposal(
+            &target,
+            &call_data,
+            &function,
+            &native_value
+        ),
+        ContractError::OperatorProposalNotApproved
+    );
+}
+
+#[test]
+fn execute_operator_proposal_by_non_operator_fails() {
+    let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
+
+    let target = env.register(TestTarget, ());
+    let call_data = Bytes::new(&env);
+    let function = Symbol::new(&env, "call_target");
+    let native_value = 0i128;
+    let eta = env.ledger().timestamp() + minimum_time_delay;
+
+    let approve_params: Vec<Val> = vec![
+        &env,
+        2u32.into_val(&env), // CommandType::ApproveOperatorProposal
+        target.into_val(&env),
+        call_data.into_val(&env),
+        function.into_val(&env),
+        native_value.into_val(&env),
+        eta.into_val(&env),
+    ];
+    let approve_payload = approve_params.to_xdr(&env);
+
+    client.execute(&governance_chain, &governance_address, &approve_payload);
+
+    let random_address = Address::generate(&env);
+    assert_auth_err!(
+        random_address,
+        client.execute_operator_proposal(&target, &call_data, &function, &native_value)
+    );
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Context, MissingValue)")]
+
+fn execute_operator_proposal_with_invalid_function_fails() {
+    let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
+
+    let target = env.register(TestTarget, ());
+    let call_data = Bytes::new(&env);
+    let function = Symbol::new(&env, "invalid_function");
+    let native_value = 0i128;
+    let eta = env.ledger().timestamp() + minimum_time_delay;
+
+    let approve_params: Vec<Val> = vec![
+        &env,
+        2u32.into_val(&env),
+        target.into_val(&env),
+        call_data.into_val(&env),
+        function.into_val(&env),
+        native_value.into_val(&env),
+        eta.into_val(&env),
+    ];
+    let approve_payload = approve_params.to_xdr(&env);
+
+    client.execute(&governance_chain, &governance_address, &approve_payload);
+
+    client.mock_all_auths().execute_operator_proposal(
+        &target,
+        &call_data,
+        &function,
+        &native_value,
+    );
+}
+
+#[test]
+fn transfer_operatorship_succeeds() {
+    let (env, client, _governance_chain, _governance_address, _minimum_time_delay) = setup_client();
+    let new_operator = Address::generate(&env);
+
+    client
+        .mock_all_auths()
+        .transfer_operatorship_wrapper(&new_operator);
+
+    assert_eq!(client.operator(), new_operator);
 }
