@@ -166,46 +166,8 @@ mod testutils {
         upgrader_client: &UpgraderClient<'a>,
         token_id: BytesN<32>,
     ) {
-        let token_manager = its_client.token_manager_address(&token_id);
-        let token_manager_client = UpgradableClient::new(&env, &token_manager);
-        let interchain_token = its_client.interchain_token_address(&token_id);
-        let interchain_token_client = UpgradableClient::new(&env, &interchain_token);
-
-        let its_migrate_token_auth = mock_auth!(
-            its_client.owner(),
-            its_client.migrate_token(
-                &token_id,
-                &upgrader_client.address,
-                &String::from_str(env, NEW_VERSION),
-            )
-        );
-
-        let tm_upgrade_auth = mock_auth!(
-            its_client.address,
-            token_manager_client.upgrade(&its_client.token_manager_wasm_hash(),)
-        );
-        let tm_migrate_auth = mock_auth!(
-            its_client.address,
-            token_manager_client.migrate(&vec![&env, ()],)
-        );
-        let it_upgrade_auth = mock_auth!(
-            its_client.address,
-            interchain_token_client.upgrade(&its_client.interchain_token_wasm_hash(),)
-        );
-        let it_migrate_auth = mock_auth!(
-            its_client.address,
-            interchain_token_client.migrate(&vec![&env, ()],)
-        );
-
         its_client
             .mock_all_auths_allowing_non_root_auth()
-            // .mock_auths(&[
-            //     its_migrate_token_auth,
-            //     tm_upgrade_auth,
-            //     tm_migrate_auth,
-            //     it_upgrade_auth,
-            //     it_migrate_auth,
-            // ])
             .migrate_token(
                 &token_id,
                 &upgrader_client.address,
