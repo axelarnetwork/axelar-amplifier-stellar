@@ -58,6 +58,22 @@ impl CustomMigratableInterface for InterchainTokenService {
     }
 }
 
+fn create_contract_invocation(
+    env: &Env,
+    contract: Address,
+    fn_name: &str,
+    args: soroban_sdk::Vec<soroban_sdk::Val>,
+) -> InvokerContractAuthEntry {
+    InvokerContractAuthEntry::Contract(SubContractInvocation {
+        context: ContractContext {
+            contract,
+            fn_name: Symbol::new(env, fn_name),
+            args,
+        },
+        sub_invocations: vec![env],
+    })
+}
+
 fn create_upgrade_auth_entries(
     env: &Env,
     upgrader: &Address,
@@ -69,19 +85,19 @@ fn create_upgrade_auth_entries(
 
     vec![
         env,
-        create_contract_invocation!(
+        create_contract_invocation(
             env,
             upgrader.clone(),
             upgrade_symbol,
-            vec![env, wasm_hash.clone().into()]
+            vec![env, wasm_hash.clone().into()],
         ),
-        create_contract_invocation!(
+        create_contract_invocation(
             env,
             contract.clone(),
             upgrade_symbol,
-            vec![env, wasm_hash.clone().into()]
+            vec![env, wasm_hash.clone().into()],
         ),
-        create_contract_invocation!(env, contract.clone(), migrate_symbol, vec![env, ().into()]),
+        create_contract_invocation(env, contract.clone(), migrate_symbol, vec![env, ().into()]),
     ]
 }
 
