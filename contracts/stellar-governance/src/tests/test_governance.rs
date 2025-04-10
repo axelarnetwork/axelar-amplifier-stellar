@@ -209,9 +209,9 @@ fn execute_with_invalid_command_id_fails() {
     let payload = setup_payload(
         &env,
         4u32,
-        target.clone(),
-        call_data.clone(),
-        function.clone(),
+        target,
+        call_data,
+        function,
         native_value,
         eta,
     );
@@ -330,9 +330,9 @@ fn cancel_unscheduled_proposal_fails() {
     let payload = setup_payload(
         &env,
         1u32,
-        target.clone(),
-        call_data.clone(),
-        function.clone(),
+        target,
+        call_data,
+        function,
         native_value,
         eta,
     );
