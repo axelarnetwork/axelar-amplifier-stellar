@@ -55,6 +55,27 @@ fn setup_client<'a>() -> (Env, StellarGovernanceClient<'a>, String, String, u64)
     )
 }
 
+fn setup_payload(
+    env: &Env,
+    command_id: u32,
+    target: Address,
+    call_data: Bytes,
+    function: Symbol,
+    native_value: i128,
+    eta: u64,
+) -> Bytes {
+    let params: Vec<Val> = vec![
+        &env,
+        command_id.into_val(env),
+        target.into_val(env),
+        call_data.into_val(env),
+        function.into_val(env),
+        native_value.into_val(env),
+        eta.into_val(env),
+    ];
+    params.to_xdr(env)
+}
+
 fn setup<'a>() -> (
     Env,
     StellarGovernanceClient<'a>,
@@ -76,16 +97,7 @@ fn setup<'a>() -> (
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let params: Vec<Val> = vec![
-        &env,
-        command_id.into_val(&env),
-        target.into_val(&env),
-        call_data.into_val(&env),
-        function.into_val(&env),
-        native_value.into_val(&env),
-        eta.into_val(&env),
-    ];
-    let payload = params.to_xdr(&env);
+    let payload = setup_payload(&env, command_id, target.clone(), call_data.clone(), function.clone(), native_value, eta);
 
     (
         env,
@@ -160,16 +172,7 @@ fn cancel_existing_proposal_succeeds() {
 
     client.execute(&governance_chain, &governance_address, &payload);
 
-    let cancel_params: Vec<Val> = vec![
-        &env,
-        1u32.into_val(&env),
-        target.into_val(&env),
-        call_data.into_val(&env),
-        function.into_val(&env),
-        native_value.into_val(&env),
-        eta.into_val(&env),
-    ];
-    let cancel_payload = cancel_params.to_xdr(&env);
+    let cancel_payload = setup_payload(&env, 1u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
 
     client.execute(&governance_chain, &governance_address, &cancel_payload);
 
@@ -187,16 +190,7 @@ fn execute_with_invalid_command_id_fails() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let params: Vec<Val> = vec![
-        &env,
-        4u32.into_val(&env),
-        target.into_val(&env),
-        call_data.into_val(&env),
-        function.into_val(&env),
-        native_value.into_val(&env),
-        eta.into_val(&env),
-    ];
-    let payload = params.to_xdr(&env);
+    let payload = setup_payload(&env, 4u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
 
     assert_contract_err!(
         client.try_execute(&governance_chain, &governance_address, &payload),
@@ -258,16 +252,7 @@ fn execute_with_invalid_target_address_fails() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let params: Vec<Val> = vec![
-        &env,
-        0u32.into_val(&env), // CommandType::ScheduleTimeLockProposal
-        invalid_target.into_val(&env),
-        call_data.into_val(&env),
-        function.into_val(&env),
-        native_value.into_val(&env),
-        eta.into_val(&env),
-    ];
-    let payload = params.to_xdr(&env);
+    let payload = setup_payload(&env, 0u32, invalid_target.clone(), call_data.clone(), function.clone(), native_value, eta);
 
     client.execute(&governance_chain, &governance_address, &payload);
 
@@ -285,16 +270,7 @@ fn execute_proposal_with_invalid_function_fails() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let params: Vec<Val> = vec![
-        &env,
-        0u32.into_val(&env),
-        target.into_val(&env),
-        call_data.into_val(&env),
-        function.into_val(&env),
-        native_value.into_val(&env),
-        eta.into_val(&env),
-    ];
-    let payload = params.to_xdr(&env);
+    let payload = setup_payload(&env, 0u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
 
     client.execute(&governance_chain, &governance_address, &payload);
 
@@ -311,16 +287,7 @@ fn cancel_unscheduled_proposal_fails() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let params: Vec<Val> = vec![
-        &env,
-        1u32.into_val(&env), // CommandType::CancelTimeLockProposal
-        target.into_val(&env),
-        call_data.into_val(&env),
-        function.into_val(&env),
-        native_value.into_val(&env),
-        eta.into_val(&env),
-    ];
-    let payload = params.to_xdr(&env);
+    let payload = setup_payload(&env, 1u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
 
     assert_contract_err!(
         client.try_execute(&governance_chain, &governance_address, &payload),
@@ -338,17 +305,7 @@ fn approve_and_execute_operator_proposal_succeeds() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    // First approve the operator proposal
-    let approve_params: Vec<Val> = vec![
-        &env,
-        2u32.into_val(&env),
-        target.into_val(&env),
-        call_data.into_val(&env),
-        function.into_val(&env),
-        native_value.into_val(&env),
-        eta.into_val(&env),
-    ];
-    let approve_payload = approve_params.to_xdr(&env);
+    let approve_payload = setup_payload(&env, 2u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
 
     client.execute(&governance_chain, &governance_address, &approve_payload);
 
@@ -370,31 +327,13 @@ fn operator_proposal_approval_status_changes() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let approve_params: Vec<Val> = vec![
-        &env,
-        2u32.into_val(&env),
-        target.into_val(&env),
-        call_data.into_val(&env),
-        function.into_val(&env),
-        native_value.into_val(&env),
-        eta.into_val(&env),
-    ];
-    let approve_payload = approve_params.to_xdr(&env);
+    let approve_payload = setup_payload(&env, 2u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
 
     client.execute(&governance_chain, &governance_address, &approve_payload);
 
     assert!(client.is_operator_proposal_approved(&target, &call_data, &function, &native_value));
 
-    let cancel_params: Vec<Val> = vec![
-        &env,
-        3u32.into_val(&env),
-        target.into_val(&env),
-        call_data.into_val(&env),
-        function.into_val(&env),
-        native_value.into_val(&env),
-        eta.into_val(&env),
-    ];
-    let cancel_payload = cancel_params.to_xdr(&env);
+    let cancel_payload = setup_payload(&env, 3u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
 
     client.execute(&governance_chain, &governance_address, &cancel_payload);
 
@@ -431,16 +370,7 @@ fn execute_operator_proposal_by_non_operator_fails() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let approve_params: Vec<Val> = vec![
-        &env,
-        2u32.into_val(&env), // CommandType::ApproveOperatorProposal
-        target.into_val(&env),
-        call_data.into_val(&env),
-        function.into_val(&env),
-        native_value.into_val(&env),
-        eta.into_val(&env),
-    ];
-    let approve_payload = approve_params.to_xdr(&env);
+    let approve_payload = setup_payload(&env, 2u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
 
     client.execute(&governance_chain, &governance_address, &approve_payload);
 
@@ -462,16 +392,7 @@ fn execute_operator_proposal_with_invalid_function_fails() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let approve_params: Vec<Val> = vec![
-        &env,
-        2u32.into_val(&env),
-        target.into_val(&env),
-        call_data.into_val(&env),
-        function.into_val(&env),
-        native_value.into_val(&env),
-        eta.into_val(&env),
-    ];
-    let approve_payload = approve_params.to_xdr(&env);
+    let approve_payload = setup_payload(&env, 2u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
 
     client.execute(&governance_chain, &governance_address, &approve_payload);
 

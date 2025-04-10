@@ -301,8 +301,6 @@ impl StellarGovernanceInterface for StellarGovernance {
             .try_into_val(env)
             .expect("Failed to convert to u64");
 
-        // TODO: add check for if target is valid
-
         let command_type = match command_type_num {
             0 => CommandType::ScheduleTimeLockProposal,
             1 => CommandType::CancelTimeLockProposal,

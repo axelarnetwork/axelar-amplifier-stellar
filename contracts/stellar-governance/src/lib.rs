@@ -1,4 +1,4 @@
-// #![no_std]
+#![no_std]
 
 #[cfg(any(test, feature = "testutils"))]
 extern crate std;
