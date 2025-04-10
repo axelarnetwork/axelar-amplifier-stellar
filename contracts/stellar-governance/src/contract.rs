@@ -212,9 +212,9 @@ impl StellarGovernanceInterface for StellarGovernance {
         Self::call_target(&env, &target, &function, &call_data, Some(native_value))?;
 
         OperatorProposalExecutedEvent {
-            target: target.clone(),
+            target,
             proposal_hash,
-            call_data: call_data.clone(),
+            call_data,
         }
         .emit(&env);
 
@@ -259,9 +259,9 @@ impl StellarGovernanceInterface for StellarGovernance {
         let _ = Self::call_target(&env, &target, &function, &call_data, Some(native_value))?;
 
         ProposalExecutedEvent {
-            target: target.clone(),
+            target,
             proposal_hash,
-            call_data: call_data.clone(),
+            call_data,
         }
         .emit(&env);
 
