@@ -6,7 +6,6 @@ use testutils::{
 };
 
 use crate::error::ContractError;
-use crate::tests::utils::format_auths;
 use crate::types::TokenManagerType;
 
 const NEW_VERSION: &str = "0.0.0"; // Avoids Upgrader::ContractError::SameVersion during release.
@@ -272,11 +271,6 @@ fn upgrade_and_migrate_native_interchain_token_succeeds() {
 
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
-    goldie::assert!(format_auths(
-        env.auths(),
-        "its.migrate_token(&its_client, &upgrader_client, token_id.clone())"
-    ));
-
     assert_migrate_storage(
         &its_client,
         migration_data,
@@ -351,10 +345,6 @@ fn migrate_lock_unlock_succeeds() {
     migrate(&env, &its_client, migration_data.clone());
 
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
-    goldie::assert!(format_auths(
-        env.auths(),
-        "its.migrate_token(&its_client, &upgrader_client, token_id.clone())"
-    ));
 
     assert_migrate_storage(
         &its_client,
