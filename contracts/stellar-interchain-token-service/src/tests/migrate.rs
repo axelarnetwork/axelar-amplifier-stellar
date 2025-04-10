@@ -308,10 +308,6 @@ fn migrate_native_interchain_token_succeeds() {
     migrate(&env, &its_client, migration_data.clone());
     migrate_token(&env, &its_client, &upgrader_client, token_id.clone());
 
-    println!("auths: {:?}", env.auths());
-
-    // panic!("Testing");
-
     assert_migrate_storage(
         &its_client,
         migration_data,
