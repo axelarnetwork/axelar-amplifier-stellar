@@ -1,4 +1,5 @@
 #![cfg(test)]
+use stellar_axelar_std::events::fmt_last_emitted_event;
 use stellar_axelar_std::testutils::Address as _;
 use stellar_axelar_std::xdr::ToXdr;
 use stellar_axelar_std::{
@@ -9,6 +10,11 @@ use test_target::TestTarget;
 
 use crate::contract::{StellarGovernance, StellarGovernanceClient};
 use crate::error::ContractError;
+use crate::event::{
+    OperatorProposalApprovedEvent, OperatorProposalCancelledEvent, OperatorProposalExecutedEvent,
+    ProposalCancelledEvent, ProposalExecutedEvent, ProposalScheduledEvent,
+};
+use crate::types::CommandType;
 
 mod test_target {
     use stellar_axelar_std::{contract, contractimpl, soroban_sdk};
@@ -90,7 +96,7 @@ fn setup<'a>() -> (
 ) {
     let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
 
-    let command_id = 0u32;
+    let command_id = CommandType::ScheduleTimeLockProposal as u32;
     let target = env.register(TestTarget, ());
     let call_data = Bytes::new(&env);
     let function = Symbol::new(&env, "call_target");
@@ -124,7 +130,7 @@ fn setup<'a>() -> (
 #[test]
 fn schedule_proposal_and_get_eta_succeeds() {
     let (
-        ..,
+        env,
         client,
         governance_chain,
         governance_address,
@@ -138,6 +144,8 @@ fn schedule_proposal_and_get_eta_succeeds() {
 
     client.execute(&governance_chain, &governance_address, &payload);
 
+    goldie::assert!(fmt_last_emitted_event::<ProposalScheduledEvent>(&env));
+
     let retrieved_eta = client.get_proposal_eta(&target, &call_data, &function, &native_value);
 
     assert_eq!(retrieved_eta, eta);
@@ -146,7 +154,7 @@ fn schedule_proposal_and_get_eta_succeeds() {
 #[test]
 fn execute_existing_proposal_succeeds() {
     let (
-        ..,
+        env,
         client,
         governance_chain,
         governance_address,
@@ -161,6 +169,8 @@ fn execute_existing_proposal_succeeds() {
     client.execute(&governance_chain, &governance_address, &payload);
 
     client.execute_proposal(&target, &call_data, &function, &native_value);
+
+    goldie::assert!(fmt_last_emitted_event::<ProposalExecutedEvent>(&env));
 }
 
 #[test]
@@ -182,7 +192,7 @@ fn cancel_existing_proposal_succeeds() {
 
     let cancel_payload = setup_payload(
         &env,
-        1u32,
+        CommandType::CancelTimeLockProposal as u32,
         target.clone(),
         call_data.clone(),
         function.clone(),
@@ -191,6 +201,8 @@ fn cancel_existing_proposal_succeeds() {
     );
 
     client.execute(&governance_chain, &governance_address, &cancel_payload);
+
+    goldie::assert!(fmt_last_emitted_event::<ProposalCancelledEvent>(&env));
 
     let retrieved_eta = client.get_proposal_eta(&target, &call_data, &function, &native_value);
     assert_eq!(retrieved_eta, 0);
@@ -206,15 +218,7 @@ fn execute_with_invalid_command_id_fails() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let payload = setup_payload(
-        &env,
-        4u32,
-        target,
-        call_data,
-        function,
-        native_value,
-        eta,
-    );
+    let payload = setup_payload(&env, 4u32, target, call_data, function, native_value, eta);
 
     assert_contract_err!(
         client.try_execute(&governance_chain, &governance_address, &payload),
@@ -278,7 +282,7 @@ fn execute_with_invalid_target_address_fails() {
 
     let payload = setup_payload(
         &env,
-        0u32,
+        CommandType::ScheduleTimeLockProposal as u32,
         invalid_target.clone(),
         call_data.clone(),
         function.clone(),
@@ -287,6 +291,8 @@ fn execute_with_invalid_target_address_fails() {
     );
 
     client.execute(&governance_chain, &governance_address, &payload);
+
+    goldie::assert!(fmt_last_emitted_event::<ProposalScheduledEvent>(&env));
 
     client.execute_proposal(&invalid_target, &call_data, &function, &native_value);
 }
@@ -304,7 +310,7 @@ fn execute_proposal_with_invalid_function_fails() {
 
     let payload = setup_payload(
         &env,
-        0u32,
+        CommandType::ScheduleTimeLockProposal as u32,
         target.clone(),
         call_data.clone(),
         function.clone(),
@@ -313,6 +319,8 @@ fn execute_proposal_with_invalid_function_fails() {
     );
 
     client.execute(&governance_chain, &governance_address, &payload);
+
+    goldie::assert!(fmt_last_emitted_event::<ProposalScheduledEvent>(&env));
 
     client.execute_proposal(&target, &call_data, &function, &native_value);
 }
@@ -329,7 +337,7 @@ fn cancel_unscheduled_proposal_fails() {
 
     let payload = setup_payload(
         &env,
-        1u32,
+        CommandType::CancelTimeLockProposal as u32,
         target,
         call_data,
         function,
@@ -355,7 +363,7 @@ fn approve_and_execute_operator_proposal_succeeds() {
 
     let approve_payload = setup_payload(
         &env,
-        2u32,
+        CommandType::ApproveOperatorProposal as u32,
         target.clone(),
         call_data.clone(),
         function.clone(),
@@ -371,6 +379,10 @@ fn approve_and_execute_operator_proposal_succeeds() {
         &function,
         &native_value,
     );
+
+    goldie::assert!(fmt_last_emitted_event::<OperatorProposalExecutedEvent>(
+        &env
+    ));
 }
 
 #[test]
@@ -385,7 +397,7 @@ fn operator_proposal_approval_status_changes() {
 
     let approve_payload = setup_payload(
         &env,
-        2u32,
+        CommandType::ApproveOperatorProposal as u32,
         target.clone(),
         call_data.clone(),
         function.clone(),
@@ -399,7 +411,7 @@ fn operator_proposal_approval_status_changes() {
 
     let cancel_payload = setup_payload(
         &env,
-        3u32,
+        CommandType::CancelOperatorApproval as u32,
         target.clone(),
         call_data.clone(),
         function.clone(),
@@ -408,6 +420,10 @@ fn operator_proposal_approval_status_changes() {
     );
 
     client.execute(&governance_chain, &governance_address, &cancel_payload);
+
+    goldie::assert!(fmt_last_emitted_event::<OperatorProposalCancelledEvent>(
+        &env
+    ));
 
     assert!(!client.is_operator_proposal_approved(&target, &call_data, &function, &native_value));
 }
@@ -444,7 +460,7 @@ fn execute_operator_proposal_by_non_operator_fails() {
 
     let approve_payload = setup_payload(
         &env,
-        2u32,
+        CommandType::ApproveOperatorProposal as u32,
         target.clone(),
         call_data.clone(),
         function.clone(),
@@ -453,6 +469,10 @@ fn execute_operator_proposal_by_non_operator_fails() {
     );
 
     client.execute(&governance_chain, &governance_address, &approve_payload);
+
+    goldie::assert!(fmt_last_emitted_event::<OperatorProposalApprovedEvent>(
+        &env
+    ));
 
     let random_address = Address::generate(&env);
     assert_auth_err!(
@@ -474,7 +494,7 @@ fn execute_operator_proposal_with_invalid_function_fails() {
 
     let approve_payload = setup_payload(
         &env,
-        2u32,
+        CommandType::ApproveOperatorProposal as u32,
         target.clone(),
         call_data.clone(),
         function.clone(),
@@ -483,6 +503,10 @@ fn execute_operator_proposal_with_invalid_function_fails() {
     );
 
     client.execute(&governance_chain, &governance_address, &approve_payload);
+
+    goldie::assert!(fmt_last_emitted_event::<OperatorProposalApprovedEvent>(
+        &env
+    ));
 
     client.mock_all_auths().execute_operator_proposal(
         &target,

@@ -209,14 +209,14 @@ impl StellarGovernanceInterface for StellarGovernance {
 
         storage::set_operator_approval(&env, proposal_hash.clone(), &false);
 
+        Self::call_target(&env, &target, &function, &call_data, Some(native_value))?;
+
         OperatorProposalExecutedEvent {
             target: target.clone(),
             proposal_hash,
             call_data: call_data.clone(),
         }
         .emit(&env);
-
-        Self::call_target(&env, &target, &function, &call_data, Some(native_value))?;
 
         Ok(())
     }
@@ -256,14 +256,14 @@ impl StellarGovernanceInterface for StellarGovernance {
 
         let _ = TimeLock::finalize_time_lock(&env, proposal_hash.clone());
 
+        let _ = Self::call_target(&env, &target, &function, &call_data, Some(native_value))?;
+
         ProposalExecutedEvent {
             target: target.clone(),
             proposal_hash,
             call_data: call_data.clone(),
         }
         .emit(&env);
-
-        let _ = Self::call_target(&env, &target, &function, &call_data, Some(native_value))?;
 
         Ok(())
     }
