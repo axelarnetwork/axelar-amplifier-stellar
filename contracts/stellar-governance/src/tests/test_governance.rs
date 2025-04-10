@@ -453,7 +453,6 @@ fn execute_operator_proposal_by_non_operator_fails() {
 
 #[test]
 #[should_panic(expected = "HostError: Error(Context, MissingValue)")]
-
 fn execute_operator_proposal_with_invalid_function_fails() {
     let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
 

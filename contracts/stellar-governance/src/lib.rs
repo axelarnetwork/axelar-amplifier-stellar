@@ -3,7 +3,7 @@
 #[cfg(any(test, feature = "testutils"))]
 extern crate std;
 
-mod error;
+pub mod error;
 mod interface;
 mod types;
 

@@ -1,9 +1,8 @@
 use soroban_sdk::xdr::{FromXdr, ToXdr};
 use stellar_axelar_std::events::Event;
 use stellar_axelar_std::{
-    assert_some, contract, contractimpl, ensure, only_operator, only_owner, soroban_sdk, vec,
-    Address, Bytes, Env, IntoVal, Operatable, Ownable, Pausable, String, Symbol, TryIntoVal, Val,
-    Vec,
+    assert_some, contract, contractimpl, ensure, only_operator, soroban_sdk, vec, Address, Bytes,
+    Env, IntoVal, Operatable, Ownable, Pausable, String, Symbol, TryIntoVal, Val, Vec,
 };
 
 use crate::error::ContractError;
@@ -66,7 +65,7 @@ impl StellarGovernance {
                 .emit(env);
             }
             CommandType::CancelTimeLockProposal => {
-                let _ = TimeLock::cancel_time_lock(env, proposal_hash.clone())?;
+                TimeLock::cancel_time_lock(env, proposal_hash.clone())?;
 
                 ProposalCancelledEvent {
                     target,
