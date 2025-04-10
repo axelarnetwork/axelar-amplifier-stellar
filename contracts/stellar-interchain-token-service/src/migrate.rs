@@ -75,6 +75,17 @@ pub fn migrate_token(
         env,
         InvokerContractAuthEntry::Contract(SubContractInvocation {
             context: ContractContext {
+                contract: upgrader.clone(),
+                fn_name: Symbol::new(env, "upgrade"),
+                args: vec![
+                    env,
+                    storage::token_manager_wasm_hash(env).into(),
+                ],
+            },
+            sub_invocations: vec![env],
+        }),
+        InvokerContractAuthEntry::Contract(SubContractInvocation {
+            context: ContractContext {
                 contract: token_manager.clone(),
                 fn_name: Symbol::new(env, "upgrade"),
                 args: vec![
@@ -105,6 +116,17 @@ pub fn migrate_token(
     if token_manager_type == TokenManagerType::NativeInterchainToken {
         env.authorize_as_current_contract(vec![
             env,
+            InvokerContractAuthEntry::Contract(SubContractInvocation {
+                context: ContractContext {
+                    contract: upgrader.clone(),
+                    fn_name: Symbol::new(env, "upgrade"),
+                    args: vec![
+                        env,
+                        storage::interchain_token_wasm_hash(env).into(),
+                    ],
+                },
+                sub_invocations: vec![env],
+            }),
             InvokerContractAuthEntry::Contract(SubContractInvocation {
                 context: ContractContext {
                     contract: interchain_token.clone(),

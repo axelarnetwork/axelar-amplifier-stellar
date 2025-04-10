@@ -1,5 +1,3 @@
-use std::println;
-
 use stellar_axelar_std::testutils::BytesN as _;
 use stellar_axelar_std::{assert_contract_err, BytesN, String};
 use testutils::{
