@@ -1,6 +1,6 @@
 [package]
 name = "stellar-axelar-gateway"
-version = "1.0.0"
+version = "1.1.1"
 edition = { workspace = true }
 description = "AxelarGateway contract, responsible for serving as the gateway for cross-chain contract calls and token transfers within the Axelar network."
 license = { workspace = true }
@@ -26,7 +26,7 @@ rand_chacha = { version = "0.3" }
 stellar-axelar-std = { workspace = true, features = ["testutils"] }
 
 [features]
-library = [] # Only export the contract interface
+library = [] # Exports only the contract interface
 testutils = ["stellar-axelar-std/testutils", "dep:ed25519-dalek", "dep:rand"]
 
 [lints]

@@ -1,6 +1,6 @@
 [package]
 name = "stellar-multicall"
-version = "1.0.0"
+version = "1.0.1"
 edition = { workspace = true }
 description = "Multicall contract, responsible for executing multiple contract calls in a single transaction."
 license = { workspace = true }
@@ -18,7 +18,7 @@ goldie = { workspace = true }
 stellar-axelar-std = { workspace = true, features = ["testutils"] }
 
 [features]
-library = []
+library = [] # Exports only the contract interface
 testutils = ["stellar-axelar-std/testutils"]
 
 [lints]

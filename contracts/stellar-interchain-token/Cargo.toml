@@ -1,6 +1,6 @@
 [package]
 name = "stellar-interchain-token"
-version = "1.0.0"
+version = "1.1.1"
 edition = { workspace = true }
 description = "InterchainToken contract, responsible for implementing an interchain token that is compatible with SEP-41."
 license = { workspace = true }
@@ -20,7 +20,7 @@ paste = { workspace = true }
 stellar-axelar-std = { workspace = true, features = ["testutils"] }
 
 [features]
-library = [] # Only export the contract interface
+library = [] # Exports only the contract interface
 testutils = ["stellar-axelar-std/testutils"]
 
 [lints]
