@@ -97,7 +97,15 @@ fn setup<'a>() -> (
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let payload = setup_payload(&env, command_id, target.clone(), call_data.clone(), function.clone(), native_value, eta);
+    let payload = setup_payload(
+        &env,
+        command_id,
+        target.clone(),
+        call_data.clone(),
+        function.clone(),
+        native_value,
+        eta,
+    );
 
     (
         env,
@@ -172,7 +180,15 @@ fn cancel_existing_proposal_succeeds() {
 
     client.execute(&governance_chain, &governance_address, &payload);
 
-    let cancel_payload = setup_payload(&env, 1u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
+    let cancel_payload = setup_payload(
+        &env,
+        1u32,
+        target.clone(),
+        call_data.clone(),
+        function.clone(),
+        native_value,
+        eta,
+    );
 
     client.execute(&governance_chain, &governance_address, &cancel_payload);
 
@@ -190,7 +206,15 @@ fn execute_with_invalid_command_id_fails() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let payload = setup_payload(&env, 4u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
+    let payload = setup_payload(
+        &env,
+        4u32,
+        target.clone(),
+        call_data.clone(),
+        function.clone(),
+        native_value,
+        eta,
+    );
 
     assert_contract_err!(
         client.try_execute(&governance_chain, &governance_address, &payload),
@@ -252,7 +276,15 @@ fn execute_with_invalid_target_address_fails() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let payload = setup_payload(&env, 0u32, invalid_target.clone(), call_data.clone(), function.clone(), native_value, eta);
+    let payload = setup_payload(
+        &env,
+        0u32,
+        invalid_target.clone(),
+        call_data.clone(),
+        function.clone(),
+        native_value,
+        eta,
+    );
 
     client.execute(&governance_chain, &governance_address, &payload);
 
@@ -270,7 +302,15 @@ fn execute_proposal_with_invalid_function_fails() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let payload = setup_payload(&env, 0u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
+    let payload = setup_payload(
+        &env,
+        0u32,
+        target.clone(),
+        call_data.clone(),
+        function.clone(),
+        native_value,
+        eta,
+    );
 
     client.execute(&governance_chain, &governance_address, &payload);
 
@@ -287,7 +327,15 @@ fn cancel_unscheduled_proposal_fails() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let payload = setup_payload(&env, 1u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
+    let payload = setup_payload(
+        &env,
+        1u32,
+        target.clone(),
+        call_data.clone(),
+        function.clone(),
+        native_value,
+        eta,
+    );
 
     assert_contract_err!(
         client.try_execute(&governance_chain, &governance_address, &payload),
@@ -305,7 +353,15 @@ fn approve_and_execute_operator_proposal_succeeds() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let approve_payload = setup_payload(&env, 2u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
+    let approve_payload = setup_payload(
+        &env,
+        2u32,
+        target.clone(),
+        call_data.clone(),
+        function.clone(),
+        native_value,
+        eta,
+    );
 
     client.execute(&governance_chain, &governance_address, &approve_payload);
 
@@ -327,13 +383,29 @@ fn operator_proposal_approval_status_changes() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let approve_payload = setup_payload(&env, 2u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
+    let approve_payload = setup_payload(
+        &env,
+        2u32,
+        target.clone(),
+        call_data.clone(),
+        function.clone(),
+        native_value,
+        eta,
+    );
 
     client.execute(&governance_chain, &governance_address, &approve_payload);
 
     assert!(client.is_operator_proposal_approved(&target, &call_data, &function, &native_value));
 
-    let cancel_payload = setup_payload(&env, 3u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
+    let cancel_payload = setup_payload(
+        &env,
+        3u32,
+        target.clone(),
+        call_data.clone(),
+        function.clone(),
+        native_value,
+        eta,
+    );
 
     client.execute(&governance_chain, &governance_address, &cancel_payload);
 
@@ -370,7 +442,15 @@ fn execute_operator_proposal_by_non_operator_fails() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let approve_payload = setup_payload(&env, 2u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
+    let approve_payload = setup_payload(
+        &env,
+        2u32,
+        target.clone(),
+        call_data.clone(),
+        function.clone(),
+        native_value,
+        eta,
+    );
 
     client.execute(&governance_chain, &governance_address, &approve_payload);
 
@@ -392,7 +472,15 @@ fn execute_operator_proposal_with_invalid_function_fails() {
     let native_value = 0i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
-    let approve_payload = setup_payload(&env, 2u32, target.clone(), call_data.clone(), function.clone(), native_value, eta);
+    let approve_payload = setup_payload(
+        &env,
+        2u32,
+        target.clone(),
+        call_data.clone(),
+        function.clone(),
+        native_value,
+        eta,
+    );
 
     client.execute(&governance_chain, &governance_address, &approve_payload);
 
