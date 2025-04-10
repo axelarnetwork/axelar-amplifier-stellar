@@ -1,4 +1,4 @@
-use stellar_axelar_std::{contract, contractimpl, soroban_sdk, Bytes, Env};
+use stellar_axelar_std::{contract, soroban_sdk, Bytes, Env};
 
 use crate::error::ContractError;
 use crate::storage;
@@ -6,12 +6,7 @@ use crate::storage;
 #[contract]
 pub struct TimeLock;
 
-#[contractimpl]
 impl TimeLock {
-    pub fn __constructor(env: &Env, minimum_time_delay: u64) {
-        storage::set_minimum_time_delay(env, &minimum_time_delay);
-    }
-
     pub fn get_time_lock(env: &Env, hash: Bytes) -> u64 {
         Self::get_time_lock_eta(env, hash)
     }
