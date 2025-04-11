@@ -211,6 +211,13 @@ impl StellarGovernanceInterface for StellarGovernance {
 
         storage::set_operator_approval(&env, proposal_hash.clone(), &false);
 
+        OperatorProposalExecutedEvent {
+            target: target.clone(),
+            proposal_hash,
+            call_data: call_data.clone(),
+        }
+        .emit(&env);
+
         Self::call_target(
             &env,
             &target,
@@ -219,13 +226,6 @@ impl StellarGovernanceInterface for StellarGovernance {
             Some(native_value),
             &token_address,
         )?;
-
-        OperatorProposalExecutedEvent {
-            target,
-            proposal_hash,
-            call_data,
-        }
-        .emit(&env);
 
         Ok(())
     }
@@ -264,7 +264,14 @@ impl StellarGovernanceInterface for StellarGovernance {
             native_value,
         );
 
-        let _ = TimeLock::finalize_time_lock(&env, proposal_hash.clone());
+        let _ = TimeLock::finalize_time_lock(&env, proposal_hash.clone())?;
+
+        ProposalExecutedEvent {
+            target: target.clone(),
+            proposal_hash,
+            call_data: call_data.clone(),
+        }
+        .emit(&env);
 
         let _ = Self::call_target(
             &env,
@@ -274,13 +281,6 @@ impl StellarGovernanceInterface for StellarGovernance {
             Some(native_value),
             &token_address,
         )?;
-
-        ProposalExecutedEvent {
-            target,
-            proposal_hash,
-            call_data,
-        }
-        .emit(&env);
 
         Ok(())
     }

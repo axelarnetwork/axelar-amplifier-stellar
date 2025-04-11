@@ -1,6 +1,6 @@
 #![cfg(test)]
 use stellar_axelar_std::events::fmt_last_emitted_event;
-use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::testutils::{Address as _, Ledger as _};
 use stellar_axelar_std::token::StellarAssetClient;
 use stellar_axelar_std::xdr::ToXdr;
 use stellar_axelar_std::{
@@ -186,11 +186,13 @@ fn execute_existing_proposal_succeeds() {
         call_data,
         function,
         native_value,
-        _eta,
+        eta,
         token_address,
     ) = setup();
 
     client.execute(&governance_chain, &governance_address, &payload);
+
+    env.ledger().set_timestamp(eta);
 
     client.execute_proposal(
         &target,
@@ -304,6 +306,8 @@ fn execute_with_invalid_target_address_fails() {
 
     client.execute(&governance_chain, &governance_address, &payload);
 
+    env.ledger().set_timestamp(eta);
+
     goldie::assert!(fmt_last_emitted_event::<ProposalScheduledEvent>(&env));
 
     client.execute_proposal(
@@ -339,6 +343,8 @@ fn execute_proposal_with_invalid_function_fails() {
     );
 
     client.execute(&governance_chain, &governance_address, &payload);
+
+    env.ledger().set_timestamp(eta);
 
     goldie::assert!(fmt_last_emitted_event::<ProposalScheduledEvent>(&env));
 
@@ -459,8 +465,7 @@ fn operator_proposal_approval_status_changes() {
 
 #[test]
 fn execute_unapproved_operator_proposal_fails() {
-    let (env, client, contract_id, _governance_chain, _governance_address, _minimum_time_delay) =
-        setup_client();
+    let (env, client, contract_id, ..) = setup_client();
 
     let target = env.register(TestTarget, ());
     let call_data = Bytes::new(&env);
@@ -561,8 +566,7 @@ fn execute_operator_proposal_with_invalid_function_fails() {
 
 #[test]
 fn transfer_operatorship_succeeds() {
-    let (env, client, _contract_id, _governance_chain, _governance_address, _minimum_time_delay) =
-        setup_client();
+    let (env, client, ..) = setup_client();
     let new_operator = Address::generate(&env);
 
     client
@@ -570,4 +574,118 @@ fn transfer_operatorship_succeeds() {
         .transfer_operatorship_wrapper(&new_operator);
 
     assert_eq!(client.operator(), new_operator);
+}
+
+#[test]
+fn execute_proposal_time_lock_not_ready_fails() {
+    let (
+        _env,
+        client,
+        governance_chain,
+        governance_address,
+        payload,
+        target,
+        call_data,
+        function,
+        native_value,
+        _eta,
+        token_address,
+    ) = setup();
+
+    client.execute(&governance_chain, &governance_address, &payload);
+
+    assert_contract_err!(
+        client.try_execute_proposal(
+            &target,
+            &call_data,
+            &function,
+            &native_value,
+            &token_address,
+        ),
+        ContractError::TimeLockNotReady
+    );
+}
+
+#[test]
+fn execute_proposal_insufficient_balance_fails() {
+    let (env, client, contract_id, governance_chain, governance_address, minimum_time_delay) =
+        setup_client();
+
+    let command_id = CommandType::ScheduleTimeLockProposal as u32;
+    let target = env.register(TestTarget, ());
+    let call_data = Bytes::new(&env);
+    let function = Symbol::new(&env, "call_target");
+    let native_value = 1000i128;
+    let eta = env.ledger().timestamp() + minimum_time_delay;
+
+    let token_address = setup_token(&env, contract_id, 0i128);
+
+    let payload = setup_payload(
+        &env,
+        command_id,
+        target.clone(),
+        call_data.clone(),
+        function.clone(),
+        native_value,
+        eta,
+    );
+
+    client.execute(&governance_chain, &governance_address, &payload);
+
+    env.ledger().set_timestamp(eta);
+
+    goldie::assert!(fmt_last_emitted_event::<ProposalScheduledEvent>(&env));
+
+    assert_contract_err!(
+        client.try_execute_proposal(
+            &target,
+            &call_data,
+            &function,
+            &native_value,
+            &token_address,
+        ),
+        ContractError::InsufficientBalance
+    );
+}
+
+#[test]
+fn execute_operator_proposal_insufficient_balance_fails() {
+    let (env, client, contract_id, governance_chain, governance_address, minimum_time_delay) =
+        setup_client();
+
+    let command_id = CommandType::ApproveOperatorProposal as u32;
+    let target = env.register(TestTarget, ());
+    let call_data = Bytes::new(&env);
+    let function = Symbol::new(&env, "call_target");
+    let native_value = 1000i128;
+    let eta = env.ledger().timestamp() + minimum_time_delay;
+
+    let token_address = setup_token(&env, contract_id, 0i128);
+
+    let payload = setup_payload(
+        &env,
+        command_id,
+        target.clone(),
+        call_data.clone(),
+        function.clone(),
+        native_value,
+        eta,
+    );
+
+    client.execute(&governance_chain, &governance_address, &payload);
+
+    goldie::assert!(fmt_last_emitted_event::<OperatorProposalApprovedEvent>(
+        &env
+    ));
+
+    assert_contract_err!(
+        client.mock_all_auths().try_execute_operator_proposal(
+            &target,
+            &call_data,
+            &function,
+            &native_value,
+            &token_address,
+        ),
+        ContractError::InsufficientBalance
+    );
 }
