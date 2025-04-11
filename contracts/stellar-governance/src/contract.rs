@@ -264,7 +264,7 @@ impl StellarGovernanceInterface for StellarGovernance {
             native_value,
         );
 
-        let _ = TimeLock::finalize_time_lock(&env, proposal_hash.clone())?;
+        TimeLock::finalize_time_lock(&env, proposal_hash.clone())?;
 
         ProposalExecutedEvent {
             target: target.clone(),
