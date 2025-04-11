@@ -1,6 +1,7 @@
 #![cfg(test)]
 use stellar_axelar_std::events::fmt_last_emitted_event;
 use stellar_axelar_std::testutils::Address as _;
+use stellar_axelar_std::token::StellarAssetClient;
 use stellar_axelar_std::xdr::ToXdr;
 use stellar_axelar_std::{
     assert_auth_err, assert_contract_err, vec, Address, Bytes, Env, IntoVal, String, Symbol, Val,
@@ -30,7 +31,14 @@ mod test_target {
     }
 }
 
-fn setup_client<'a>() -> (Env, StellarGovernanceClient<'a>, String, String, u64) {
+fn setup_client<'a>() -> (
+    Env,
+    StellarGovernanceClient<'a>,
+    Address,
+    String,
+    String,
+    u64,
+) {
     let env = Env::default();
     let gateway = Address::generate(&env);
     let owner = Address::generate(&env);
@@ -55,6 +63,7 @@ fn setup_client<'a>() -> (Env, StellarGovernanceClient<'a>, String, String, u64)
     (
         env,
         client,
+        contract_id,
         governance_chain,
         governance_address,
         minimum_time_delay,
@@ -82,6 +91,14 @@ fn setup_payload(
     params.to_xdr(env)
 }
 
+fn setup_token(env: &Env, contract_id: Address, native_value: i128) -> Address {
+    let token = env.register_stellar_asset_contract_v2(contract_id.clone());
+    StellarAssetClient::new(&env, &token.address())
+        .mock_all_auths()
+        .mint(&contract_id, &native_value);
+    token.address()
+}
+
 fn setup<'a>() -> (
     Env,
     StellarGovernanceClient<'a>,
@@ -93,15 +110,19 @@ fn setup<'a>() -> (
     Symbol,
     i128,
     u64,
+    Address,
 ) {
-    let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
+    let (env, client, contract_id, governance_chain, governance_address, minimum_time_delay) =
+        setup_client();
 
     let command_id = CommandType::ScheduleTimeLockProposal as u32;
     let target = env.register(TestTarget, ());
     let call_data = Bytes::new(&env);
     let function = Symbol::new(&env, "call_target");
-    let native_value = 0i128;
+    let native_value = 1000i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
+
+    let token_address = setup_token(&env, contract_id, native_value);
 
     let payload = setup_payload(
         &env,
@@ -124,6 +145,7 @@ fn setup<'a>() -> (
         function,
         native_value,
         eta,
+        token_address,
     )
 }
 
@@ -140,6 +162,7 @@ fn schedule_proposal_and_get_eta_succeeds() {
         function,
         native_value,
         eta,
+        ..,
     ) = setup();
 
     client.execute(&governance_chain, &governance_address, &payload);
@@ -164,11 +187,18 @@ fn execute_existing_proposal_succeeds() {
         function,
         native_value,
         _eta,
+        token_address,
     ) = setup();
 
     client.execute(&governance_chain, &governance_address, &payload);
 
-    client.execute_proposal(&target, &call_data, &function, &native_value);
+    client.execute_proposal(
+        &target,
+        &call_data,
+        &function,
+        &native_value,
+        &token_address,
+    );
 
     goldie::assert!(fmt_last_emitted_event::<ProposalExecutedEvent>(&env));
 }
@@ -186,6 +216,7 @@ fn cancel_existing_proposal_succeeds() {
         function,
         native_value,
         eta,
+        ..,
     ) = setup();
 
     client.execute(&governance_chain, &governance_address, &payload);
@@ -210,7 +241,8 @@ fn cancel_existing_proposal_succeeds() {
 
 #[test]
 fn execute_with_invalid_command_id_fails() {
-    let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
+    let (env, client, _contract_id, governance_chain, governance_address, minimum_time_delay) =
+        setup_client();
 
     let target = env.register(TestTarget, ());
     let call_data = Bytes::from_slice(&env, &[1, 2, 3]);
@@ -228,18 +260,7 @@ fn execute_with_invalid_command_id_fails() {
 
 #[test]
 fn execute_with_wrong_source_chain_fails() {
-    let (
-        env,
-        client,
-        _governance_chain,
-        governance_address,
-        payload,
-        _target,
-        _call_data,
-        _function,
-        _native_value,
-        _eta,
-    ) = setup();
+    let (env, client, _governance_chain, governance_address, payload, ..) = setup();
 
     let wrong_source_chain = String::from_str(&env, "wrong-chain");
     assert_contract_err!(
@@ -250,18 +271,7 @@ fn execute_with_wrong_source_chain_fails() {
 
 #[test]
 fn execute_with_wrong_source_address_fails() {
-    let (
-        env,
-        client,
-        governance_chain,
-        _governance_address,
-        payload,
-        _target,
-        _call_data,
-        _function,
-        _native_value,
-        _eta,
-    ) = setup();
+    let (env, client, governance_chain, _governance_address, payload, ..) = setup();
     let wrong_source_address = String::from_str(&env, "wrong-address");
     assert_contract_err!(
         client.try_execute(&governance_chain, &wrong_source_address, &payload),
@@ -272,13 +282,15 @@ fn execute_with_wrong_source_address_fails() {
 #[test]
 #[should_panic(expected = "HostError: Error(Storage, MissingValue)")]
 fn execute_with_invalid_target_address_fails() {
-    let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
+    let (env, client, contract_id, governance_chain, governance_address, minimum_time_delay) =
+        setup_client();
 
     let invalid_target = Address::generate(&env);
     let call_data = Bytes::new(&env);
     let function = Symbol::new(&env, "call_target");
-    let native_value = 0i128;
+    let native_value = 1000i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
+    let token_address = setup_token(&env, contract_id, native_value);
 
     let payload = setup_payload(
         &env,
@@ -294,19 +306,27 @@ fn execute_with_invalid_target_address_fails() {
 
     goldie::assert!(fmt_last_emitted_event::<ProposalScheduledEvent>(&env));
 
-    client.execute_proposal(&invalid_target, &call_data, &function, &native_value);
+    client.execute_proposal(
+        &invalid_target,
+        &call_data,
+        &function,
+        &native_value,
+        &token_address,
+    );
 }
 
 #[test]
 #[should_panic(expected = "HostError: Error(Context, MissingValue)")]
 fn execute_proposal_with_invalid_function_fails() {
-    let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
+    let (env, client, contract_id, governance_chain, governance_address, minimum_time_delay) =
+        setup_client();
 
     let target = env.register(TestTarget, ());
     let call_data = Bytes::from_slice(&env, &[1, 2, 3]);
     let function = Symbol::new(&env, "invalid_function");
-    let native_value = 0i128;
+    let native_value = 1000i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
+    let token_address = setup_token(&env, contract_id, native_value);
 
     let payload = setup_payload(
         &env,
@@ -322,17 +342,24 @@ fn execute_proposal_with_invalid_function_fails() {
 
     goldie::assert!(fmt_last_emitted_event::<ProposalScheduledEvent>(&env));
 
-    client.execute_proposal(&target, &call_data, &function, &native_value);
+    client.execute_proposal(
+        &target,
+        &call_data,
+        &function,
+        &native_value,
+        &token_address,
+    );
 }
 
 #[test]
 fn cancel_unscheduled_proposal_fails() {
-    let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
+    let (env, client, _contract_id, governance_chain, governance_address, minimum_time_delay) =
+        setup_client();
 
     let target = env.register(TestTarget, ());
     let call_data = Bytes::new(&env);
     let function = Symbol::new(&env, "call_target");
-    let native_value = 0i128;
+    let native_value = 1000i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
     let payload = setup_payload(
@@ -353,14 +380,15 @@ fn cancel_unscheduled_proposal_fails() {
 
 #[test]
 fn approve_and_execute_operator_proposal_succeeds() {
-    let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
+    let (env, client, contract_id, governance_chain, governance_address, minimum_time_delay) =
+        setup_client();
 
     let target = env.register(TestTarget, ());
     let call_data = Bytes::new(&env);
     let function = Symbol::new(&env, "call_target");
-    let native_value = 0i128;
+    let native_value = 1000i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
-
+    let token_address = setup_token(&env, contract_id, native_value);
     let approve_payload = setup_payload(
         &env,
         CommandType::ApproveOperatorProposal as u32,
@@ -378,6 +406,7 @@ fn approve_and_execute_operator_proposal_succeeds() {
         &call_data,
         &function,
         &native_value,
+        &token_address,
     );
 
     goldie::assert!(fmt_last_emitted_event::<OperatorProposalExecutedEvent>(
@@ -387,12 +416,12 @@ fn approve_and_execute_operator_proposal_succeeds() {
 
 #[test]
 fn operator_proposal_approval_status_changes() {
-    let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
-
+    let (env, client, _contract_id, governance_chain, governance_address, minimum_time_delay) =
+        setup_client();
     let target = env.register(TestTarget, ());
     let call_data = Bytes::new(&env);
     let function = Symbol::new(&env, "call_target");
-    let native_value = 0i128;
+    let native_value = 1000i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
 
     let approve_payload = setup_payload(
@@ -430,19 +459,22 @@ fn operator_proposal_approval_status_changes() {
 
 #[test]
 fn execute_unapproved_operator_proposal_fails() {
-    let (env, client, _governance_chain, _governance_address, _minimum_time_delay) = setup_client();
+    let (env, client, contract_id, _governance_chain, _governance_address, _minimum_time_delay) =
+        setup_client();
 
     let target = env.register(TestTarget, ());
     let call_data = Bytes::new(&env);
     let function = Symbol::new(&env, "call_target");
-    let native_value = 0i128;
+    let native_value = 1000i128;
+    let token_address = setup_token(&env, contract_id, native_value);
 
     assert_contract_err!(
         client.mock_all_auths().try_execute_operator_proposal(
             &target,
             &call_data,
             &function,
-            &native_value
+            &native_value,
+            &token_address,
         ),
         ContractError::OperatorProposalNotApproved
     );
@@ -450,13 +482,15 @@ fn execute_unapproved_operator_proposal_fails() {
 
 #[test]
 fn execute_operator_proposal_by_non_operator_fails() {
-    let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
+    let (env, client, contract_id, governance_chain, governance_address, minimum_time_delay) =
+        setup_client();
 
     let target = env.register(TestTarget, ());
     let call_data = Bytes::new(&env);
     let function = Symbol::new(&env, "call_target");
-    let native_value = 0i128;
+    let native_value = 1000i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
+    let token_address = setup_token(&env, contract_id, native_value);
 
     let approve_payload = setup_payload(
         &env,
@@ -477,20 +511,28 @@ fn execute_operator_proposal_by_non_operator_fails() {
     let random_address = Address::generate(&env);
     assert_auth_err!(
         random_address,
-        client.execute_operator_proposal(&target, &call_data, &function, &native_value)
+        client.execute_operator_proposal(
+            &target,
+            &call_data,
+            &function,
+            &native_value,
+            &token_address
+        )
     );
 }
 
 #[test]
 #[should_panic(expected = "HostError: Error(Context, MissingValue)")]
 fn execute_operator_proposal_with_invalid_function_fails() {
-    let (env, client, governance_chain, governance_address, minimum_time_delay) = setup_client();
+    let (env, client, contract_id, governance_chain, governance_address, minimum_time_delay) =
+        setup_client();
 
     let target = env.register(TestTarget, ());
     let call_data = Bytes::new(&env);
     let function = Symbol::new(&env, "invalid_function");
-    let native_value = 0i128;
+    let native_value = 1000i128;
     let eta = env.ledger().timestamp() + minimum_time_delay;
+    let token_address = setup_token(&env, contract_id, native_value);
 
     let approve_payload = setup_payload(
         &env,
@@ -513,12 +555,14 @@ fn execute_operator_proposal_with_invalid_function_fails() {
         &call_data,
         &function,
         &native_value,
+        &token_address,
     );
 }
 
 #[test]
 fn transfer_operatorship_succeeds() {
-    let (env, client, _governance_chain, _governance_address, _minimum_time_delay) = setup_client();
+    let (env, client, _contract_id, _governance_chain, _governance_address, _minimum_time_delay) =
+        setup_client();
     let new_operator = Address::generate(&env);
 
     client

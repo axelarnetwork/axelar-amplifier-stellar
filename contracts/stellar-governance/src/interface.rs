@@ -61,6 +61,7 @@ pub trait StellarGovernanceInterface: OwnableInterface + OperatableInterface {
         call_data: Bytes,
         function: Symbol,
         native_value: i128,
+        token_address: Address,
     ) -> Result<(), ContractError>;
 
     /// Transfers the operator address to a new address.
@@ -110,6 +111,7 @@ pub trait StellarGovernanceInterface: OwnableInterface + OperatableInterface {
         call_data: Bytes,
         function: Symbol,
         native_value: i128,
+        token_address: Address,
     ) -> Result<(), ContractError>;
 
     /// Executes a command

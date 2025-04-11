@@ -123,17 +123,18 @@ impl StellarGovernance {
         function: &Symbol,
         call_data: &Bytes,
         native_value: Option<i128>,
+        token_address: &Address,
     ) -> Result<Val, ContractError> {
         if let Some(value) = native_value {
             if value > 0 {
-                let token = soroban_sdk::token::Client::new(env, &env.current_contract_address());
-                let balance: i128 = token.balance(&env.current_contract_address());
+                let token_client = soroban_sdk::token::Client::new(env, &token_address);
+                let balance: i128 = token_client.balance(&env.current_contract_address());
 
                 if balance < value {
                     return Err(ContractError::InsufficientBalance);
                 }
 
-                token.transfer(&env.current_contract_address(), target, &value);
+                token_client.transfer(&env.current_contract_address(), target, &value);
             }
         }
         let args = if !call_data.is_empty() {
@@ -191,6 +192,7 @@ impl StellarGovernanceInterface for StellarGovernance {
         call_data: Bytes,
         function: Symbol,
         native_value: i128,
+        token_address: Address,
     ) -> Result<(), ContractError> {
         Self::operator(&env).require_auth();
 
@@ -209,7 +211,14 @@ impl StellarGovernanceInterface for StellarGovernance {
 
         storage::set_operator_approval(&env, proposal_hash.clone(), &false);
 
-        Self::call_target(&env, &target, &function, &call_data, Some(native_value))?;
+        Self::call_target(
+            &env,
+            &target,
+            &function,
+            &call_data,
+            Some(native_value),
+            &token_address,
+        )?;
 
         OperatorProposalExecutedEvent {
             target,
@@ -245,6 +254,7 @@ impl StellarGovernanceInterface for StellarGovernance {
         call_data: Bytes,
         function: Symbol,
         native_value: i128,
+        token_address: Address,
     ) -> Result<(), ContractError> {
         let proposal_hash = Self::get_proposal_hash(
             &env,
@@ -256,7 +266,14 @@ impl StellarGovernanceInterface for StellarGovernance {
 
         let _ = TimeLock::finalize_time_lock(&env, proposal_hash.clone());
 
-        let _ = Self::call_target(&env, &target, &function, &call_data, Some(native_value))?;
+        let _ = Self::call_target(
+            &env,
+            &target,
+            &function,
+            &call_data,
+            Some(native_value),
+            &token_address,
+        )?;
 
         ProposalExecutedEvent {
             target,
