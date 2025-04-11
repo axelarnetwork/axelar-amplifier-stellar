@@ -127,7 +127,7 @@ impl StellarGovernance {
     ) -> Result<Val, ContractError> {
         if let Some(value) = native_value {
             if value > 0 {
-                let token_client = soroban_sdk::token::Client::new(env, &token_address);
+                let token_client = soroban_sdk::token::Client::new(env, token_address);
                 let balance: i128 = token_client.balance(&env.current_contract_address());
 
                 if balance < value {

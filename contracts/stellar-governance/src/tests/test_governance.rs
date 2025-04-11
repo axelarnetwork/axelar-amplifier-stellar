@@ -93,7 +93,7 @@ fn setup_payload(
 
 fn setup_token(env: &Env, contract_id: Address, native_value: i128) -> Address {
     let token = env.register_stellar_asset_contract_v2(contract_id.clone());
-    StellarAssetClient::new(&env, &token.address())
+    StellarAssetClient::new(env, &token.address())
         .mock_all_auths()
         .mint(&contract_id, &native_value);
     token.address()
