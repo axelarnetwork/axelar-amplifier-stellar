@@ -1,3 +1,3 @@
 mod execute;
-mod test_governance;
+mod test;
 mod testutils;
