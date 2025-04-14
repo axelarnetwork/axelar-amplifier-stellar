@@ -2059,7 +2059,7 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "stellar-axelar-example"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "goldie",
  "soroban-token-sdk",
@@ -2152,7 +2152,7 @@ dependencies = [
 
 [[package]]
 name = "stellar-interchain-token-service"
-version = "1.1.1"
+version = "1.1.2"
 dependencies = [
  "alloy-primitives",
  "alloy-sol-types",
