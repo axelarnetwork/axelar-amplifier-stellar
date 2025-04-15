@@ -22,9 +22,9 @@ fn schedule_same_proposal_twice_fails() {
     let payload = setup_payload(
         &env,
         CommandType::ScheduleTimeLockProposal as u32,
-        target.clone(),
-        call_data.clone(),
-        function.clone(),
+        target,
+        call_data,
+        function,
         native_value,
         eta,
     );
