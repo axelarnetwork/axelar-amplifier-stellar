@@ -15,7 +15,6 @@ use crate::{auth, storage};
 
 #[contract]
 #[derive(Operatable, Ownable, Pausable, Upgradable)]
-#[migratable]
 pub struct AxelarGateway;
 
 #[contractimpl]
