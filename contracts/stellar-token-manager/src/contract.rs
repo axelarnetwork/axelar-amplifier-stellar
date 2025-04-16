@@ -8,7 +8,6 @@ use crate::interface::TokenManagerInterface;
 
 #[contract]
 #[derive(Ownable, Upgradable)]
-#[migratable]
 pub struct TokenManager;
 
 #[contractimpl]
