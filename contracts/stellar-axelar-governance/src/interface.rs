@@ -56,7 +56,7 @@ pub trait AxelarGovernanceInterface: OwnableInterface + OperatableInterface {
     /// - [`ContractError::OperatorProposalNotApproved`]: If the proposal has not been approved
     /// - Errors propagated by calling the target contract
     fn execute_operator_proposal(
-        env: Env,
+        env: &Env,
         target: Address,
         call_data: Bytes,
         function: Symbol,

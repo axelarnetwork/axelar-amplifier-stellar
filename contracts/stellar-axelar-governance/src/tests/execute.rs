@@ -58,7 +58,7 @@ fn execute_proposal_with_invalid_target_address_fails() {
 
     let payload = setup_payload(
         &env,
-        CommandType::ScheduleTimeLockProposal as u32,
+        CommandType::ScheduleTimeLockProposal,
         invalid_target.clone(),
         call_data.clone(),
         function.clone(),
@@ -96,7 +96,7 @@ fn execute_proposal_with_invalid_function_fails() {
 
     let payload = setup_payload(
         &env,
-        CommandType::ScheduleTimeLockProposal as u32,
+        CommandType::ScheduleTimeLockProposal,
         target.clone(),
         call_data.clone(),
         function.clone(),
@@ -154,7 +154,7 @@ fn execute_proposal_insufficient_balance_fails() {
     let (env, client, contract_id, governance_chain, governance_address, minimum_time_delay) =
         setup_client();
 
-    let command_id = CommandType::ScheduleTimeLockProposal as u32;
+    let command = CommandType::ScheduleTimeLockProposal;
     let target = env.register(TestTarget, ());
     let call_data = Bytes::new(&env);
     let function = Symbol::new(&env, "call_target");
@@ -165,7 +165,7 @@ fn execute_proposal_insufficient_balance_fails() {
 
     let payload = setup_payload(
         &env,
-        command_id,
+        command,
         target.clone(),
         call_data.clone(),
         function.clone(),
@@ -204,7 +204,7 @@ fn approve_and_execute_operator_proposal_succeeds() {
     let token_address = setup_token(&env, contract_id, native_value);
     let approve_payload = setup_payload(
         &env,
-        CommandType::ApproveOperatorProposal as u32,
+        CommandType::ApproveOperatorProposal,
         target.clone(),
         call_data.clone(),
         function.clone(),
@@ -263,7 +263,7 @@ fn execute_operator_proposal_by_non_operator_fails() {
 
     let approve_payload = setup_payload(
         &env,
-        CommandType::ApproveOperatorProposal as u32,
+        CommandType::ApproveOperatorProposal,
         target.clone(),
         call_data.clone(),
         function.clone(),
@@ -305,7 +305,7 @@ fn execute_operator_proposal_with_invalid_function_fails() {
 
     let approve_payload = setup_payload(
         &env,
-        CommandType::ApproveOperatorProposal as u32,
+        CommandType::ApproveOperatorProposal,
         target.clone(),
         call_data.clone(),
         function.clone(),
@@ -333,7 +333,7 @@ fn execute_operator_proposal_insufficient_balance_fails() {
     let (env, client, contract_id, governance_chain, governance_address, minimum_time_delay) =
         setup_client();
 
-    let command_id = CommandType::ApproveOperatorProposal as u32;
+    let command = CommandType::ApproveOperatorProposal;
     let target = env.register(TestTarget, ());
     let call_data = Bytes::new(&env);
     let function = Symbol::new(&env, "call_target");
@@ -344,7 +344,7 @@ fn execute_operator_proposal_insufficient_balance_fails() {
 
     let payload = setup_payload(
         &env,
-        command_id,
+        command,
         target.clone(),
         call_data.clone(),
         function.clone(),

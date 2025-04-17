@@ -62,13 +62,14 @@ pub fn setup_client<'a>() -> (
 
 pub fn setup_payload(
     env: &Env,
-    command_id: u32,
+    command: CommandType,
     target: Address,
     call_data: Bytes,
     function: Symbol,
     native_value: i128,
     eta: u64,
 ) -> Bytes {
+    let command_id = command as u32;
     let params: Vec<Val> = vec![
         &env,
         command_id.into_val(env),
@@ -105,7 +106,7 @@ pub fn setup<'a>() -> (
     let (env, client, contract_id, governance_chain, governance_address, minimum_time_delay) =
         setup_client();
 
-    let command_id = CommandType::ScheduleTimeLockProposal as u32;
+    let command = CommandType::ScheduleTimeLockProposal;
     let target = env.register(TestTarget, ());
     let call_data = Bytes::new(&env);
     let function = Symbol::new(&env, "call_target");
@@ -116,7 +117,7 @@ pub fn setup<'a>() -> (
 
     let payload = setup_payload(
         &env,
-        command_id,
+        command,
         target.clone(),
         call_data.clone(),
         function.clone(),

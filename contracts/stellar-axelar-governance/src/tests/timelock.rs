@@ -21,7 +21,7 @@ fn schedule_same_proposal_twice_fails() {
 
     let payload = setup_payload(
         &env,
-        CommandType::ScheduleTimeLockProposal as u32,
+        CommandType::ScheduleTimeLockProposal,
         target,
         call_data,
         function,
@@ -69,7 +69,7 @@ fn execute_proposal_with_zero_eta_fails() {
 
     let payload = setup_payload(
         &env,
-        CommandType::ScheduleTimeLockProposal as u32,
+        CommandType::ScheduleTimeLockProposal,
         target.clone(),
         call_data.clone(),
         function.clone(),

@@ -56,7 +56,7 @@ fn cancel_proposal_succeeds() {
 
     let cancel_payload = setup_payload(
         &env,
-        CommandType::CancelTimeLockProposal as u32,
+        CommandType::CancelTimeLockProposal,
         target.clone(),
         call_data.clone(),
         function.clone(),
@@ -70,25 +70,6 @@ fn cancel_proposal_succeeds() {
 
     let retrieved_eta = client.proposal_eta(&target, &call_data, &function, &native_value);
     assert_eq!(retrieved_eta, 0);
-}
-
-#[test]
-fn schedule_proposal_with_invalid_command_id_fails() {
-    let (env, client, _contract_id, governance_chain, governance_address, minimum_time_delay) =
-        setup_client();
-
-    let target = env.register(TestTarget, ());
-    let call_data = Bytes::from_slice(&env, &[1, 2, 3]);
-    let function = Symbol::new(&env, "call_target");
-    let native_value = 0i128;
-    let eta = env.ledger().timestamp() + minimum_time_delay;
-
-    let payload = setup_payload(&env, 5u32, target, call_data, function, native_value, eta);
-
-    assert_contract_err!(
-        client.try_execute(&governance_chain, &governance_address, &payload),
-        ContractError::InvalidCommandType
-    );
 }
 
 #[test]
@@ -125,7 +106,7 @@ fn cancel_unscheduled_proposal_fails() {
 
     let payload = setup_payload(
         &env,
-        CommandType::CancelTimeLockProposal as u32,
+        CommandType::CancelTimeLockProposal,
         target,
         call_data,
         function,
@@ -151,7 +132,7 @@ fn toggle_operator_proposal_approval_succeeds() {
 
     let approve_payload = setup_payload(
         &env,
-        CommandType::ApproveOperatorProposal as u32,
+        CommandType::ApproveOperatorProposal,
         target.clone(),
         call_data.clone(),
         function.clone(),
@@ -165,7 +146,7 @@ fn toggle_operator_proposal_approval_succeeds() {
 
     let cancel_payload = setup_payload(
         &env,
-        CommandType::CancelOperatorApproval as u32,
+        CommandType::CancelOperatorApproval,
         target.clone(),
         call_data.clone(),
         function.clone(),

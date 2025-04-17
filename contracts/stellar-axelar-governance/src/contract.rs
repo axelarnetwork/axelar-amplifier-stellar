@@ -1,8 +1,8 @@
 use soroban_sdk::xdr::{FromXdr, ToXdr};
 use stellar_axelar_std::events::Event;
 use stellar_axelar_std::{
-    contract, contractimpl, ensure, only_operator, soroban_sdk, vec, Address, Bytes, Env, IntoVal,
-    Operatable, Ownable, Pausable, String, Symbol, TryIntoVal, Val, Vec,
+    contract, contractimpl, ensure, only_operator, soroban_sdk, vec, when_not_paused, Address,
+    Bytes, Env, IntoVal, Operatable, Ownable, Pausable, String, Symbol, TryIntoVal, Val, Vec,
 };
 
 use crate::error::ContractError;
@@ -28,13 +28,15 @@ impl AxelarGovernance {
         let governance_chain = storage::governance_chain(env);
         let governance_address = storage::governance_address(env);
 
-        if governance_chain != source_chain || governance_address != source_address {
-            return Err(ContractError::NotGovernance);
-        }
+        ensure!(
+            governance_chain == source_chain && governance_address == source_address,
+            ContractError::NotGovernance
+        );
 
         Ok(())
     }
 
+    #[when_not_paused]
     fn process_command(
         env: &Env,
         command_type: CommandType,
@@ -48,7 +50,7 @@ impl AxelarGovernance {
             env,
             target.clone(),
             call_data.clone(),
-            function,
+            function.clone(),
             native_value,
         );
 
@@ -57,10 +59,10 @@ impl AxelarGovernance {
                 let scheduled_eta = TimeLock::schedule_time_lock(env, proposal_hash.clone(), eta)?;
 
                 ProposalScheduledEvent {
-                    target,
-                    eta: scheduled_eta,
                     proposal_hash,
+                    target,
                     call_data,
+                    eta: scheduled_eta,
                 }
                 .emit(env);
             }
@@ -68,8 +70,8 @@ impl AxelarGovernance {
                 TimeLock::cancel_time_lock(env, proposal_hash.clone())?;
 
                 ProposalCancelledEvent {
-                    target,
                     proposal_hash,
+                    target,
                     call_data,
                 }
                 .emit(env);
@@ -78,8 +80,8 @@ impl AxelarGovernance {
                 storage::set_operator_approval(env, proposal_hash.clone(), &true);
 
                 OperatorProposalApprovedEvent {
-                    target,
                     proposal_hash,
+                    target,
                     call_data,
                 }
                 .emit(env);
@@ -88,8 +90,8 @@ impl AxelarGovernance {
                 storage::set_operator_approval(env, proposal_hash.clone(), &false);
 
                 OperatorProposalCancelledEvent {
-                    target,
                     proposal_hash,
+                    target,
                     call_data,
                 }
                 .emit(env);
@@ -130,21 +132,18 @@ impl AxelarGovernance {
                 let token_client = soroban_sdk::token::Client::new(env, token_address);
                 let balance: i128 = token_client.balance(&env.current_contract_address());
 
-                if balance < value {
-                    return Err(ContractError::InsufficientBalance);
-                }
+                ensure!(balance >= value, ContractError::InsufficientBalance);
 
                 token_client.transfer(&env.current_contract_address(), target, &value);
             }
         }
-        let args = if !call_data.is_empty() {
-            vec![env, call_data.to_val()]
-        } else {
+        let args = if call_data.is_empty() {
             Vec::new(env)
+        } else {
+            vec![env, call_data.to_val()]
         };
 
-        let result = env.invoke_contract::<Val>(target, function, args);
-        Ok(result)
+        Ok(env.invoke_contract::<Val>(target, function, args))
     }
 }
 
@@ -159,14 +158,15 @@ impl AxelarGovernanceInterface for AxelarGovernance {
         governance_address: String,
         minimum_time_delay: u64,
     ) -> Result<(), ContractError> {
-        if governance_chain.is_empty() || governance_address.is_empty() {
-            return Err(ContractError::InvalidAddress);
-        }
+        ensure!(
+            !governance_chain.is_empty() && !governance_address.is_empty(),
+            ContractError::InvalidAddress
+        );
 
+        storage::set_gateway(&env, &gateway);
         stellar_axelar_std::interfaces::set_owner(&env, &owner);
         stellar_axelar_std::interfaces::set_operator(&env, &operator);
 
-        storage::set_gateway(&env, &gateway);
         storage::set_governance_chain(&env, &governance_chain);
         storage::set_governance_address(&env, &governance_address);
         storage::set_minimum_time_delay(&env, &minimum_time_delay);
@@ -185,18 +185,18 @@ impl AxelarGovernanceInterface for AxelarGovernance {
         storage::try_operator_approval(&env, proposal_hash).unwrap_or(false)
     }
 
+    #[when_not_paused]
+    #[only_operator]
     fn execute_operator_proposal(
-        env: Env,
+        env: &Env,
         target: Address,
         call_data: Bytes,
         function: Symbol,
         native_value: i128,
         token_address: Address,
     ) -> Result<(), ContractError> {
-        Self::operator(&env).require_auth();
-
         let proposal_hash = Self::proposal_hash(
-            &env,
+            env,
             target.clone(),
             call_data.clone(),
             function.clone(),
@@ -204,14 +204,14 @@ impl AxelarGovernanceInterface for AxelarGovernance {
         );
 
         ensure!(
-            storage::try_operator_approval(&env, proposal_hash.clone()).unwrap_or(false),
+            storage::try_operator_approval(env, proposal_hash.clone()).unwrap_or(false),
             ContractError::OperatorProposalNotApproved
         );
 
-        storage::set_operator_approval(&env, proposal_hash.clone(), &false);
+        storage::set_operator_approval(env, proposal_hash.clone(), &false);
 
         Self::call_target(
-            &env,
+            env,
             &target,
             &function,
             &call_data,
@@ -224,7 +224,7 @@ impl AxelarGovernanceInterface for AxelarGovernance {
             proposal_hash,
             call_data,
         }
-        .emit(&env);
+        .emit(env);
 
         Ok(())
     }
@@ -311,8 +311,6 @@ impl AxelarGovernanceInterface for AxelarGovernance {
             function,
             native_value,
             eta,
-        )?;
-
-        Ok(())
+        )
     }
 }
