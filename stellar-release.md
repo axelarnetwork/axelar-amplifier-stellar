@@ -34,19 +34,19 @@
     a. Use workflow from: `main` branch
 3. If successful, continue; otherwise, address the failure and repeat step 1.
 
-### 3. Release
-
-1. Navigate to the [Release](https://github.com/axelarnetwork/axelar-amplifier-stellar/actions/workflows/release.yaml) GitHub Action.
-2. Run the workflow with the following:
-    a. Use workflow from: `main` branch
-
-### 4. Create Release PR
+### 3. Create Release PR
 
 1. Navigate to the [Create Release PR](https://github.com/axelarnetwork/axelar-amplifier-stellar/actions/workflows/create-release-pr.yaml) GitHub Action.
 2. Run the workflow with the following:
     a. Use workflow from: `main` branch
 3. Visit the generated PR and self-review the changes.
 4. Reach out to maintainers for approval, and merge the PR.
+
+### 4. Release
+
+1. Navigate to the [Release](https://github.com/axelarnetwork/axelar-amplifier-stellar/actions/workflows/release.yaml) GitHub Action.
+2. Run the workflow with the following:
+    a. Use workflow from: `main` branch
 
 ### 5. Verify Release
 
@@ -65,5 +65,7 @@
         - [`stellar-multicall`](https://crates.io/crates/stellar-multicall)
         - [`stellar-token-manager`](https://crates.io/crates/stellar-token-manager)
         - [`stellar-upgrader`](https://crates.io/crates/stellar-upgrader)
+3. Verify the GitHub Releases page is as expected: <https://github.com/axelarnetwork/axelar-amplifier-stellar/releases>
+4. Verify the GitHub Tags page is as expected: <https://github.com/axelarnetwork/axelar-amplifier-stellar/tags>
 
 Your new release in now ready for permissionless interop with the Axelar network.
