@@ -50,7 +50,7 @@ impl AxelarGovernance {
             env,
             target.clone(),
             call_data.clone(),
-            function.clone(),
+            function,
             native_value,
         );
 
