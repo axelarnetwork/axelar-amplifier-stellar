@@ -1,0 +1,26 @@
+[package]
+name = "stellar-axelar-governance"
+version = "1.0.0"
+edition = { workspace = true }
+description = "Stellar Governance contract, responsible for handling cross-chain governance actions like creating, cancelling, approving and executing governance proposals."
+license = { workspace = true }
+publish = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+cfg-if = { workspace = true }
+stellar-axelar-std = { workspace = true }
+
+[dev-dependencies]
+goldie = { workspace = true }
+paste = { workspace = true }
+stellar-axelar-std = { workspace = true, features = ["testutils"] }
+
+[features]
+library = []
+testutils = ["stellar-axelar-std/testutils"]
+
+[lints]
+workspace = true 

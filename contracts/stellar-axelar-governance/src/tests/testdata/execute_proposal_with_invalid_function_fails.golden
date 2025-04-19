@@ -1,0 +1,15 @@
+ProposalScheduledEvent {
+    proposal_hash: Bytes(0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 18, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 13, 0, 0, 0, 3, 1, 2, 3, 0, 0, 0, 0, 15, 0, 0, 0, 16, 105, 110, 118, 97, 108, 105, 100, 95, 102, 117, 110, 99, 116, 105, 111, 110, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 232),
+    target: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM),
+    call_data: Bytes(1, 2, 3),
+    eta: 10,
+}
+
+Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4)
+
+proposal_scheduled {
+    #[topic] proposal_hash: Bytes,
+    #[topic] target: Address,
+    #[topic] call_data: Bytes,
+    #[topic] eta: u64,
+}
