@@ -298,7 +298,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
             destination_chain: destination_chain.clone(),
             destination_address: destination_address.clone(),
             amount,
-            data: data.clone(),
+            data_hash: data.as_ref().map(|d| env.crypto().keccak256(d).into()),
         }
         .emit(env);
 
