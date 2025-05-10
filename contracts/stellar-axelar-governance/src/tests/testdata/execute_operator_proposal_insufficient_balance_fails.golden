@@ -1,0 +1,13 @@
+OperatorProposalApprovedEvent {
+    proposal_hash: Bytes(0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 18, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 11, 99, 97, 108, 108, 95, 116, 97, 114, 103, 101, 116, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 232),
+    target: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM),
+    call_data: Bytes(),
+}
+
+Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4)
+
+operator_proposal_approved {
+    #[topic] proposal_hash: Bytes,
+    #[topic] target: Address,
+    #[topic] call_data: Bytes,
+}
