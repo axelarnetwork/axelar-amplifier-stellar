@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-axelar-gas-service-v1.1.1...stellar-axelar-gas-service-v1.1.2)
+
+### 📚 Documentation
+
+- Add READMEs to all crates ([#340](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/340)) - ([606affd](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/606affdb67172cb6d6812f8d08f43b8f4ae6df95))
+
+### Contributors
+
+* @nbayindirli
+
 ## [1.1.1](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-axelar-gas-service-v1.1.0...stellar-axelar-gas-service-v1.1.1)
 
 ### ⚙️ Miscellaneous Tasks
