@@ -6,7 +6,7 @@ use stellar_axelar_std::{Address, BytesN, Env};
 use crate::event::{InterchainTokenDeployedEvent, TokenManagerDeployedEvent};
 use crate::types::TokenManagerType;
 
-/// This prefix along with the tokenId is used to generate the salt for the deterministic interchain token deployment
+/// This prefix, along with the tokenId, is used to generate the salt for the deterministic interchain token deployment
 const PREFIX_INTERCHAIN_TOKEN_DEPLOYMENT_SALT: &str = "its-interchain-token-salt";
 /// This prefix, along with the tokenId, is used to generate the salt for the deterministic token manager deployment
 const PREFIX_TOKEN_MANAGER_DEPLOYMENT_SALT: &str = "its-token-manager-salt";
