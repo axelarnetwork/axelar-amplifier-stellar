@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-interchain-token-service-v1.1.2...stellar-interchain-token-service-v1.2.0)
+
+### ⛰️ Features
+
+- *(interchain-token-service)* Bump up minor version ([#343](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/343)) - ([a87882c](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/a87882cc870e37df984d2bea48c9971dd6afd06e))
+
+### 🐛 Bug Fixes
+
+- *(interchain-token-service)* Emit data_hash instead of data in InterchainTransferSentEvent ([#342](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/342)) - ([2b90431](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/2b904316b3b209732c3ba3733b2e0e5719b32a52))
+
+### 📚 Documentation
+
+- Add READMEs to all crates ([#340](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/340)) - ([606affd](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/606affdb67172cb6d6812f8d08f43b8f4ae6df95))
+
+### ⚙️ Miscellaneous Tasks
+
+- *(contracts)* Remove v1.1 migration handlers ([#339](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/339)) - ([4f6e796](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/4f6e79649d2ac370bb11818cb79a3d9be2c30d01))
+
+### Contributors
+
+* @ahramy
+* @nbayindirli
+
 ## [1.1.2](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-interchain-token-service-v1.1.1...stellar-interchain-token-service-v1.1.2)
 
 ### 🐛 Bug Fixes

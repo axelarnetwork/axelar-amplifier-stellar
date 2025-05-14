@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-axelar-gateway-v1.1.1...stellar-axelar-gateway-v1.1.2)
+
+### 📚 Documentation
+
+- Add READMEs to all crates ([#340](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/340)) - ([606affd](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/606affdb67172cb6d6812f8d08f43b8f4ae6df95))
+
+### ⚙️ Miscellaneous Tasks
+
+- *(contracts)* Remove v1.1 migration handlers ([#339](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/339)) - ([4f6e796](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/4f6e79649d2ac370bb11818cb79a3d9be2c30d01))
+
+### Contributors
+
+* @nbayindirli
+
 ## [1.1.1](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-axelar-gateway-v1.1.0...stellar-axelar-gateway-v1.1.1)
 
 ### ⚙️ Miscellaneous Tasks

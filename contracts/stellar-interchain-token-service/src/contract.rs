@@ -8,9 +8,9 @@ use stellar_axelar_std::token::StellarAssetClient;
 use stellar_axelar_std::types::Token;
 use stellar_axelar_std::xdr::ToXdr;
 use stellar_axelar_std::{
-    contract, contractimpl, ensure, interfaces, only_operator, only_owner, soroban_sdk, vec,
-    when_not_paused, Address, AxelarExecutable, Bytes, BytesN, Env, IntoVal, Operatable, Ownable,
-    Pausable, String, Symbol, Upgradable, Val,
+    contract, contractimpl, ensure, interfaces, only_operator, soroban_sdk, vec, when_not_paused,
+    Address, AxelarExecutable, Bytes, BytesN, Env, IntoVal, Operatable, Ownable, Pausable, String,
+    Symbol, Upgradable, Val,
 };
 use stellar_interchain_token::InterchainTokenClient;
 
@@ -26,14 +26,13 @@ use crate::token_metadata::TokenMetadataExt;
 use crate::types::{
     DeployInterchainToken, HubMessage, InterchainTransfer, Message, TokenManagerType,
 };
-use crate::{deployer, flow_limit, migrate, token_handler, token_id, token_metadata};
+use crate::{deployer, flow_limit, token_handler, token_id, token_metadata};
 
 const ITS_HUB_CHAIN_NAME: &str = "axelar";
 const EXECUTE_WITH_INTERCHAIN_TOKEN: &str = "execute_with_interchain_token";
 
 #[contract]
 #[derive(Operatable, Ownable, Pausable, Upgradable, AxelarExecutable)]
-#[migratable]
 pub struct InterchainTokenService;
 
 #[contractimpl]
@@ -299,7 +298,9 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
             destination_chain: destination_chain.clone(),
             destination_address: destination_address.clone(),
             amount,
-            data: data.clone(),
+            data_hash: data
+                .as_ref()
+                .map(|data| env.crypto().keccak256(data).into()),
         }
         .emit(env);
 
@@ -314,16 +315,6 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         Self::pay_gas_and_call_contract(env, caller, destination_chain, message, gas_token)?;
 
         Ok(())
-    }
-
-    #[only_owner]
-    fn migrate_token(
-        env: &Env,
-        token_id: BytesN<32>,
-        upgrader: Address,
-        new_version: String,
-    ) -> Result<(), ContractError> {
-        migrate::migrate_token(env, token_id, upgrader, new_version)
     }
 }
 
@@ -523,7 +514,9 @@ impl InterchainTokenService {
             source_address: source_address.clone(),
             destination_address: destination_address.clone(),
             amount,
-            data_hash: data.as_ref().map(|d| env.crypto().keccak256(d).into()),
+            data_hash: data
+                .as_ref()
+                .map(|data| env.crypto().keccak256(data).into()),
         }
         .emit(env);
 

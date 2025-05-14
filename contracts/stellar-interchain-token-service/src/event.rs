@@ -59,7 +59,7 @@ pub struct InterchainTransferSentEvent {
     pub destination_address: Bytes,
     pub amount: i128,
     #[data]
-    pub data: Option<Bytes>,
+    pub data_hash: Option<BytesN<32>>,
 }
 
 #[derive(Debug, PartialEq, Eq, IntoEvent)]

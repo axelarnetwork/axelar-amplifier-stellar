@@ -11,7 +11,6 @@ use crate::storage;
 
 #[contract]
 #[derive(Ownable, Upgradable)]
-#[migratable]
 pub struct AxelarOperators;
 
 #[contractimpl]

@@ -14,6 +14,13 @@ main() {
     # Check each changed storage schema file
     while IFS= read -r file; do
         [ -z "$file" ] && continue
+
+        # Check if the file still exists (not deleted)
+        if [ ! -f "$file" ]; then
+            echo "File $file has been deleted, skipping migration checks"
+            continue
+        fi
+
         check_migration_file "$file"
     done <<< "$CHANGED_FILES"
 }
