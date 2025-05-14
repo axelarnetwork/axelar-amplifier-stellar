@@ -70,7 +70,6 @@ pub trait AxelarGovernanceInterface: OwnableInterface + OperatableInterface {
     /// * `new_operator` - The new operator address
     ///
     /// # Authorization
-    /// - [`OwnableInterface::owner`] must authorize.
     /// - [`OperatableInterface::operator`] must authorize.
     fn transfer_operatorship_wrapper(env: &Env, new_operator: Address);
 
