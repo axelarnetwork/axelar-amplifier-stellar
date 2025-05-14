@@ -19,6 +19,7 @@ use crate::{get_params, storage};
 #[derive(Operatable, Ownable, Pausable)]
 pub struct AxelarGovernance;
 
+#[contractimpl]
 impl AxelarGovernance {
     fn only_governance(
         env: &Env,
