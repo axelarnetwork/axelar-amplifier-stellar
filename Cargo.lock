@@ -2095,6 +2095,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "stellar-axelar-governance"
+version = "1.0.0"
+dependencies = [
+ "cfg-if",
+ "goldie",
+ "paste",
+ "stellar-axelar-std",
+]
+
+[[package]]
 name = "stellar-axelar-operators"
 version = "1.1.2"
 dependencies = [
