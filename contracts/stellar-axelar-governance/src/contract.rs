@@ -131,11 +131,12 @@ impl AxelarGovernance {
         if let Some(value) = native_value {
             if value > 0 {
                 let token_client = soroban_sdk::token::Client::new(env, token_address);
-                let balance: i128 = token_client.balance(&env.current_contract_address());
+                let current_contract = env.current_contract_address();
+                let balance: i128 = token_client.balance(&current_contract);
 
                 ensure!(balance >= value, ContractError::InsufficientBalance);
 
-                token_client.transfer(&env.current_contract_address(), target, &value);
+                token_client.transfer(&current_contract, target, &value);
             }
         }
         let args = if call_data.is_empty() {
