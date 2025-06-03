@@ -23,17 +23,14 @@ fn setup<'a>() -> TestConfig<'a> {
 fn stellar_asset_contract_address_succeeds_with_valid_xdr() {
     let TestConfig { env, client } = setup();
 
-    // Create valid asset XDR that's exactly 32 bytes (minimum required length)
-    let valid_asset_xdr = bytes!(
+    let test_asset_xdr = bytes!(
         &env,
-        0x0000000000000000000000000000000000000000000000000000000000000001
+        0x0000000155534400000000002dbb7dfec733df8c4b044d3ae01e5fce901071a19b2b2cf903acaa16299f8d56
     );
 
-    // Call should succeed and return a valid address
-    let result = client.stellar_asset_contract_address(&valid_asset_xdr);
+    let result = client.try_stellar_asset_contract_address(&test_asset_xdr);
 
-    // Verify that we got a valid address
-    assert!(!result.to_string().is_empty());
+    assert!(result.is_ok());
 }
 
 #[test]
