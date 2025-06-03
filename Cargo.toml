@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["contracts/*", "contracts/stellar-upgrader/src/tests/testdata/*", "packages/*", "stellar-token-utils"]
+members = ["contracts/*", "contracts/stellar-upgrader/src/tests/testdata/*", "packages/*"]
 
 [workspace.package]
 edition = "2021"
