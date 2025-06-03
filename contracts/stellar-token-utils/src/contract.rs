@@ -24,10 +24,7 @@ impl StellarTokenUtilsInterface for StellarTokenUtils {
         // Ensure asset_xdr is at least 32 bytes (Stellar address length)
         ensure!(asset_xdr.len() >= 32, ContractError::InvalidAssetXdr);
 
-        let deployed_address = env
-            .deployer()
-            .with_stellar_asset(asset_xdr)
-            .deployed_address();
+        let deployed_address = env.deployer().with_stellar_asset(asset_xdr).deploy();
 
         Ok(deployed_address)
     }
