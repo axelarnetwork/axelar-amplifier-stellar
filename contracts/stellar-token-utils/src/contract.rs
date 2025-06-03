@@ -8,7 +8,7 @@ pub struct StellarTokenUtils;
 
 #[contractimpl]
 impl StellarTokenUtilsInterface for StellarTokenUtils {
-    /// Resolves the Stellar Asset Contract (SAC) address for a given asset XDR.
+    /// Creates the Stellar Asset Contract (SAC) address for a given asset XDR.
     ///
     /// This function takes an asset's XDR representation
     /// and returns the corresponding Stellar Asset Contract address.
@@ -20,10 +20,7 @@ impl StellarTokenUtilsInterface for StellarTokenUtils {
     /// # Returns
     /// * `Ok(Address)` - The resolved Stellar Asset Contract address
     /// * `Err(ContractError::InvalidAssetXdr)` - If the asset XDR is invalid
-    fn stellar_asset_contract_address(
-        env: Env,
-        asset_xdr: Bytes,
-    ) -> Result<Address, ContractError> {
+    fn create_stellar_asset_contract(env: Env, asset_xdr: Bytes) -> Result<Address, ContractError> {
         // Ensure asset_xdr is at least 32 bytes (Stellar address length)
         ensure!(asset_xdr.len() >= 32, ContractError::InvalidAssetXdr);
 

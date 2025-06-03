@@ -4,7 +4,7 @@ use crate::error::ContractError;
 
 #[contractclient(name = "StellarTokenUtilsClient")]
 pub trait StellarTokenUtilsInterface {
-    /// Resolves the Stellar Asset Contract (SAC) address for a given asset XDR.
+    /// Creates the Stellar Asset Contract (SAC) address for a given asset XDR.
     ///
     /// This function returns the address of the Stellar Asset Contract for
     /// the specified asset, always deploying it when called. The
@@ -24,6 +24,5 @@ pub trait StellarTokenUtilsInterface {
     ///                                          is empty, too short (<32 bytes),
     ///                                          malformed, or invalid.
     ///
-    fn stellar_asset_contract_address(env: Env, asset_xdr: Bytes)
-        -> Result<Address, ContractError>;
+    fn create_stellar_asset_contract(env: Env, asset_xdr: Bytes) -> Result<Address, ContractError>;
 }
