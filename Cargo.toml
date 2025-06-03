@@ -32,7 +32,7 @@ stellar-interchain-token = { version = "^1.1.2", path = "contracts/stellar-inter
 stellar-interchain-token-service = { version = "^1.2.0", path = "contracts/stellar-interchain-token-service" }
 stellar-token-manager = { version = "^1.1.2", path = "contracts/stellar-token-manager" }
 stellar-multicall = { version = "^1.0.2", path = "contracts/stellar-multicall" }
-stellar-token-utils = { version = "^1.0.0", path = "stellar-token-utils" }
+stellar-token-utils = { version = "^1.0.0", path = "contracts/stellar-token-utils" }
 stellar-upgrader = { version = "^1.1.2", path = "contracts/stellar-upgrader" }
 
 [workspace.lints.clippy]
