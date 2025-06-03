@@ -2,7 +2,6 @@ use stellar_axelar_std::{contractclient, soroban_sdk, Address, Bytes, Env};
 
 use crate::error::ContractError;
 
-#[contractclient(name = "StellarTokenUtilsClient")]
 pub trait StellarTokenUtilsInterface {
     /// Creates the Stellar Asset Contract (SAC) address for a given asset XDR.
     ///
