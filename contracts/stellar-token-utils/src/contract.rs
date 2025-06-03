@@ -10,8 +10,8 @@ pub struct StellarTokenUtils;
 impl StellarTokenUtilsInterface for StellarTokenUtils {
     /// Resolves the Stellar Asset Contract (SAC) address for a given asset XDR.
     ///
-    /// This function takes an asset's XDR representation
-    /// and returns the corresponding Stellar Asset Contract address.
+    /// This function creates and returns the Stellar Asset Contract (SAC) address
+    /// for a given asset XDR using the Soroban SDK's deployer functionality.
     ///
     /// # Arguments
     /// * `env` - The contract execution environment
@@ -19,7 +19,7 @@ impl StellarTokenUtilsInterface for StellarTokenUtils {
     ///
     /// # Returns
     /// * `Ok(Address)` - The resolved Stellar Asset Contract address
-    /// * `Err(ContractError::InvalidAssetXdr)` - If the asset XDR is invalid
+    /// * `Err(ContractError::InvalidAssetXdr)` - If the asset XDR is invalid or insufficient length
     fn stellar_asset_contract_address(
         env: Env,
         asset_xdr: Bytes,
