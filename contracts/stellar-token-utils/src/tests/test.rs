@@ -3,6 +3,7 @@ extern crate alloc;
 extern crate std;
 
 use alloc::string::ToString;
+
 use stellar_axelar_std::{assert_contract_err, assert_ok, bytes, Bytes, Env};
 
 use crate::error::ContractError;
