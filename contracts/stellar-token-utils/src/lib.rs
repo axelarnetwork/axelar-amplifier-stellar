@@ -12,10 +12,10 @@ mod tests;
 
 cfg_if::cfg_if! {
     if #[cfg(all(feature = "library", not(test)))] {
-        pub use interface::StellarTokenUtilsInterface;
+        pub use interface::TokenUtilsInterface;
     } else {
         mod contract;
 
-        pub use contract::{StellarTokenUtils, StellarTokenUtilsClient};
+        pub use contract::{TokenUtils, TokenUtilsClient};
     }
 }

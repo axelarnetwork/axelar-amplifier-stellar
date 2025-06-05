@@ -2,7 +2,7 @@ use stellar_axelar_std::{Address, Bytes, Env};
 
 use crate::error::ContractError;
 
-pub trait StellarTokenUtilsInterface {
+pub trait TokenUtilsInterface {
     /// Creates the Stellar Asset Contract (SAC) address for a given asset XDR.
     ///
     /// This function returns the address of the Stellar Asset Contract for
@@ -10,7 +10,6 @@ pub trait StellarTokenUtilsInterface {
     /// address is deterministic based on the asset's XDR representation.
     ///
     /// # Arguments
-    /// * `env` - The Stellar contract execution environment variable
     /// * `asset_xdr` - The XDR (External Data Representation) bytes of the
     ///                 Stellar asset. This should be a properly formatted
     ///                 Stellar asset XDR as defined by the Stellar protocol.

@@ -1,20 +1,19 @@
 use stellar_axelar_std::{contract, contractimpl, ensure, soroban_sdk, Address, Bytes, Env};
 
 use crate::error::ContractError;
-use crate::interface::StellarTokenUtilsInterface;
+use crate::interface::TokenUtilsInterface;
 
 #[contract]
-pub struct StellarTokenUtils;
+pub struct TokenUtils;
 
 #[contractimpl]
-impl StellarTokenUtilsInterface for StellarTokenUtils {
+impl TokenUtilsInterface for TokenUtils {
     /// Creates the Stellar Asset Contract (SAC) address for a given asset XDR.
     ///
     /// This function takes an asset's XDR representation
     /// and returns the corresponding Stellar Asset Contract address.
     ///
     /// # Arguments
-    /// * `env` - The contract execution environment
     /// * `asset_xdr` - The XDR byte representation of the Stellar asset
     ///
     /// # Returns

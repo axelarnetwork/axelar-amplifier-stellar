@@ -1,20 +1,24 @@
 #![cfg(test)]
+extern crate alloc;
 extern crate std;
 
-use stellar_axelar_std::{assert_contract_err, bytes, Bytes, Env};
+use alloc::string::ToString;
+use stellar_axelar_std::{assert_contract_err, assert_ok, bytes, Bytes, Env};
 
 use crate::error::ContractError;
-use crate::{StellarTokenUtils, StellarTokenUtilsClient};
+use crate::{TokenUtils, TokenUtilsClient};
+
+const CONTRACT_ADDRESS_PREFIX: char = 'C';
 
 pub struct TestConfig<'a> {
     pub env: Env,
-    pub client: StellarTokenUtilsClient<'a>,
+    pub client: TokenUtilsClient<'a>,
 }
 
 fn setup<'a>() -> TestConfig<'a> {
     let env = Env::default();
-    let contract_id = env.register(StellarTokenUtils, ());
-    let client = StellarTokenUtilsClient::new(&env, &contract_id);
+    let contract_id = env.register(TokenUtils, ());
+    let client = TokenUtilsClient::new(&env, &contract_id);
 
     TestConfig { env, client }
 }
@@ -23,14 +27,27 @@ fn setup<'a>() -> TestConfig<'a> {
 fn create_stellar_asset_contract_succeeds_with_valid_xdr() {
     let TestConfig { env, client } = setup();
 
-    let test_asset_xdr = bytes!(
+    let valid_asset_xdr = bytes!(
         &env,
         0x0000000155534400000000002dbb7dfec733df8c4b044d3ae01e5fce901071a19b2b2cf903acaa16299f8d56
     );
 
-    let result = client.try_create_stellar_asset_contract(&test_asset_xdr);
+    let contract_address = assert_ok!(client.try_create_stellar_asset_contract(&valid_asset_xdr))
+        .expect("Contract creation should succeed with valid XDR");
 
-    assert!(result.is_ok());
+    let address_string = contract_address.to_string().to_string();
+
+    assert!(
+        !address_string.is_empty(),
+        "Contract address should not be empty"
+    );
+
+    assert!(
+        address_string.starts_with(CONTRACT_ADDRESS_PREFIX),
+        "Contract address should start with '{}', got: {}",
+        CONTRACT_ADDRESS_PREFIX,
+        address_string
+    );
 }
 
 #[test]
