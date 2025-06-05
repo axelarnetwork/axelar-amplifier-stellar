@@ -17,7 +17,24 @@ pub struct StellarTokenUtils;
 #[contractimpl]
 impl StellarTokenUtils {
     pub fn __constructor(_env: &Env) {}
+}
 
+#[contractimpl]
+impl StellarTokenUtilsInterface for StellarTokenUtils {
+    fn stellar_asset_contract_address(
+        env: Env,
+        code: String,
+        issuer: Address,
+    ) -> Result<Address, ContractError> {
+        ensure!(!code.is_empty(), ContractError::InvalidAssetCode);
+
+        let asset_xdr = Self.create_asset_xdr(&env, &code, &issuer)?;
+
+        Ok(env.deployer().with_stellar_asset(asset_xdr).deploy())
+    }
+}
+
+impl StellarTokenUtils {
     /// Private method to create asset XDR representation
     fn create_asset_xdr(
         &self,
@@ -48,28 +65,9 @@ impl StellarTokenUtils {
                 })
             }
         };
-
         let xdr_bytes = asset
             .to_xdr(Limits::none())
             .map_err(|_| ContractError::InvalidAssetCode)?;
         Ok(Bytes::from_slice(env, &xdr_bytes))
-    }
-}
-
-#[contractimpl]
-impl StellarTokenUtilsInterface for StellarTokenUtils {
-    fn stellar_asset_contract_address(
-        env: Env,
-        code: String,
-        issuer: Address,
-    ) -> Result<Address, ContractError> {
-        ensure!(!code.is_empty(), ContractError::InvalidAssetCode);
-
-        let serialized_asset = Self.create_asset_xdr(&env, &code, &issuer)?;
-
-        let deployer = env.deployer().with_stellar_asset(serialized_asset);
-        let sac_address = deployer.deployed_address();
-
-        Ok(sac_address)
     }
 }
