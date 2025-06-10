@@ -43,6 +43,7 @@ jobs:
         with:
           crate: cargo-sort
           version: 1.0.9
+          # Pinned version for compatibility with Rust 1.81.0
 
       - name: Run cargo sort
         run: cargo-sort --workspace --check --check-format

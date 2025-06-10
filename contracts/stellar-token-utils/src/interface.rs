@@ -3,24 +3,40 @@ use stellar_axelar_std::{Address, Bytes, Env};
 use crate::error::ContractError;
 
 pub trait TokenUtilsInterface {
-    /// Creates the Stellar Asset Contract (SAC) address for a given asset XDR.
+    /// Deploys the Stellar Asset Contract (SAC) address for a given asset XDR.
     ///
-    /// This function returns the address of the Stellar Asset Contract for
-    /// the specified asset, always deploying it when called. The
-    /// address is deterministic based on the asset's XDR representation.
+    /// This function takes an asset's XDR representation and deploys the corresponding
+    /// Stellar Asset Contract. It will fail if the contract is already deployed.
+    ///
+    /// This utility is specifically designed for Stellar Classic tokens (native Stellar assets),
+    /// allowing them to be used in Soroban smart contracts through the SAC interface.
     ///
     /// # Arguments
-    /// * `asset_xdr` - The XDR (External Data Representation) bytes of the
-    ///                 Stellar asset. This should be a properly formatted
-    ///                 Stellar asset XDR as defined by the Stellar protocol.
-    ///                 Must be at least 32 bytes (Stellar address length).
+    /// * `asset_xdr` - The XDR byte representation of the Stellar asset
     ///
     /// # Returns
-    /// - `Ok(Address)`: The deterministic address where the Stellar Asset
-    ///                  Contract for this asset would be (or is) deployed.
-    /// - `Err(ContractError::InvalidAssetXdr)`: If the provided asset XDR
-    ///                                          is empty, too short (<32 bytes),
-    ///                                          malformed, or invalid.
+    /// * `Ok(Address)` - The deployed Stellar Asset Contract address
+    /// * `Err(ContractError::InvalidAssetXdr)` - If the asset XDR is invalid
+    /// * `Err` - If the contract is already deployed (deployment error)
     ///
-    fn create_stellar_asset_contract(env: Env, asset_xdr: Bytes) -> Result<Address, ContractError>;
+    /// # Usage
+    /// This function is used to deploy a new Stellar Asset Contract for a specific asset.
+    /// It takes the XDR representation of a Stellar asset (code and issuer) and creates
+    /// a new contract instance for that asset.
+    ///
+    /// To obtain the asset XDR:
+    /// 1. Use Stellar SDK libraries (like js-stellar-sdk) to create an Asset object
+    /// 2. Serialize the Asset to XDR format
+    /// 3. Convert the XDR to bytes
+    ///
+    /// Example with js-stellar-sdk:
+    /// ```javascript
+    /// const asset = new StellarSdk.Asset('USD', 'ISSUER_PUBLIC_KEY');
+    /// const xdr = asset.toXDRObject().toXDR('base64');
+    /// // Convert base64 to bytes for contract input
+    /// ```
+    ///
+    /// Note that this function will fail if the contract for the given asset is already
+    /// deployed on the network.
+    fn deploy_stellar_asset_contract(env: Env, asset_xdr: Bytes) -> Result<Address, ContractError>;
 }
