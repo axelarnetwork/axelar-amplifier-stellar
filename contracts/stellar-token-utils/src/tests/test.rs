@@ -129,7 +129,6 @@ fn deploy_stellar_asset_contract_different_assets_succeed_and_address_derivation
             let asset_xdr = create_asset_xdr(&env, code, &issuer);
             let address = client.deploy_stellar_asset_contract(&asset_xdr);
 
-            // Validate each address as it's deployed
             assert_valid_contract_address(&address);
 
             address
@@ -210,11 +209,9 @@ fn deploy_stellar_asset_contract_consecutive_calls_return_same_address() {
     let issuer = create_issuer(&env, TEST_ISSUER_1);
     let asset_xdr = create_asset_xdr(&env, "REPEAT", &issuer);
 
-    // Deploy the first time
     let first_address = client.deploy_stellar_asset_contract(&asset_xdr);
     assert_valid_contract_address(&first_address);
 
-    // Deploy the same asset again - should return the same address (idempotent behavior)
     let second_address = client.deploy_stellar_asset_contract(&asset_xdr);
     assert_eq!(
         first_address, second_address,
