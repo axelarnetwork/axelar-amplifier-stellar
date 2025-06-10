@@ -142,7 +142,7 @@ fn deploy_stellar_asset_contract_fails_empty_asset_xdr() {
 #[test]
 fn deploy_stellar_asset_contract_fails_short_asset_xdr() {
     let (env, client) = setup();
-    let short_asset_xdr = bytes!(&env, 0x0123456789abcdef0123456789abcdef); // XDR shorter than minimum 32 bytes required
+    let short_asset_xdr = bytes!(&env, 0x0123456789abcdef0123456789abcdef);
 
     assert_contract_err!(
         client.try_deploy_stellar_asset_contract(&short_asset_xdr),
@@ -171,7 +171,7 @@ fn deploy_stellar_asset_contract_different_assets_succeed() {
     let (env, client) = setup();
     let issuer = create_issuer(&env, TEST_ISSUER_1);
 
-    let test_assets = ["USD", "EUR", "GBP", "JPY"]; // Each asset code must be unique to avoid deployment conflicts
+    let test_assets = ["USD", "EUR", "GBP", "JPY"];
     let addresses: Vec<Address> = test_assets
         .iter()
         .map(|&code| {
