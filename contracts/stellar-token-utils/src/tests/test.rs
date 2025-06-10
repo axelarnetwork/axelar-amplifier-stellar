@@ -36,7 +36,6 @@ fn address_to_account_id(address: &Address) -> AccountId {
     let address_str = address.to_string().to_string();
     let addr_bytes = address_str.as_bytes();
 
-    // Copy bytes from address string to account bytes
     let copy_len = std::cmp::min(addr_bytes.len(), 32);
     for (i, &byte) in addr_bytes.iter().enumerate().take(copy_len) {
         account_bytes[i] = byte;
@@ -204,10 +203,10 @@ fn deploy_stellar_asset_contract_alphanum4_vs_alphanum12() {
     let (env, client) = setup();
     let issuer = create_issuer(&env, TEST_ISSUER_1);
 
-    let alphanum4_xdr = create_asset_xdr(&env, "TEST", &issuer); // AlphaNum4: 4 characters or less
+    let alphanum4_xdr = create_asset_xdr(&env, "TEST", &issuer);
     let alphanum4_address = deploy_and_expect_success(&client, &alphanum4_xdr);
 
-    let alphanum12_xdr = create_asset_xdr(&env, "TESTLONGNAME", &issuer); // AlphaNum12: more than 4 characters
+    let alphanum12_xdr = create_asset_xdr(&env, "TESTLONGNAME", &issuer);
     let alphanum12_address = deploy_and_expect_success(&client, &alphanum12_xdr);
 
     assert_ne!(alphanum4_address, alphanum12_address);
