@@ -2,8 +2,9 @@
 extern crate alloc;
 extern crate std;
 
-use crate::{TokenUtils, TokenUtilsClient};
 use stellar_axelar_std::Env;
+
+use crate::{TokenUtils, TokenUtilsClient};
 
 macro_rules! address_strings {
     ($addresses:expr) => {

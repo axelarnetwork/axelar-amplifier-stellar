@@ -3,7 +3,6 @@ extern crate alloc;
 extern crate std;
 
 use alloc::string::ToString;
-use std::vec;
 use std::vec::Vec;
 
 use stellar_axelar_std::testutils::Address as _;
@@ -34,7 +33,7 @@ fn address_to_account_id(address: &Address) -> AccountId {
         .take(32)
         .collect();
 
-    let account_id_bytes: [u8; 32] = bytes.try_into().unwrap_or_else(|_| [0u8; 32]);
+    let account_id_bytes: [u8; 32] = bytes.try_into().unwrap_or([0u8; 32]);
 
     AccountId(PublicKey::PublicKeyTypeEd25519(
         stellar_axelar_std::xdr::Uint256(account_id_bytes),
@@ -92,7 +91,7 @@ fn deploy_stellar_asset_contract_succeeds_with_valid_xdr() {
     assert_eq!(symbol, String::from_str(&env, asset_code));
     assert_eq!(decimals, 7);
 
-    let address_strings = address_strings!(vec![deployed_address]);
+    let address_strings = address_strings!([deployed_address]);
     goldie::assert_json!(address_strings);
 }
 
@@ -154,7 +153,7 @@ fn deploy_stellar_asset_contract_same_asset_code_different_issuers_address_deriv
     let address1 = client.deploy_stellar_asset_contract(&asset_xdr1);
     let address2 = client.deploy_stellar_asset_contract(&asset_xdr2);
 
-    let addresses = vec![address1, address2];
+    let addresses = [address1, address2];
     let address_strings = address_strings!(addresses);
 
     goldie::assert_json!(address_strings);
@@ -170,7 +169,7 @@ fn deploy_stellar_asset_contract_alphanum4() {
 
     assert_valid_contract_address(&alphanum4_address);
 
-    let address_strings = address_strings!(vec![alphanum4_address]);
+    let address_strings = address_strings!([alphanum4_address]);
     goldie::assert_json!(address_strings);
 }
 
@@ -184,7 +183,7 @@ fn deploy_stellar_asset_contract_alphanum12() {
 
     assert_valid_contract_address(&alphanum12_address);
 
-    let address_strings = address_strings!(vec![alphanum12_address]);
+    let address_strings = address_strings!([alphanum12_address]);
     goldie::assert_json!(address_strings);
 }
 
@@ -199,7 +198,7 @@ fn deploy_stellar_asset_contract_same_issuer_different_asset_code_address_deriva
     let alphanum12_xdr = create_asset_xdr(&env, "TESTLONGNAME", &issuer);
     let alphanum12_address = client.deploy_stellar_asset_contract(&alphanum12_xdr);
 
-    let addresses = vec![alphanum4_address, alphanum12_address];
+    let addresses = [alphanum4_address, alphanum12_address];
     let address_strings = address_strings!(addresses);
 
     goldie::assert_json!(address_strings);
