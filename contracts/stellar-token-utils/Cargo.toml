@@ -16,6 +16,7 @@ stellar-axelar-std = { workspace = true, features = ["derive"] }
 [dev-dependencies]
 goldie = { workspace = true }
 stellar-axelar-std = { workspace = true, features = ["testutils"] }
+stellar-strkey = { workspace = true }
 
 [features]
 library = [] # Exports only the contract interface

@@ -9,9 +9,10 @@ use stellar_axelar_std::testutils::Address as _;
 use stellar_axelar_std::token::TokenClient;
 use stellar_axelar_std::xdr::{
     AccountId, AlphaNum12, AlphaNum4, Asset as XdrAsset, AssetCode12, AssetCode4, Limits,
-    PublicKey, WriteXdr,
+    PublicKey as XdrPublicKey, Uint256, WriteXdr,
 };
 use stellar_axelar_std::{assert_contract_err, bytes, Address, Bytes, Env, String};
+use stellar_strkey::ed25519::PublicKey;
 
 use super::testutils::{address_strings, setup};
 use crate::error::ContractError;
@@ -25,19 +26,15 @@ fn create_issuer(env: &Env, address: &str) -> Address {
 }
 
 fn address_to_account_id(address: &Address) -> AccountId {
-    let bytes: Vec<u8> = address
-        .to_string()
-        .to_string()
-        .into_bytes()
-        .into_iter()
-        .take(32)
-        .collect();
+    let address_string = address.to_string().to_string();
 
-    let account_id_bytes: [u8; 32] = bytes.try_into().unwrap_or([0u8; 32]);
+    let issuer_pk = PublicKey::from_string(&address_string)
+        .expect("Address should convert to a valid Ed25519 public key");
 
-    AccountId(PublicKey::PublicKeyTypeEd25519(
-        stellar_axelar_std::xdr::Uint256(account_id_bytes),
-    ))
+    let uint256 = Uint256(issuer_pk.0);
+    let pk = XdrPublicKey::PublicKeyTypeEd25519(uint256);
+
+    AccountId(pk)
 }
 
 fn string_to_asset_code<const N: usize>(code: &str) -> [u8; N] {
