@@ -60,8 +60,8 @@ fn register_token_metadata_succeeds() {
         spender,
         gas_service.pay_gas(
             client.address.clone(),
-            its_hub_chain.clone(),
-            its_hub_address.clone(),
+            its_hub_chain,
+            its_hub_address,
             payload,
             &spender,
             gas_token.clone(),
@@ -72,7 +72,7 @@ fn register_token_metadata_succeeds() {
 
     let register_token_metadata_auth = auth_invocation!(
         spender,
-        client.register_token_metadata(token.address(), spender, Some(gas_token.clone())),
+        client.register_token_metadata(token.address(), spender, Some(gas_token)),
         pay_gas_auth
     );
 
