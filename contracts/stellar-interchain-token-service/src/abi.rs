@@ -703,4 +703,20 @@ mod tests {
         assert_eq!(register_struct.tokenAddress.len(), 5);
         assert_eq!(register_struct.decimals, 6);
     }
+
+    #[test]
+    fn message_type_invalid_and_register_token_metadata_usage() {
+        let mut s = RegisterTokenMetadata {
+            messageType: MessageType::RegisterTokenMetadata.into(),
+            tokenAddress: alloy_primitives::Bytes::from(vec![9, 8, 7, 6, 5]),
+            decimals: 99,
+        };
+        s.decimals += 1;
+        assert_eq!(s.decimals, 100);
+        assert_eq!(
+            s.tokenAddress,
+            alloy_primitives::Bytes::from(vec![9, 8, 7, 6, 5])
+        );
+        assert_eq!(s.messageType, MessageType::RegisterTokenMetadata.into());
+    }
 }
