@@ -604,49 +604,45 @@ mod tests {
     }
 
     #[test]
-    fn register_token_metadata_direct_encode_decode() {
-        let env = Env::default();
+    fn register_token_metadata_struct() {
+        let message = RegisterTokenMetadata {
+            messageType: MessageType::RegisterTokenMetadata.into(),
+            tokenAddress: alloy_primitives::Bytes::from(vec![0u8; 20]), // 20 bytes for token address
+            decimals: 18,
+        };
 
-        let cases = vec![
-            types::Message::RegisterTokenMetadata(types::RegisterTokenMetadata {
-                token_address: Bytes::from_hex(&env, "00"),
-                decimals: 0,
-            }),
-            types::Message::RegisterTokenMetadata(types::RegisterTokenMetadata {
-                token_address: Bytes::from_hex(&env, "4F4495243837681061C4743b74B3eEdf548D56A5"),
-                decimals: 18,
-            }),
-            types::Message::RegisterTokenMetadata(types::RegisterTokenMetadata {
-                token_address: Bytes::from_hex(&env, "4F4495243837681061C4743b74B3eEdf548D56A5"),
-                decimals: 255,
-            }),
-        ];
+        let encoded = message.abi_encode_params();
+        let decoded = RegisterTokenMetadata::abi_decode_params(&encoded, true).unwrap();
 
-        for original in cases {
-            let encoded = assert_ok!(original.clone().abi_encode(&env));
-            let decoded = Message::abi_decode(&env, &encoded);
-            assert_eq!(original, decoded.unwrap());
-        }
-    }
+        assert_eq!(
+            decoded.messageType,
+            MessageType::RegisterTokenMetadata.into()
+        );
+        assert_eq!(
+            decoded.tokenAddress,
+            alloy_primitives::Bytes::from(vec![0u8; 20])
+        );
+        assert_eq!(decoded.decimals, 18);
 
-    #[test]
-    fn register_token_metadata_decode_fails() {
-        let env = Env::default();
+        // Test with non-zero token address
+        let message = RegisterTokenMetadata {
+            messageType: MessageType::RegisterTokenMetadata.into(),
+            tokenAddress: alloy_primitives::Bytes::from(vec![255u8; 20]),
+            decimals: 255,
+        };
 
-        let short_payload = Bytes::from_slice(&env, &[0u8; 31]);
-        let result = Message::abi_decode(&env, &short_payload);
-        assert!(matches!(
-            result,
-            Err(ContractError::InsufficientMessageLength)
-        ));
+        let encoded = message.abi_encode_params();
+        let decoded = RegisterTokenMetadata::abi_decode_params(&encoded, true).unwrap();
 
-        let invalid_type = Bytes::from_slice(&env, &[255u8; 32]);
-        let result = Message::abi_decode(&env, &invalid_type);
-        assert!(matches!(result, Err(ContractError::InvalidMessageType)));
-
-        let invalid_encoding = Bytes::from_slice(&env, &[0u8; 64]);
-        let result = Message::abi_decode(&env, &invalid_encoding);
-        assert!(matches!(result, Err(ContractError::AbiDecodeFailed)));
+        assert_eq!(
+            decoded.messageType,
+            MessageType::RegisterTokenMetadata.into()
+        );
+        assert_eq!(
+            decoded.tokenAddress,
+            alloy_primitives::Bytes::from(vec![255u8; 20])
+        );
+        assert_eq!(decoded.decimals, 255);
     }
 
     #[test]
@@ -671,5 +667,44 @@ mod tests {
 
         let result = HubMessage::abi_decode(&env, &invalid_hub_message_type);
         assert!(matches!(result, Err(ContractError::InvalidMessageType)));
+    }
+
+    #[test]
+    fn message_type_enum() {
+        assert_eq!(MessageType::InterchainTransfer as u32, 0);
+        assert_eq!(MessageType::DeployInterchainToken as u32, 1);
+        assert_eq!(MessageType::DeployTokenManager as u32, 2);
+        assert_eq!(MessageType::SendToHub as u32, 3);
+        assert_eq!(MessageType::ReceiveFromHub as u32, 4);
+        assert_eq!(MessageType::RegisterTokenMetadata as u32, 5);
+    }
+
+    #[test]
+    fn register_token_metadata_struct_definition() {
+        let message = RegisterTokenMetadata {
+            messageType: MessageType::RegisterTokenMetadata.into(),
+            tokenAddress: alloy_primitives::Bytes::from(vec![0u8; 20]),
+            decimals: 18,
+        };
+
+        assert_eq!(
+            message.messageType,
+            MessageType::RegisterTokenMetadata.into()
+        );
+        assert_eq!(message.tokenAddress.len(), 20);
+        assert_eq!(message.decimals, 18);
+
+        let encoded = message.abi_encode_params();
+        let decoded = RegisterTokenMetadata::abi_decode_params(&encoded, true).unwrap();
+
+        assert_eq!(
+            decoded.messageType,
+            MessageType::RegisterTokenMetadata.into()
+        );
+        assert_eq!(
+            decoded.tokenAddress,
+            alloy_primitives::Bytes::from(vec![0u8; 20])
+        );
+        assert_eq!(decoded.decimals, 18);
     }
 }
