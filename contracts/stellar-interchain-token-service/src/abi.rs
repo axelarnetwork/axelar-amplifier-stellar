@@ -38,6 +38,7 @@ sol! {
     }
 
     struct RegisterTokenMetadata {
+        uint256 messageType;
         bytes tokenAddress;
         uint8 decimals;
     }
@@ -92,6 +93,7 @@ impl Message {
                 token_address,
                 decimals,
             }) => RegisterTokenMetadata {
+                messageType: MessageType::RegisterTokenMetadata.into(),
                 tokenAddress: token_address.to_alloc_vec().into(),
                 decimals,
             }
@@ -131,6 +133,15 @@ impl Message {
                     symbol: String::from_str(env, &decoded.symbol),
                     decimals: decoded.decimals,
                     minter: from_vec(env, decoded.minter.as_ref()),
+                }))
+            }
+            MessageType::RegisterTokenMetadata => {
+                let decoded = RegisterTokenMetadata::abi_decode_params(&payload, true)
+                    .map_err(|_| ContractError::AbiDecodeFailed)?;
+
+                Ok(Self::RegisterTokenMetadata(types::RegisterTokenMetadata {
+                    token_address: Bytes::from_slice(env, decoded.tokenAddress.as_ref()),
+                    decimals: decoded.decimals,
                 }))
             }
             _ => Err(ContractError::InvalidMessageType),
