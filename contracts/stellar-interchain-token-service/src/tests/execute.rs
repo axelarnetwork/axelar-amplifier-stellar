@@ -701,12 +701,20 @@ fn execute_register_token_metadata_fails() {
     let source_chain = client.its_hub_chain_name();
     let source_address = client.its_hub_address();
     let message_id = String::from_str(&env, "message_id");
+    let original_source_chain = String::from_str(&env, "ethereum");
 
-    let message = Message::RegisterTokenMetadata(RegisterTokenMetadata {
-        token_address: Bytes::new(&env),
-        decimals: 18,
-    });
-    let payload = message.abi_encode(&env).unwrap();
+    client
+        .mock_all_auths()
+        .set_trusted_chain(&original_source_chain);
+
+    let msg = HubMessage::ReceiveFromHub {
+        source_chain: original_source_chain,
+        message: Message::RegisterTokenMetadata(RegisterTokenMetadata {
+            token_address: Bytes::new(&env),
+            decimals: 18,
+        }),
+    };
+    let payload = msg.abi_encode(&env).unwrap();
     let payload_hash: BytesN<32> = env.crypto().keccak256(&payload).into();
 
     let messages = vec![
