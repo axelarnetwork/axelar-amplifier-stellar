@@ -719,4 +719,30 @@ mod tests {
         );
         assert_eq!(decoded.decimals, 18);
     }
+
+    #[test]
+    fn register_token_metadata_enum_and_struct_usage() {
+        let message_type = MessageType::RegisterTokenMetadata;
+        assert_eq!(message_type as u32, 5);
+
+        match message_type {
+            MessageType::RegisterTokenMetadata => {
+                assert!(true);
+            }
+            _ => panic!("Should match RegisterTokenMetadata"),
+        }
+
+        let register_msg = RegisterTokenMetadata {
+            messageType: MessageType::RegisterTokenMetadata.into(),
+            tokenAddress: alloy_primitives::Bytes::from(vec![1, 2, 3, 4]),
+            decimals: 6,
+        };
+
+        assert_eq!(
+            register_msg.messageType,
+            MessageType::RegisterTokenMetadata.into()
+        );
+        assert_eq!(register_msg.tokenAddress.len(), 4);
+        assert_eq!(register_msg.decimals, 6);
+    }
 }
