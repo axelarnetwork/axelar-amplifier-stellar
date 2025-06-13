@@ -542,6 +542,114 @@ mod tests {
     }
 
     #[test]
+    fn register_token_metadata_encode_decode() {
+        let env = Env::default();
+        let remote_chain = String::from_str(&env, "chain");
+
+        let cases = vec![
+            types::HubMessage::SendToHub {
+                destination_chain: remote_chain.clone(),
+                message: types::Message::RegisterTokenMetadata(types::RegisterTokenMetadata {
+                    token_address: Bytes::from_hex(&env, "00"),
+                    decimals: 0,
+                }),
+            },
+            types::HubMessage::SendToHub {
+                destination_chain: remote_chain.clone(),
+                message: types::Message::RegisterTokenMetadata(types::RegisterTokenMetadata {
+                    token_address: Bytes::from_hex(
+                        &env,
+                        "4F4495243837681061C4743b74B3eEdf548D56A5",
+                    ),
+                    decimals: 18,
+                }),
+            },
+            types::HubMessage::ReceiveFromHub {
+                source_chain: remote_chain.clone(),
+                message: types::Message::RegisterTokenMetadata(types::RegisterTokenMetadata {
+                    token_address: Bytes::from_hex(&env, "00"),
+                    decimals: 0,
+                }),
+            },
+            types::HubMessage::ReceiveFromHub {
+                source_chain: remote_chain,
+                message: types::Message::RegisterTokenMetadata(types::RegisterTokenMetadata {
+                    token_address: Bytes::from_hex(
+                        &env,
+                        "4F4495243837681061C4743b74B3eEdf548D56A5",
+                    ),
+                    decimals: 18,
+                }),
+            },
+        ];
+
+        let encoded: Vec<_> = cases
+            .iter()
+            .map(|original| {
+                hex::encode(
+                    assert_ok!(original.clone().abi_encode(&env))
+                        .to_buffer::<1024>()
+                        .as_slice(),
+                )
+            })
+            .collect();
+
+        goldie::assert_json!(encoded);
+
+        for original in cases {
+            let encoded = assert_ok!(original.clone().abi_encode(&env));
+            let decoded = HubMessage::abi_decode(&env, &encoded);
+            assert_eq!(original, decoded.unwrap());
+        }
+    }
+
+    #[test]
+    fn register_token_metadata_direct_encode_decode() {
+        let env = Env::default();
+
+        let cases = vec![
+            types::Message::RegisterTokenMetadata(types::RegisterTokenMetadata {
+                token_address: Bytes::from_hex(&env, "00"),
+                decimals: 0,
+            }),
+            types::Message::RegisterTokenMetadata(types::RegisterTokenMetadata {
+                token_address: Bytes::from_hex(&env, "4F4495243837681061C4743b74B3eEdf548D56A5"),
+                decimals: 18,
+            }),
+            types::Message::RegisterTokenMetadata(types::RegisterTokenMetadata {
+                token_address: Bytes::from_hex(&env, "4F4495243837681061C4743b74B3eEdf548D56A5"),
+                decimals: 255,
+            }),
+        ];
+
+        for original in cases {
+            let encoded = assert_ok!(original.clone().abi_encode(&env));
+            let decoded = Message::abi_decode(&env, &encoded);
+            assert_eq!(original, decoded.unwrap());
+        }
+    }
+
+    #[test]
+    fn register_token_metadata_decode_fails() {
+        let env = Env::default();
+
+        let short_payload = Bytes::from_slice(&env, &[0u8; 31]);
+        let result = Message::abi_decode(&env, &short_payload);
+        assert!(matches!(
+            result,
+            Err(ContractError::InsufficientMessageLength)
+        ));
+
+        let invalid_type = Bytes::from_slice(&env, &[255u8; 32]);
+        let result = Message::abi_decode(&env, &invalid_type);
+        assert!(matches!(result, Err(ContractError::InvalidMessageType)));
+
+        let invalid_encoding = Bytes::from_slice(&env, &[0u8; 64]);
+        let result = Message::abi_decode(&env, &invalid_encoding);
+        assert!(matches!(result, Err(ContractError::AbiDecodeFailed)));
+    }
+
+    #[test]
     fn abi_decode_fails_invalid_message_type() {
         let env = Env::default();
         let bytes = [0u8; 32];
