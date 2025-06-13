@@ -610,6 +610,11 @@ mod tests {
             decimals: 18,
         };
 
+        assert_eq!(
+            message.messageType,
+            MessageType::RegisterTokenMetadata.into()
+        );
+
         let encoded = message.abi_encode_params();
         let decoded = RegisterTokenMetadata::abi_decode_params(&encoded, true).unwrap();
 
@@ -622,25 +627,6 @@ mod tests {
             alloy_primitives::Bytes::from(vec![0u8; 20])
         );
         assert_eq!(decoded.decimals, 18);
-
-        let message = RegisterTokenMetadata {
-            messageType: MessageType::RegisterTokenMetadata.into(),
-            tokenAddress: alloy_primitives::Bytes::from(vec![255u8; 20]),
-            decimals: 255,
-        };
-
-        let encoded = message.abi_encode_params();
-        let decoded = RegisterTokenMetadata::abi_decode_params(&encoded, true).unwrap();
-
-        assert_eq!(
-            decoded.messageType,
-            MessageType::RegisterTokenMetadata.into()
-        );
-        assert_eq!(
-            decoded.tokenAddress,
-            alloy_primitives::Bytes::from(vec![255u8; 20])
-        );
-        assert_eq!(decoded.decimals, 255);
     }
 
     #[test]
@@ -690,35 +676,6 @@ mod tests {
     }
 
     #[test]
-    fn register_token_metadata_struct_definition() {
-        let message = RegisterTokenMetadata {
-            messageType: MessageType::RegisterTokenMetadata.into(),
-            tokenAddress: alloy_primitives::Bytes::from(vec![0u8; 20]),
-            decimals: 18,
-        };
-
-        assert_eq!(
-            message.messageType,
-            MessageType::RegisterTokenMetadata.into()
-        );
-        assert_eq!(message.tokenAddress.len(), 20);
-        assert_eq!(message.decimals, 18);
-
-        let encoded = message.abi_encode_params();
-        let decoded = RegisterTokenMetadata::abi_decode_params(&encoded, true).unwrap();
-
-        assert_eq!(
-            decoded.messageType,
-            MessageType::RegisterTokenMetadata.into()
-        );
-        assert_eq!(
-            decoded.tokenAddress,
-            alloy_primitives::Bytes::from(vec![0u8; 20])
-        );
-        assert_eq!(decoded.decimals, 18);
-    }
-
-    #[test]
     fn register_token_metadata_message_direct() {
         let env = Env::default();
         let token_address = Bytes::from_hex(&env, "4F4495243837681061C4743b74B3eEdf548D56A5");
@@ -741,44 +698,5 @@ mod tests {
         );
         assert_eq!(register_struct.tokenAddress.len(), 5);
         assert_eq!(register_struct.decimals, 6);
-    }
-
-    #[test]
-    fn message_type_and_struct_coverage() {
-        let register_metadata = RegisterTokenMetadata {
-            messageType: MessageType::RegisterTokenMetadata.into(),
-            tokenAddress: alloy_primitives::Bytes::from(vec![0x42; 20]),
-            decimals: 18,
-        };
-
-        assert_eq!(
-            register_metadata.messageType,
-            MessageType::RegisterTokenMetadata.into()
-        );
-        assert_eq!(register_metadata.tokenAddress.len(), 20);
-        assert_eq!(register_metadata.decimals, 18);
-
-        let encoded = register_metadata.abi_encode_params();
-        let decoded = RegisterTokenMetadata::abi_decode_params(&encoded, true).unwrap();
-
-        assert_eq!(decoded.messageType, register_metadata.messageType);
-        assert_eq!(decoded.tokenAddress, register_metadata.tokenAddress);
-        assert_eq!(decoded.decimals, register_metadata.decimals);
-    }
-
-    #[test]
-    fn message_type_invalid_and_register_token_metadata_usage() {
-        let mut s = RegisterTokenMetadata {
-            messageType: MessageType::RegisterTokenMetadata.into(),
-            tokenAddress: alloy_primitives::Bytes::from(vec![9, 8, 7, 6, 5]),
-            decimals: 99,
-        };
-        s.decimals += 1;
-        assert_eq!(s.decimals, 100);
-        assert_eq!(
-            s.tokenAddress,
-            alloy_primitives::Bytes::from(vec![9, 8, 7, 6, 5])
-        );
-        assert_eq!(s.messageType, MessageType::RegisterTokenMetadata.into());
     }
 }
