@@ -16,7 +16,7 @@ sol! {
         DeployTokenManager, // note, this case is not supported by the ITS hub
         SendToHub,
         ReceiveFromHub,
-        LinkToken, // reserved for future implementation; maintained for enum ordering
+        // add LinkToken here to maintain compatibility with the ITS spec
         RegisterTokenMetadata,
     }
 
