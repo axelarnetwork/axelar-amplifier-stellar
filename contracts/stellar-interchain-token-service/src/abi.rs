@@ -14,9 +14,10 @@ sol! {
         InterchainTransfer,
         DeployInterchainToken,
         DeployTokenManager, // note, this case is not supported by the ITS hub
-        RegisterTokenMetadata,
         SendToHub,
-        ReceiveFromHub
+        ReceiveFromHub,
+        LinkToken, // reserved for future implementation; maintained for enum ordering
+        RegisterTokenMetadata,
     }
 
     struct InterchainTransfer {
