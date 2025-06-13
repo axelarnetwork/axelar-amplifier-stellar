@@ -646,6 +646,18 @@ mod tests {
     }
 
     #[test]
+    fn register_token_metadata_invalid_message_type() {
+        let env = Env::default();
+        let message = Message::RegisterTokenMetadata(types::RegisterTokenMetadata {
+            token_address: Bytes::from_hex(&env, "00"),
+            decimals: 18,
+        });
+        let encoded = message.abi_encode(&env).unwrap();
+        let result = HubMessage::abi_decode(&env, &encoded);
+        assert!(matches!(result, Err(ContractError::InvalidMessageType)));
+    }
+
+    #[test]
     fn abi_decode_fails_invalid_message_type() {
         let env = Env::default();
         let bytes = [0u8; 32];

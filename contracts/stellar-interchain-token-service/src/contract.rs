@@ -721,7 +721,7 @@ impl CustomAxelarExecutable for InterchainTokenService {
                 Self::execute_transfer_message(env, &source_chain, message_id, message)
             }
             Message::DeployInterchainToken(message) => Self::execute_deploy_message(env, message),
-            _ => Err(ContractError::InvalidMessageType),
+            Message::RegisterTokenMetadata(_) => Err(ContractError::InvalidMessageType),
         }?;
 
         Ok(())
