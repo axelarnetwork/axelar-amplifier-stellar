@@ -16,8 +16,7 @@ sol! {
         DeployTokenManager, // note, this case is not supported by the ITS hub
         SendToHub,
         ReceiveFromHub,
-        // add LinkToken here to maintain compatibility with the ITS spec
-        RegisterTokenMetadata,
+        RegisterTokenMetadata, // add LinkToken before RegisterTokenMetadata to maintain compatibility with the ITS spec
     }
 
     struct InterchainTransfer {
@@ -721,28 +720,36 @@ mod tests {
     }
 
     #[test]
-    fn register_token_metadata_enum_and_struct_usage() {
-        let message_type = MessageType::RegisterTokenMetadata;
-        assert_eq!(message_type as u32, 5);
+    fn register_token_metadata_message_direct() {
+        let env = Env::default();
 
-        match message_type {
-            MessageType::RegisterTokenMetadata => {
-                assert!(true);
+        let message = types::Message::RegisterTokenMetadata(types::RegisterTokenMetadata {
+            token_address: Bytes::from_hex(&env, "4F4495243837681061C4743b74B3eEdf548D56A5"),
+            decimals: 18,
+        });
+
+        let encoded = message.abi_encode(&env).unwrap();
+        let decoded = Message::abi_decode(&env, &encoded).unwrap();
+
+        match decoded {
+            Message::RegisterTokenMetadata(decoded_msg) => {
+                assert_eq!(decoded_msg.decimals, 18);
+                assert_eq!(decoded_msg.token_address.len(), 20);
             }
-            _ => panic!("Should match RegisterTokenMetadata"),
+            _ => panic!("Should decode to RegisterTokenMetadata"),
         }
 
-        let register_msg = RegisterTokenMetadata {
+        let register_struct = RegisterTokenMetadata {
             messageType: MessageType::RegisterTokenMetadata.into(),
-            tokenAddress: alloy_primitives::Bytes::from(vec![1, 2, 3, 4]),
+            tokenAddress: alloy_primitives::Bytes::from(vec![1, 2, 3, 4, 5]),
             decimals: 6,
         };
 
         assert_eq!(
-            register_msg.messageType,
+            register_struct.messageType,
             MessageType::RegisterTokenMetadata.into()
         );
-        assert_eq!(register_msg.tokenAddress.len(), 4);
-        assert_eq!(register_msg.decimals, 6);
+        assert_eq!(register_struct.tokenAddress.len(), 5);
+        assert_eq!(register_struct.decimals, 6);
     }
 }
