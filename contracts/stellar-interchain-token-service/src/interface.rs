@@ -231,6 +231,34 @@ pub trait InterchainTokenServiceInterface:
         gas_token: Option<Token>,
     ) -> Result<BytesN<32>, ContractError>;
 
+    /// Registers token metadata with the ITS Hub.
+    ///
+    /// This function validates the token's metadata and sends a message to the ITS Hub
+    /// to register the token's metadata (address and decimals). The token must be a valid
+    /// token contract that implements the required metadata interface.
+    ///
+    /// # Arguments
+    /// - `token_address`: The address of the token whose metadata is being registered.
+    /// - `spender`: The address that will pay for the cross-chain gas.
+    /// - `gas_token`: An optional gas token used to pay for cross-chain message execution.
+    ///
+    /// # Returns
+    /// - `Ok(())`: If the metadata was successfully registered.
+    ///
+    /// # Errors
+    /// - [`ContractError::InvalidTokenAddress`]: If the token address is invalid or the token contract doesn't implement the required interface.
+    /// - [`ContractError::TokenInvocationError`]: If the token contract call fails.
+    /// - Any error propagated from `pay_gas_and_call_contract`.
+    ///
+    /// # Authorization
+    /// - `spender` needs to authorize `pay_gas` call to the gas service.
+    fn register_token_metadata(
+        env: &Env,
+        token_address: Address,
+        spender: Address,
+        gas_token: Option<Token>,
+    ) -> Result<(), ContractError>;
+
     /// Initiates a cross-chain token transfer.
     ///
     /// Takes tokens from the caller on the source chain and initiates a transfer
