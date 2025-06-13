@@ -627,6 +627,10 @@ mod tests {
             alloy_primitives::Bytes::from(vec![0u8; 20])
         );
         assert_eq!(decoded.decimals, 18);
+
+        assert_eq!(decoded.messageType, message.messageType);
+        assert_eq!(decoded.tokenAddress, message.tokenAddress);
+        assert_eq!(decoded.decimals, message.decimals);
     }
 
     #[test]
