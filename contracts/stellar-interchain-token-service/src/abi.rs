@@ -16,7 +16,7 @@ sol! {
         DeployTokenManager, // note, this case is not supported by the ITS hub
         SendToHub,
         ReceiveFromHub,
-        RegisterTokenMetadata, // add LinkToken before RegisterTokenMetadata to maintain compatibility with the ITS spec
+        RegisterTokenMetadata, // note, add LinkToken before RegisterTokenMetadata to maintain compatibility with the ITS
     }
 
     struct InterchainTransfer {
@@ -821,5 +821,29 @@ mod tests {
         assert_eq!(decoded.messageType, register_metadata.messageType);
         assert_eq!(decoded.tokenAddress, register_metadata.tokenAddress);
         assert_eq!(decoded.decimals, register_metadata.decimals);
+    }
+
+    #[test]
+    fn message_type_invalid_and_register_token_metadata_usage() {
+        // Explicitly construct and match on __Invalid
+        let invalid = MessageType::__Invalid;
+        match invalid {
+            MessageType::__Invalid => assert!(true),
+            _ => unreachable!(),
+        }
+
+        // Construct RegisterTokenMetadata and use it
+        let mut s = RegisterTokenMetadata {
+            messageType: MessageType::RegisterTokenMetadata.into(),
+            tokenAddress: alloy_primitives::Bytes::from(vec![9, 8, 7, 6, 5]),
+            decimals: 99,
+        };
+        s.decimals += 1;
+        assert_eq!(s.decimals, 100);
+        assert_eq!(
+            s.tokenAddress,
+            alloy_primitives::Bytes::from(vec![9, 8, 7, 6, 5])
+        );
+        assert_eq!(s.messageType, MessageType::RegisterTokenMetadata.into());
     }
 }
