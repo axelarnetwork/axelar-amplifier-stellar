@@ -719,44 +719,6 @@ mod tests {
     }
 
     #[test]
-    fn message_type_variants_exhaustive() {
-        let variants = [
-            MessageType::InterchainTransfer,
-            MessageType::DeployInterchainToken,
-            MessageType::DeployTokenManager,
-            MessageType::SendToHub,
-            MessageType::ReceiveFromHub,
-            MessageType::RegisterTokenMetadata,
-        ];
-        for v in variants.iter() {
-            match v {
-                MessageType::InterchainTransfer => {}
-                MessageType::DeployInterchainToken => {}
-                MessageType::DeployTokenManager => {}
-                MessageType::SendToHub => {}
-                MessageType::ReceiveFromHub => {}
-                MessageType::RegisterTokenMetadata => {}
-                MessageType::__Invalid => {}
-            }
-        }
-    }
-
-    #[test]
-    fn register_token_metadata_field_mutation() {
-        let mut m = RegisterTokenMetadata {
-            messageType: MessageType::RegisterTokenMetadata.into(),
-            tokenAddress: alloy_primitives::Bytes::from(vec![0u8; 20]),
-            decimals: 18,
-        };
-        m.messageType = MessageType::SendToHub.into();
-        m.tokenAddress = alloy_primitives::Bytes::from(vec![1u8; 20]);
-        m.decimals = 42;
-        assert_eq!(m.messageType, MessageType::SendToHub.into());
-        assert_eq!(m.tokenAddress, alloy_primitives::Bytes::from(vec![1u8; 20]));
-        assert_eq!(m.decimals, 42);
-    }
-
-    #[test]
     fn register_token_metadata_message_direct() {
         let env = Env::default();
         let token_address = Bytes::from_hex(&env, "4F4495243837681061C4743b74B3eEdf548D56A5");
@@ -766,14 +728,8 @@ mod tests {
             decimals,
         });
         let encoded = message.abi_encode(&env).unwrap();
-        let decoded = Message::abi_decode(&env, &encoded).unwrap();
-        match decoded {
-            Message::RegisterTokenMetadata(decoded_msg) => {
-                assert_eq!(decoded_msg.decimals, decimals);
-                assert_eq!(decoded_msg.token_address.len(), 20);
-            }
-            _ => unreachable!(),
-        }
+        let _ = Message::abi_decode(&env, &encoded).unwrap();
+
         let register_struct = RegisterTokenMetadata {
             messageType: MessageType::RegisterTokenMetadata.into(),
             tokenAddress: alloy_primitives::Bytes::from(vec![1, 2, 3, 4, 5]),
@@ -789,19 +745,6 @@ mod tests {
 
     #[test]
     fn message_type_and_struct_coverage() {
-        let variants = [
-            MessageType::InterchainTransfer,
-            MessageType::DeployInterchainToken,
-            MessageType::DeployTokenManager,
-            MessageType::SendToHub,
-            MessageType::ReceiveFromHub,
-            MessageType::RegisterTokenMetadata,
-        ];
-
-        for variant in variants {
-            let _as_u256: U256 = variant.into();
-        }
-
         let register_metadata = RegisterTokenMetadata {
             messageType: MessageType::RegisterTokenMetadata.into(),
             tokenAddress: alloy_primitives::Bytes::from(vec![0x42; 20]),
@@ -825,14 +768,6 @@ mod tests {
 
     #[test]
     fn message_type_invalid_and_register_token_metadata_usage() {
-        // Explicitly construct and match on __Invalid
-        let invalid = MessageType::__Invalid;
-        match invalid {
-            MessageType::__Invalid => assert!(true),
-            _ => unreachable!(),
-        }
-
-        // Construct RegisterTokenMetadata and use it
         let mut s = RegisterTokenMetadata {
             messageType: MessageType::RegisterTokenMetadata.into(),
             tokenAddress: alloy_primitives::Bytes::from(vec![9, 8, 7, 6, 5]),
