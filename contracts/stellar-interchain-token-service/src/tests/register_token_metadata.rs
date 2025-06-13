@@ -56,24 +56,24 @@ fn register_token_metadata_succeeds() {
         gas_token_client.transfer(&spender, gas_service.address.clone(), gas_token.amount)
     );
 
-    let gas_service_auth = auth_invocation!(
+    let pay_gas_auth = auth_invocation!(
         spender,
         gas_service.pay_gas(
             client.address.clone(),
-            its_hub_chain,
-            its_hub_address,
+            its_hub_chain.clone(),
+            its_hub_address.clone(),
             payload,
-            spender.clone(),
+            &spender,
             gas_token.clone(),
-            Bytes::new(&env)
+            &Bytes::new(&env)
         ),
         transfer_auth
     );
 
     let register_token_metadata_auth = auth_invocation!(
         spender,
-        client.register_token_metadata(token.address(), spender, Some(gas_token)),
-        gas_service_auth
+        client.register_token_metadata(token.address(), spender, Some(gas_token.clone())),
+        pay_gas_auth
     );
 
     assert_eq!(env.auths(), register_token_metadata_auth);
