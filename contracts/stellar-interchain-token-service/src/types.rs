@@ -4,6 +4,7 @@ use stellar_axelar_std::{contracttype, soroban_sdk, Bytes, BytesN, String};
 pub enum Message {
     InterchainTransfer(InterchainTransfer),
     DeployInterchainToken(DeployInterchainToken),
+    RegisterTokenMetadata(RegisterTokenMetadata),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -22,6 +23,12 @@ pub struct DeployInterchainToken {
     pub symbol: String,
     pub decimals: u8,
     pub minter: Option<Bytes>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct RegisterTokenMetadata {
+    pub token_address: Bytes,
+    pub decimals: u8,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

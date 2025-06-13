@@ -17,14 +17,16 @@ use stellar_interchain_token::InterchainTokenClient;
 use crate::error::ContractError;
 use crate::event::{
     InterchainTokenDeploymentStartedEvent, InterchainTransferReceivedEvent,
-    InterchainTransferSentEvent, TrustedChainRemovedEvent, TrustedChainSetEvent,
+    InterchainTransferSentEvent, TokenMetadataRegisteredEvent, TrustedChainRemovedEvent,
+    TrustedChainSetEvent,
 };
 use crate::flow_limit::FlowDirection;
 use crate::interface::InterchainTokenServiceInterface;
 use crate::storage::{self, TokenIdConfigValue};
 use crate::token_metadata::TokenMetadataExt;
 use crate::types::{
-    DeployInterchainToken, HubMessage, InterchainTransfer, Message, TokenManagerType,
+    DeployInterchainToken, HubMessage, InterchainTransfer, Message, RegisterTokenMetadata,
+    TokenManagerType,
 };
 use crate::{deployer, flow_limit, token_handler, token_id, token_metadata};
 
@@ -257,6 +259,40 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         Self::deploy_remote_token(env, spender, token_id.clone(), destination_chain, gas_token)?;
 
         Ok(token_id)
+    }
+
+    #[when_not_paused]
+    fn register_token_metadata(
+        env: &Env,
+        token_address: Address,
+        spender: Address,
+        gas_token: Option<Token>,
+    ) -> Result<(), ContractError> {
+        spender.require_auth();
+
+        let token_metadata =
+            token_metadata::token_metadata(env, &token_address, &Self::native_token_address(env))?;
+
+        let message = Message::RegisterTokenMetadata(RegisterTokenMetadata {
+            token_address: token_address.to_string_bytes(),
+            decimals: token_metadata.decimal as u8,
+        });
+
+        TokenMetadataRegisteredEvent {
+            token_address,
+            decimals: token_metadata.decimal,
+        }
+        .emit(env);
+
+        Self::pay_gas_and_call_contract(
+            env,
+            spender,
+            Self::its_hub_chain_name(env),
+            message,
+            gas_token,
+        )?;
+
+        Ok(())
     }
 
     #[when_not_paused]
@@ -685,6 +721,7 @@ impl CustomAxelarExecutable for InterchainTokenService {
                 Self::execute_transfer_message(env, &source_chain, message_id, message)
             }
             Message::DeployInterchainToken(message) => Self::execute_deploy_message(env, message),
+            _ => Err(ContractError::InvalidMessageType),
         }?;
 
         Ok(())

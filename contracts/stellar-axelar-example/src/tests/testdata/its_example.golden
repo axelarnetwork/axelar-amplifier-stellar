@@ -26,7 +26,7 @@ MessageApprovedEvent {
         message_id: String(transfer-message-id),
         source_address: String(its_hub_address),
         contract_address: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABMPZO),
-        payload_hash: BytesN<32>(228, 211, 2, 123, 50, 148, 154, 203, 234, 45, 207, 167, 126, 77, 32, 64, 146, 91, 140, 185, 176, 232, 187, 143, 101, 144, 146, 191, 79, 150, 67, 209),
+        payload_hash: BytesN<32>(208, 141, 102, 200, 11, 126, 215, 89, 99, 240, 72, 55, 221, 55, 246, 13, 131, 105, 159, 145, 208, 6, 9, 225, 52, 158, 128, 183, 160, 43, 192, 240),
     },
 }
 

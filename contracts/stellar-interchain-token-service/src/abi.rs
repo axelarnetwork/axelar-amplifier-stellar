@@ -14,6 +14,7 @@ sol! {
         InterchainTransfer,
         DeployInterchainToken,
         DeployTokenManager, // note, this case is not supported by the ITS hub
+        RegisterTokenMetadata,
         SendToHub,
         ReceiveFromHub
     }
@@ -34,6 +35,11 @@ sol! {
         string symbol;
         uint8 decimals;
         bytes minter;
+    }
+
+    struct RegisterTokenMetadata {
+        bytes tokenAddress;
+        uint8 decimals;
     }
 
     struct SendToHub {
@@ -80,6 +86,14 @@ impl Message {
                 symbol: to_std_string(symbol)?,
                 decimals,
                 minter: into_vec(minter).into(),
+            }
+            .abi_encode_params(),
+            Self::RegisterTokenMetadata(types::RegisterTokenMetadata {
+                token_address,
+                decimals,
+            }) => RegisterTokenMetadata {
+                tokenAddress: token_address.to_alloc_vec().into(),
+                decimals,
             }
             .abi_encode_params(),
         };
