@@ -731,13 +731,11 @@ mod tests {
         let encoded = message.abi_encode(&env).unwrap();
         let decoded = Message::abi_decode(&env, &encoded).unwrap();
 
-        match decoded {
-            Message::RegisterTokenMetadata(decoded_msg) => {
-                assert_eq!(decoded_msg.decimals, 18);
-                assert_eq!(decoded_msg.token_address.len(), 20);
-            }
-            _ => panic!("Should decode to RegisterTokenMetadata"),
-        }
+        let Message::RegisterTokenMetadata(decoded_msg) = decoded else {
+            panic!("Should decode to RegisterTokenMetadata");
+        };
+        assert_eq!(decoded_msg.decimals, 18);
+        assert_eq!(decoded_msg.token_address.len(), 20);
 
         let register_struct = RegisterTokenMetadata {
             messageType: MessageType::RegisterTokenMetadata.into(),
