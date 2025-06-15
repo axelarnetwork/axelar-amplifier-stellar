@@ -122,6 +122,6 @@ fn register_token_metadata_fails_with_unauthorized() {
 
     assert_auth_err!(
         spender,
-        client.register_token_metadata(&token.address(), &spender, &Some(gas_token))
+        client.register_token_metadata(&token.address(), &spender, &Some(gas_token.clone()))
     );
 }
