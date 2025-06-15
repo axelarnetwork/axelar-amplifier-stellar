@@ -90,7 +90,7 @@ fn register_token_metadata_fails_when_paused() {
     client.mock_all_auths().pause();
 
     assert_contract_err!(
-        client.try_register_token_metadata(&token.address(), &spender, &Some(gas_token.clone())),
+        client.try_register_token_metadata(&token.address(), &spender, &Some(gas_token)),
         ContractError::ContractPaused
     );
 }
@@ -122,6 +122,6 @@ fn register_token_metadata_fails_with_unauthorized() {
 
     assert_auth_err!(
         spender,
-        client.register_token_metadata(&token.address(), &spender, &Some(gas_token.clone()))
+        client.register_token_metadata(&token.address(), &spender, &Some(gas_token))
     );
 }
