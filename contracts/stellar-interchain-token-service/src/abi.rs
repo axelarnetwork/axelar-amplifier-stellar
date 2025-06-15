@@ -603,6 +603,34 @@ mod tests {
     }
 
     #[test]
+    fn register_token_metadata_hub_message_encode_decode() {
+        let env = Env::default();
+        let chain = String::from_str(&env, "test-chain");
+        let message = types::Message::RegisterTokenMetadata(types::RegisterTokenMetadata {
+            token_address: Bytes::from_hex(&env, "00"),
+            decimals: 18,
+        });
+
+        let send_to_hub = HubMessage::SendToHub {
+            destination_chain: chain.clone(),
+            message: message.clone(),
+        };
+
+        let receive_from_hub = HubMessage::ReceiveFromHub {
+            source_chain: chain,
+            message,
+        };
+
+        let send_encoded = send_to_hub.clone().abi_encode(&env).unwrap();
+        let send_decoded = HubMessage::abi_decode(&env, &send_encoded).unwrap();
+        assert_eq!(send_to_hub, send_decoded);
+
+        let receive_encoded = receive_from_hub.clone().abi_encode(&env).unwrap();
+        let receive_decoded = HubMessage::abi_decode(&env, &receive_encoded).unwrap();
+        assert_eq!(receive_from_hub, receive_decoded);
+    }
+
+    #[test]
     fn register_token_metadata_comprehensive() {
         let mut register_metadata = RegisterTokenMetadata {
             messageType: MessageType::RegisterTokenMetadata.into(),
@@ -610,7 +638,10 @@ mod tests {
             decimals: 18,
         };
 
-        assert_eq!(register_metadata.messageType, MessageType::RegisterTokenMetadata.into());
+        assert_eq!(
+            register_metadata.messageType,
+            MessageType::RegisterTokenMetadata.into()
+        );
         assert_eq!(register_metadata.tokenAddress.len(), 20);
         assert_eq!(register_metadata.decimals, 18);
 
