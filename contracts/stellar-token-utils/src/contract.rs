@@ -21,8 +21,10 @@ impl TokenUtilsInterface for TokenUtils {
     ///
     /// # Arguments
     /// * `asset_xdr` - Bytes representing the XDR encoding of a Stellar asset
-    ///   - Must be at least 32 bytes (minimum for a valid Stellar address)
-    ///   - Contains asset code (4 or 12 bytes) and issuer address (32 bytes)
+    ///   - Must be at least 40 bytes to accommodate:
+    ///     - Asset type discriminant (4 bytes)
+    ///     - Asset code (4 bytes for AlphaNum4, 12 bytes for AlphaNum12)
+    ///     - Issuer Ed25519 public key (32 bytes)
     ///
     /// # Returns
     /// * `Ok(Address)` - The deployed Stellar Asset Contract address (existing or newly deployed)
@@ -45,7 +47,7 @@ impl TokenUtilsInterface for TokenUtils {
     /// // Convert base64 to bytes for contract input
     /// ```
     fn deploy_stellar_asset_contract(env: Env, asset_xdr: Bytes) -> Result<Address, ContractError> {
-        ensure!(asset_xdr.len() >= 32, ContractError::InvalidAssetXdr);
+        ensure!(asset_xdr.len() >= 40, ContractError::InvalidAssetXdr);
 
         let deployer = env.deployer().with_stellar_asset(asset_xdr);
         let deployed_address = deployer.deployed_address();

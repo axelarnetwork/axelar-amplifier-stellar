@@ -106,7 +106,10 @@ fn deploy_stellar_asset_contract_fails_empty_asset_xdr() {
 #[test]
 fn deploy_stellar_asset_contract_fails_short_asset_xdr() {
     let (env, client) = setup();
-    let short_asset_xdr = bytes!(&env, 0x0123456789abcdef0123456789abcdef);
+    let short_asset_xdr = bytes!(
+        &env,
+        0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcd
+    );
 
     assert_contract_err!(
         client.try_deploy_stellar_asset_contract(&short_asset_xdr),
