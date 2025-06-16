@@ -67,13 +67,13 @@ fn assert_valid_contract_address(address: &Address) {
 }
 
 #[test]
-fn deploy_stellar_asset_contract_succeeds_with_valid_xdr() {
+fn create_stellar_asset_contract_succeeds_with_valid_xdr() {
     let (env, client) = setup();
     let asset_code = "USDC";
     let issuer = create_issuer(&env, TEST_ISSUER_1);
     let asset_xdr = create_asset_xdr(&env, asset_code, &issuer);
 
-    let deployed_address = client.deploy_stellar_asset_contract(&asset_xdr);
+    let deployed_address = client.create_stellar_asset_contract(&asset_xdr);
 
     assert_valid_contract_address(&deployed_address);
 
@@ -93,18 +93,18 @@ fn deploy_stellar_asset_contract_succeeds_with_valid_xdr() {
 }
 
 #[test]
-fn deploy_stellar_asset_contract_fails_empty_asset_xdr() {
+fn create_stellar_asset_contract_fails_empty_asset_xdr() {
     let (env, client) = setup();
     let empty_asset_xdr = Bytes::new(&env);
 
     assert_contract_err!(
-        client.try_deploy_stellar_asset_contract(&empty_asset_xdr),
+        client.try_create_stellar_asset_contract(&empty_asset_xdr),
         ContractError::InvalidAssetXdr
     );
 }
 
 #[test]
-fn deploy_stellar_asset_contract_fails_short_asset_xdr() {
+fn create_stellar_asset_contract_fails_short_asset_xdr() {
     let (env, client) = setup();
     let short_asset_xdr = bytes!(
         &env,
@@ -112,13 +112,13 @@ fn deploy_stellar_asset_contract_fails_short_asset_xdr() {
     );
 
     assert_contract_err!(
-        client.try_deploy_stellar_asset_contract(&short_asset_xdr),
+        client.try_create_stellar_asset_contract(&short_asset_xdr),
         ContractError::InvalidAssetXdr
     );
 }
 
 #[test]
-fn deploy_stellar_asset_contract_different_assets_succeed_and_address_derivation_unchanged() {
+fn create_stellar_asset_contract_different_assets_succeed_and_address_derivation_unchanged() {
     let (env, client) = setup();
     let issuer = create_issuer(&env, TEST_ISSUER_1);
 
@@ -127,7 +127,7 @@ fn deploy_stellar_asset_contract_different_assets_succeed_and_address_derivation
         .iter()
         .map(|&code| {
             let asset_xdr = create_asset_xdr(&env, code, &issuer);
-            let address = client.deploy_stellar_asset_contract(&asset_xdr);
+            let address = client.create_stellar_asset_contract(&asset_xdr);
 
             assert_valid_contract_address(&address);
 
@@ -140,7 +140,7 @@ fn deploy_stellar_asset_contract_different_assets_succeed_and_address_derivation
 }
 
 #[test]
-fn deploy_stellar_asset_contract_same_asset_code_different_issuers_address_derivation_unchanged() {
+fn create_stellar_asset_contract_same_asset_code_different_issuers_address_derivation_unchanged() {
     let (env, client) = setup();
     let issuer1 = create_issuer(&env, TEST_ISSUER_1);
     let issuer2 = create_issuer(&env, TEST_ISSUER_2);
@@ -149,8 +149,8 @@ fn deploy_stellar_asset_contract_same_asset_code_different_issuers_address_deriv
     let asset_xdr1 = create_asset_xdr(&env, asset_code, &issuer1);
     let asset_xdr2 = create_asset_xdr(&env, asset_code, &issuer2);
 
-    let address1 = client.deploy_stellar_asset_contract(&asset_xdr1);
-    let address2 = client.deploy_stellar_asset_contract(&asset_xdr2);
+    let address1 = client.create_stellar_asset_contract(&asset_xdr1);
+    let address2 = client.create_stellar_asset_contract(&asset_xdr2);
 
     let addresses = [address1, address2];
     let address_strings = address_strings!(addresses);
@@ -159,12 +159,12 @@ fn deploy_stellar_asset_contract_same_asset_code_different_issuers_address_deriv
 }
 
 #[test]
-fn deploy_stellar_asset_contract_alphanum4() {
+fn create_stellar_asset_contract_alphanum4() {
     let (env, client) = setup();
     let issuer = create_issuer(&env, TEST_ISSUER_1);
 
     let alphanum4_xdr = create_asset_xdr(&env, "TEST", &issuer);
-    let alphanum4_address = client.deploy_stellar_asset_contract(&alphanum4_xdr);
+    let alphanum4_address = client.create_stellar_asset_contract(&alphanum4_xdr);
 
     assert_valid_contract_address(&alphanum4_address);
 
@@ -173,12 +173,12 @@ fn deploy_stellar_asset_contract_alphanum4() {
 }
 
 #[test]
-fn deploy_stellar_asset_contract_alphanum12() {
+fn create_stellar_asset_contract_alphanum12() {
     let (env, client) = setup();
     let issuer = create_issuer(&env, TEST_ISSUER_1);
 
     let alphanum12_xdr = create_asset_xdr(&env, "TESTLONGNAME", &issuer);
-    let alphanum12_address = client.deploy_stellar_asset_contract(&alphanum12_xdr);
+    let alphanum12_address = client.create_stellar_asset_contract(&alphanum12_xdr);
 
     assert_valid_contract_address(&alphanum12_address);
 
@@ -187,15 +187,15 @@ fn deploy_stellar_asset_contract_alphanum12() {
 }
 
 #[test]
-fn deploy_stellar_asset_contract_same_issuer_different_asset_code_address_derivation_unchanged() {
+fn create_stellar_asset_contract_same_issuer_different_asset_code_address_derivation_unchanged() {
     let (env, client) = setup();
     let issuer = create_issuer(&env, TEST_ISSUER_1);
 
     let alphanum4_xdr = create_asset_xdr(&env, "TEST", &issuer);
-    let alphanum4_address = client.deploy_stellar_asset_contract(&alphanum4_xdr);
+    let alphanum4_address = client.create_stellar_asset_contract(&alphanum4_xdr);
 
     let alphanum12_xdr = create_asset_xdr(&env, "TESTLONGNAME", &issuer);
-    let alphanum12_address = client.deploy_stellar_asset_contract(&alphanum12_xdr);
+    let alphanum12_address = client.create_stellar_asset_contract(&alphanum12_xdr);
 
     let addresses = [alphanum4_address, alphanum12_address];
     let address_strings = address_strings!(addresses);
@@ -204,15 +204,15 @@ fn deploy_stellar_asset_contract_same_issuer_different_asset_code_address_deriva
 }
 
 #[test]
-fn deploy_stellar_asset_contract_consecutive_calls_return_same_address() {
+fn create_stellar_asset_contract_consecutive_calls_return_same_address() {
     let (env, client) = setup();
     let issuer = create_issuer(&env, TEST_ISSUER_1);
     let asset_xdr = create_asset_xdr(&env, "REPEAT", &issuer);
 
-    let first_address = client.deploy_stellar_asset_contract(&asset_xdr);
+    let first_address = client.create_stellar_asset_contract(&asset_xdr);
     assert_valid_contract_address(&first_address);
 
-    let second_address = client.deploy_stellar_asset_contract(&asset_xdr);
+    let second_address = client.create_stellar_asset_contract(&asset_xdr);
     assert_eq!(
         first_address, second_address,
         "Consecutive calls should return the same address (idempotent behavior)"
@@ -220,13 +220,13 @@ fn deploy_stellar_asset_contract_consecutive_calls_return_same_address() {
 }
 
 #[test]
-fn deploy_stellar_asset_contract_multiple_redeploys_return_same_address() {
+fn create_stellar_asset_contract_multiple_redeploys_return_same_address() {
     let (env, client) = setup();
     let issuer = create_issuer(&env, TEST_ISSUER_1);
     let asset_xdr = create_asset_xdr(&env, "MULTI", &issuer);
 
     let addresses: Vec<Address> = (0..5)
-        .map(|_| client.deploy_stellar_asset_contract(&asset_xdr))
+        .map(|_| client.create_stellar_asset_contract(&asset_xdr))
         .collect();
 
     for address in &addresses {
@@ -239,14 +239,14 @@ fn deploy_stellar_asset_contract_multiple_redeploys_return_same_address() {
 }
 
 #[test]
-fn deploy_stellar_asset_contract_idempotent_deployment() {
+fn create_stellar_asset_contract_idempotent_deployment() {
     let (env, client) = setup();
     let issuer = create_issuer(&env, TEST_ISSUER_1);
     let asset_xdr = create_asset_xdr(&env, "BTC", &issuer);
 
-    let first_address = client.deploy_stellar_asset_contract(&asset_xdr);
+    let first_address = client.create_stellar_asset_contract(&asset_xdr);
 
-    let second_address = client.deploy_stellar_asset_contract(&asset_xdr);
+    let second_address = client.create_stellar_asset_contract(&asset_xdr);
     assert_eq!(
         first_address, second_address,
         "Function should be idempotent and return the same address when asset is already deployed"
@@ -254,7 +254,7 @@ fn deploy_stellar_asset_contract_idempotent_deployment() {
 }
 
 #[test]
-fn deploy_stellar_asset_contract_idempotent_behavior_comprehensive() {
+fn create_stellar_asset_contract_idempotent_behavior_comprehensive() {
     let (env, client) = setup();
     let issuer = create_issuer(&env, TEST_ISSUER_1);
 
@@ -268,17 +268,17 @@ fn deploy_stellar_asset_contract_idempotent_behavior_comprehensive() {
     for (asset_code, description) in test_cases {
         let asset_xdr = create_asset_xdr(&env, asset_code, &issuer);
 
-        let first_address = client.deploy_stellar_asset_contract(&asset_xdr);
+        let first_address = client.create_stellar_asset_contract(&asset_xdr);
         assert_valid_contract_address(&first_address);
 
-        let second_address = client.deploy_stellar_asset_contract(&asset_xdr);
+        let second_address = client.create_stellar_asset_contract(&asset_xdr);
         assert_eq!(
             first_address, second_address,
             "Failed idempotent behavior for {}",
             description
         );
 
-        let third_address = client.deploy_stellar_asset_contract(&asset_xdr);
+        let third_address = client.create_stellar_asset_contract(&asset_xdr);
         assert_eq!(
             first_address, third_address,
             "Failed idempotent behavior on third deployment for {}",
