@@ -1,3 +1,4 @@
+use stellar_axelar_std::token::Client;
 use stellar_axelar_std::{contract, contractimpl, ensure, soroban_sdk, Address, Bytes, Env};
 
 use crate::error::ContractError;
@@ -44,23 +45,14 @@ impl TokenUtilsInterface for TokenUtils {
     /// // Convert base64 to bytes for contract input
     /// ```
     fn deploy_stellar_asset_contract(env: Env, asset_xdr: Bytes) -> Result<Address, ContractError> {
-        // Ensure asset_xdr is at least 32 bytes (Stellar address length)
         ensure!(asset_xdr.len() >= 32, ContractError::InvalidAssetXdr);
 
         let deployer = env.deployer().with_stellar_asset(asset_xdr);
         let deployed_address = deployer.deployed_address();
-
-        if env
-            .try_invoke_contract::<u32, soroban_sdk::InvokeError>(
-                &deployed_address,
-                &soroban_sdk::Symbol::new(&env, "decimals"),
-                soroban_sdk::vec![&env],
-            )
-            .is_ok()
-        {
-            Ok(deployed_address)
-        } else {
-            Ok(deployer.deploy())
+        
+        match Client::new(&env, &deployed_address).try_decimals() {
+            Ok(_) => Ok(deployed_address),
+            Err(_) => Ok(deployer.deploy()),
         }
     }
 }
