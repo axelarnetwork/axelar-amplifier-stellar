@@ -49,7 +49,7 @@ impl TokenUtilsInterface for TokenUtils {
 
         let deployer = env.deployer().with_stellar_asset(asset_xdr);
         let deployed_address = deployer.deployed_address();
-        
+
         match Client::new(&env, &deployed_address).try_decimals() {
             Ok(_) => Ok(deployed_address),
             Err(_) => Ok(deployer.deploy()),
