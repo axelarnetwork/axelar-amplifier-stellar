@@ -43,7 +43,7 @@ fn create_stellar_asset_contract_succeeds_with_valid_xdr() {
 
 #[test]
 #[should_panic(expected = "HostError: Error(Context, ExceededLimit)")]
-fn create_stellar_asset_contract_fails_empty_asset_xdr() {
+fn create_stellar_asset_contract_fails_with_empty_asset_xdr() {
     let (env, client) = setup();
     let empty_asset_xdr = Bytes::new(&env);
 
@@ -52,7 +52,7 @@ fn create_stellar_asset_contract_fails_empty_asset_xdr() {
 
 #[test]
 #[should_panic(expected = "HostError: Error(Value, InvalidInput)")]
-fn create_stellar_asset_contract_fails_invalid_asset_xdr() {
+fn create_stellar_asset_contract_fails_with_invalid_asset_xdr() {
     let (env, client) = setup();
     let short_asset_xdr = bytes!(&env, 0x0123456789abcdef0123456789abcdef0123456789abcdef);
 
@@ -60,7 +60,7 @@ fn create_stellar_asset_contract_fails_invalid_asset_xdr() {
 }
 
 #[test]
-fn create_stellar_asset_contract_different_assets_and_issuers_succeeds() {
+fn create_stellar_asset_contract_succeeds_with_different_assets_and_issuers() {
     let (env, client) = setup();
     let test_issuers = [TEST_ISSUER_1, TEST_ISSUER_2];
 
@@ -98,7 +98,7 @@ fn create_stellar_asset_contract_consecutive_calls_return_same_address() {
 
 #[test]
 #[should_panic(expected = "HostError: Error(Value, InvalidInput)")]
-fn create_stellar_asset_contract_fails_invalid_asset_code() {
+fn create_stellar_asset_contract_fails_with_invalid_asset_code() {
     let (env, client) = setup();
     let issuer = str_to_address(&env, TEST_ISSUER_1);
     let asset_xdr = create_asset_xdr(&env, "INVALID_ASSET_CODE", &issuer);
