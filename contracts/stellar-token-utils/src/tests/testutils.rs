@@ -43,7 +43,7 @@ pub fn address_to_account_id(address: &Address) -> AccountId {
 }
 
 pub fn string_to_asset_code<const N: usize>(code: &str) -> [u8; N] {
-    std::array::from_fn(|i| code.bytes().nth(i).unwrap_or(0))
+    std::array::from_fn(|i| code.as_bytes().get(i).copied().unwrap_or(0))
 }
 
 pub fn create_asset_xdr(env: &Env, code: &str, issuer: &Address) -> Bytes {
