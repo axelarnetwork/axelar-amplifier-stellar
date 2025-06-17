@@ -1,13 +1,17 @@
 use stellar_axelar_std::{Address, Bytes, Env};
 
-use crate::error::ContractError;
-
 pub trait TokenUtilsInterface {
     /// Create Stellar Asset Contract
     ///
     /// This function takes an asset's XDR representation and creates the corresponding
-    /// Stellar Asset Contract. If the contract is already deployed, it returns the
-    /// existing contract address instead of failing.
+    /// Stellar Asset Contract. The function is idempotent - if the contract is already
+    /// deployed, it returns the existing contract address without attempting redeployment.
+    /// This prevents failures from frontrunning and ensures consistent behavior.
+    ///
+    /// The function first calculates the deterministic contract address for the given asset,
+    /// then checks if a contract already exists at that address by calling `try_decimals()`.
+    /// If the contract exists and responds successfully, the existing address is returned.
+    /// Otherwise, the contract is deployed and the new address is returned.
     ///
     /// This utility is specifically designed for Stellar Classic tokens (native Stellar assets),
     /// not for Soroban custom tokens. The asset XDR must contain a valid Stellar asset
@@ -21,8 +25,12 @@ pub trait TokenUtilsInterface {
     ///     - Issuer Ed25519 public key (32 bytes)
     ///
     /// # Returns
-    /// * `Ok(Address)` - The created Stellar Asset Contract address (existing or newly created)
-    /// * `Err(ContractError::InvalidAssetXdr)` - If the asset XDR is invalid
+    /// * `Address` - The Stellar Asset Contract address (existing or newly created)
+    ///
+    /// # Panics
+    /// * If the asset XDR is invalid or malformed
+    /// * If the asset XDR is too short (less than required bytes)
+    /// * If deployment fails for reasons other than the contract already existing
     ///
     /// # Usage
     /// This function is used to create a new Stellar Asset Contract for a specific asset.
@@ -40,5 +48,5 @@ pub trait TokenUtilsInterface {
     /// const xdr = asset.toXDRObject().toXDR('base64');
     /// // Convert base64 to bytes for contract input
     /// ```
-    fn create_stellar_asset_contract(env: Env, asset_xdr: Bytes) -> Result<Address, ContractError>;
+    fn create_stellar_asset_contract(env: Env, asset_xdr: Bytes) -> Address;
 }

@@ -3,8 +3,6 @@
 #[cfg(test)]
 extern crate std;
 
-pub mod error;
-
 pub mod interface;
 
 #[cfg(test)]
