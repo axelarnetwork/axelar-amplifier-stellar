@@ -70,7 +70,7 @@ pub fn assert_valid_contract_address(address: &Address) {
     assert!(!address_str.is_empty());
 
     let ScAddress::Contract(_) = ScAddress::from_str(&address_str).unwrap() else {
-        panic!("not an account");
+        panic!("not a contract");
     };
 }
 
