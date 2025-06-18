@@ -26,6 +26,12 @@ pub struct DeployInterchainToken {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct RegisterTokenMetadata {
+    pub decimals: u8,
+    pub token_address: Bytes,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct LinkToken {
     pub token_id: BytesN<32>,
     pub token_manager_type: i128,
@@ -44,10 +50,7 @@ pub enum HubMessage {
         source_chain: String,
         message: Message,
     },
-    RegisterTokenMetadata {
-        decimals: u8,
-        token_address: Bytes,
-    },
+    RegisterTokenMetadata(RegisterTokenMetadata),
 }
 
 /// The type of token manager used for the tokenId.

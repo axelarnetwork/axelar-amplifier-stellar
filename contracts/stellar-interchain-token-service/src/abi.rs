@@ -193,10 +193,10 @@ impl HubMessage {
                 message: message.abi_encode(env)?.to_alloc_vec().into(),
             }
             .abi_encode_params(),
-            Self::RegisterTokenMetadata {
+            Self::RegisterTokenMetadata(types::RegisterTokenMetadata {
                 decimals,
                 token_address,
-            } => RegisterTokenMetadata {
+            }) => RegisterTokenMetadata {
                 messageType: MessageType::RegisterTokenMetadata.into(),
                 decimals,
                 tokenAddress: token_address.to_alloc_vec().into(),
@@ -240,10 +240,10 @@ impl HubMessage {
                 let decoded = RegisterTokenMetadata::abi_decode_params(&payload, true)
                     .map_err(|_| ContractError::AbiDecodeFailed)?;
 
-                Ok(Self::RegisterTokenMetadata {
+                Ok(Self::RegisterTokenMetadata(types::RegisterTokenMetadata {
                     decimals: decoded.decimals,
                     token_address: Bytes::from_slice(env, decoded.tokenAddress.as_ref()),
-                })
+                }))
             }
             _ => Err(ContractError::InvalidMessageType),
         }
