@@ -9,7 +9,6 @@ mod interchain_transfer;
 mod message_routing;
 mod pause;
 mod register_canonical_token;
-mod register_token_metadata;
 mod token_id;
 mod trusted_chain;
 mod utils;

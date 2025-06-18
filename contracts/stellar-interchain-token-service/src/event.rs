@@ -52,12 +52,6 @@ pub struct InterchainTokenDeploymentStartedEvent {
 }
 
 #[derive(Debug, PartialEq, Eq, IntoEvent)]
-pub struct TokenMetadataRegisteredEvent {
-    pub token_address: Address,
-    pub decimals: u32,
-}
-
-#[derive(Debug, PartialEq, Eq, IntoEvent)]
 pub struct InterchainTransferSentEvent {
     pub token_id: BytesN<32>,
     pub source_address: Address,

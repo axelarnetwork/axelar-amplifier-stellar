@@ -14,8 +14,7 @@ use crate::event::{
 };
 use crate::testutils::setup_its_token;
 use crate::types::{
-    DeployInterchainToken, HubMessage, InterchainTransfer, Message, RegisterTokenMetadata,
-    TokenManagerType,
+    DeployInterchainToken, HubMessage, InterchainTransfer, Message, TokenManagerType,
 };
 
 #[test]
@@ -692,46 +691,5 @@ fn deploy_interchain_token_message_execute_fails_token_already_deployed() {
     assert_contract_err!(
         client.try_execute(&source_chain, &second_message_id, &source_address, &payload),
         ContractError::TokenAlreadyRegistered
-    );
-}
-
-#[test]
-fn execute_register_token_metadata_fails() {
-    let (env, client, gateway_client, _, signers) = setup_env();
-    let source_chain = client.its_hub_chain_name();
-    let source_address = client.its_hub_address();
-    let message_id = String::from_str(&env, "message_id");
-    let original_source_chain = String::from_str(&env, "ethereum");
-
-    client
-        .mock_all_auths()
-        .set_trusted_chain(&original_source_chain);
-
-    let msg = HubMessage::ReceiveFromHub {
-        source_chain: original_source_chain,
-        message: Message::RegisterTokenMetadata(RegisterTokenMetadata {
-            token_address: Bytes::new(&env),
-            decimals: 18,
-        }),
-    };
-    let payload = msg.abi_encode(&env).unwrap();
-    let payload_hash: BytesN<32> = env.crypto().keccak256(&payload).into();
-
-    let messages = vec![
-        &env,
-        GatewayMessage {
-            source_chain: source_chain.clone(),
-            message_id: message_id.clone(),
-            source_address: source_address.clone(),
-            contract_address: client.address.clone(),
-            payload_hash,
-        },
-    ];
-
-    approve_gateway_messages(&env, &gateway_client, signers, messages);
-
-    assert_contract_err!(
-        client.try_execute(&source_chain, &message_id, &source_address, &payload),
-        ContractError::InvalidMessageType
     );
 }
