@@ -34,7 +34,7 @@ pub struct RegisterTokenMetadata {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct LinkToken {
     pub token_id: BytesN<32>,
-    pub token_manager_type: i128,
+    pub token_manager_type: TokenManagerType,
     pub source_token_address: Bytes,
     pub destination_token_address: Bytes,
     pub params: Option<Bytes>,
