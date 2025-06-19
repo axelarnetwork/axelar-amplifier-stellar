@@ -290,12 +290,17 @@ fn to_i128(value: Uint<256, 4>) -> Result<i128, ContractError> {
 }
 
 fn to_token_manager_type(value: Uint<256, 4>) -> Result<types::TokenManagerType, ContractError> {
+    // Safe conversion: check if the value fits in a u32 before converting
+    if value > Uint::from(u32::MAX) {
+        return Err(ContractError::InvalidTokenManagerType);
+    }
+
     let u32_value = value.to::<u32>();
 
     match u32_value {
         0 => Ok(types::TokenManagerType::NativeInterchainToken),
         2 => Ok(types::TokenManagerType::LockUnlock),
-        _ => Err(ContractError::InvalidAmount), // Invalid token manager type
+        _ => Err(ContractError::InvalidTokenManagerType),
     }
 }
 
@@ -732,6 +737,24 @@ mod tests {
             let decoded = assert_ok!(HubMessage::abi_decode(&env, &encoded));
             assert_eq!(original, decoded);
         }
+    }
+
+    #[test]
+    fn to_token_manager_type_fails_invalid_token_manager_type() {
+        let invalid_type: Uint<256, 4> = Uint::from(5u32);
+        let result = to_token_manager_type(invalid_type);
+        assert!(matches!(
+            result,
+            Err(ContractError::InvalidTokenManagerType)
+        ));
+
+        // Test with a value that exceeds u32::MAX
+        let overflow: Uint<256, 4> = Uint::from(u32::MAX) + Uint::from(1);
+        let result = to_token_manager_type(overflow);
+        assert!(matches!(
+            result,
+            Err(ContractError::InvalidTokenManagerType)
+        ));
     }
 
     #[test]

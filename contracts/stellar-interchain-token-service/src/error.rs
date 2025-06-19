@@ -38,4 +38,5 @@ pub enum ContractError {
     InvalidTokenConfig = 32,
     InvalidFlowKey = 33,
     FlowAmountExceededLimit = 34,
+    InvalidTokenManagerType = 35,
 }
