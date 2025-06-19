@@ -109,7 +109,7 @@ impl Message {
             }) => LinkToken {
                 messageType: MessageType::LinkToken.into(),
                 tokenId: FixedBytes::<32>::new(token_id.into()),
-                tokenManagerType: token_manager_type.try_into().expect("failed to convert"),
+                tokenManagerType: U256::from(token_manager_type as u32),
                 sourceToken: source_token_address.to_alloc_vec().into(),
                 destinationToken: destination_token_address.to_alloc_vec().into(),
                 params: into_vec(params).into(),
@@ -158,7 +158,7 @@ impl Message {
 
                 Ok(Self::LinkToken(types::LinkToken {
                     token_id: BytesN::from_array(env, &decoded.tokenId.into()),
-                    token_manager_type: to_i128(decoded.tokenManagerType)?,
+                    token_manager_type: to_token_manager_type(decoded.tokenManagerType)?,
                     source_token_address: Bytes::from_slice(env, decoded.sourceToken.as_ref()),
                     destination_token_address: Bytes::from_slice(
                         env,
@@ -287,6 +287,16 @@ fn to_i128(value: Uint<256, 4>) -> Result<i128, ContractError> {
     ensure!(i128_value >= 0, ContractError::InvalidAmount);
 
     Ok(i128_value)
+}
+
+fn to_token_manager_type(value: Uint<256, 4>) -> Result<types::TokenManagerType, ContractError> {
+    let u32_value = value.to::<u32>();
+
+    match u32_value {
+        0 => Ok(types::TokenManagerType::NativeInterchainToken),
+        2 => Ok(types::TokenManagerType::LockUnlock),
+        _ => Err(ContractError::InvalidAmount), // Invalid token manager type
+    }
 }
 
 fn into_vec(value: Option<Bytes>) -> alloc::vec::Vec<u8> {
@@ -591,7 +601,7 @@ mod tests {
                 destination_chain: remote_chain.clone(),
                 message: types::Message::LinkToken(types::LinkToken {
                     token_id: BytesN::from_array(&env, &[0u8; 32]),
-                    token_manager_type: 0,
+                    token_manager_type: types::TokenManagerType::NativeInterchainToken,
                     source_token_address: Bytes::from_hex(&env, "00"),
                     destination_token_address: Bytes::from_hex(&env, "00"),
                     params: None,
@@ -601,7 +611,7 @@ mod tests {
                 destination_chain: remote_chain.clone(),
                 message: types::Message::LinkToken(types::LinkToken {
                     token_id: BytesN::from_array(&env, &[255u8; 32]),
-                    token_manager_type: 1,
+                    token_manager_type: types::TokenManagerType::LockUnlock,
                     source_token_address: Bytes::from_hex(
                         &env,
                         "4F4495243837681061C4743b74B3eEdf548D56A5",
@@ -617,7 +627,7 @@ mod tests {
                 destination_chain: remote_chain.clone(),
                 message: types::Message::LinkToken(types::LinkToken {
                     token_id: BytesN::from_array(&env, &[42u8; 32]),
-                    token_manager_type: i128::MAX,
+                    token_manager_type: types::TokenManagerType::NativeInterchainToken,
                     source_token_address: Bytes::from_hex(&env, "deadbeef"),
                     destination_token_address: Bytes::from_hex(&env, "cafebabe"),
                     params: Some(Bytes::from_hex(&env, "1234567890abcdef")),
@@ -627,7 +637,7 @@ mod tests {
                 source_chain: remote_chain.clone(),
                 message: types::Message::LinkToken(types::LinkToken {
                     token_id: BytesN::from_array(&env, &[0u8; 32]),
-                    token_manager_type: 0,
+                    token_manager_type: types::TokenManagerType::NativeInterchainToken,
                     source_token_address: Bytes::from_hex(&env, "00"),
                     destination_token_address: Bytes::from_hex(&env, "00"),
                     params: None,
@@ -637,7 +647,7 @@ mod tests {
                 source_chain: remote_chain.clone(),
                 message: types::Message::LinkToken(types::LinkToken {
                     token_id: BytesN::from_array(&env, &[255u8; 32]),
-                    token_manager_type: 1,
+                    token_manager_type: types::TokenManagerType::LockUnlock,
                     source_token_address: Bytes::from_hex(
                         &env,
                         "4F4495243837681061C4743b74B3eEdf548D56A5",
@@ -653,7 +663,7 @@ mod tests {
                 source_chain: remote_chain,
                 message: types::Message::LinkToken(types::LinkToken {
                     token_id: BytesN::from_array(&env, &[42u8; 32]),
-                    token_manager_type: i128::MAX,
+                    token_manager_type: types::TokenManagerType::NativeInterchainToken,
                     source_token_address: Bytes::from_hex(&env, "deadbeef"),
                     destination_token_address: Bytes::from_hex(&env, "cafebabe"),
                     params: Some(Bytes::from_hex(&env, "1234567890abcdef")),
