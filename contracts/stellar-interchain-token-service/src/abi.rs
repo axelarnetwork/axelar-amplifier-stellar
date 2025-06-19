@@ -15,7 +15,9 @@ sol! {
         DeployInterchainToken,
         DeployTokenManager, // note, this case is not supported by the ITS hub
         SendToHub,
-        ReceiveFromHub
+        ReceiveFromHub,
+        LinkToken,
+        RegisterTokenMetadata,
     }
 
     struct InterchainTransfer {
@@ -47,6 +49,22 @@ sol! {
         string source_chain;
         bytes message;
     }
+
+    struct RegisterTokenMetadata {
+        uint256 messageType;
+        bytes tokenAddress;
+        uint8 decimals;
+    }
+
+    struct LinkToken {
+        uint256 messageType;
+        bytes32 tokenId;
+        uint256 tokenManagerType;
+        bytes sourceToken;
+        bytes destinationToken;
+        bytes params;
+    }
+
 }
 
 impl Message {
@@ -80,6 +98,21 @@ impl Message {
                 symbol: to_std_string(symbol)?,
                 decimals,
                 minter: into_vec(minter).into(),
+            }
+            .abi_encode_params(),
+            Self::LinkToken(types::LinkToken {
+                token_id,
+                token_manager_type,
+                source_token_address,
+                destination_token_address,
+                params,
+            }) => LinkToken {
+                messageType: MessageType::LinkToken.into(),
+                tokenId: FixedBytes::<32>::new(token_id.into()),
+                tokenManagerType: U256::from(token_manager_type as u32),
+                sourceToken: source_token_address.to_alloc_vec().into(),
+                destinationToken: destination_token_address.to_alloc_vec().into(),
+                params: into_vec(params).into(),
             }
             .abi_encode_params(),
         };
@@ -119,6 +152,21 @@ impl Message {
                     minter: from_vec(env, decoded.minter.as_ref()),
                 }))
             }
+            MessageType::LinkToken => {
+                let decoded = LinkToken::abi_decode_params(&payload, true)
+                    .map_err(|_| ContractError::AbiDecodeFailed)?;
+
+                Ok(Self::LinkToken(types::LinkToken {
+                    token_id: BytesN::from_array(env, &decoded.tokenId.into()),
+                    token_manager_type: to_token_manager_type(decoded.tokenManagerType)?,
+                    source_token_address: Bytes::from_slice(env, decoded.sourceToken.as_ref()),
+                    destination_token_address: Bytes::from_slice(
+                        env,
+                        decoded.destinationToken.as_ref(),
+                    ),
+                    params: from_vec(env, decoded.params.as_ref()),
+                }))
+            }
             _ => Err(ContractError::InvalidMessageType),
         }
     }
@@ -143,6 +191,15 @@ impl HubMessage {
                 messageType: MessageType::ReceiveFromHub.into(),
                 source_chain: to_std_string(source_chain)?,
                 message: message.abi_encode(env)?.to_alloc_vec().into(),
+            }
+            .abi_encode_params(),
+            Self::RegisterTokenMetadata(types::RegisterTokenMetadata {
+                decimals,
+                token_address,
+            }) => RegisterTokenMetadata {
+                messageType: MessageType::RegisterTokenMetadata.into(),
+                decimals,
+                tokenAddress: token_address.to_alloc_vec().into(),
             }
             .abi_encode_params(),
         };
@@ -178,6 +235,15 @@ impl HubMessage {
                         &Bytes::from_slice(env, decoded.message.as_ref()),
                     )?,
                 })
+            }
+            MessageType::RegisterTokenMetadata => {
+                let decoded = RegisterTokenMetadata::abi_decode_params(&payload, true)
+                    .map_err(|_| ContractError::AbiDecodeFailed)?;
+
+                Ok(Self::RegisterTokenMetadata(types::RegisterTokenMetadata {
+                    decimals: decoded.decimals,
+                    token_address: Bytes::from_slice(env, decoded.tokenAddress.as_ref()),
+                }))
             }
             _ => Err(ContractError::InvalidMessageType),
         }
@@ -221,6 +287,21 @@ fn to_i128(value: Uint<256, 4>) -> Result<i128, ContractError> {
     ensure!(i128_value >= 0, ContractError::InvalidAmount);
 
     Ok(i128_value)
+}
+
+fn to_token_manager_type(value: Uint<256, 4>) -> Result<types::TokenManagerType, ContractError> {
+    // Safe conversion: check if the value fits in a u32 before converting
+    if value > Uint::from(u32::MAX) {
+        return Err(ContractError::InvalidTokenManagerType);
+    }
+
+    let u32_value = value.to::<u32>();
+
+    match u32_value {
+        0 => Ok(types::TokenManagerType::NativeInterchainToken),
+        2 => Ok(types::TokenManagerType::LockUnlock),
+        _ => Err(ContractError::InvalidTokenManagerType),
+    }
 }
 
 fn into_vec(value: Option<Bytes>) -> alloc::vec::Vec<u8> {
@@ -513,6 +594,167 @@ mod tests {
             let decoded = HubMessage::abi_decode(&env, &encoded);
             assert_eq!(original, decoded.unwrap());
         }
+    }
+
+    #[test]
+    fn link_token_encode_decode() {
+        let env = Env::default();
+        let remote_chain = String::from_str(&env, "chain");
+
+        let cases = vec![
+            types::HubMessage::SendToHub {
+                destination_chain: remote_chain.clone(),
+                message: types::Message::LinkToken(types::LinkToken {
+                    token_id: BytesN::from_array(&env, &[0u8; 32]),
+                    token_manager_type: types::TokenManagerType::NativeInterchainToken,
+                    source_token_address: Bytes::from_hex(&env, "00"),
+                    destination_token_address: Bytes::from_hex(&env, "00"),
+                    params: None,
+                }),
+            },
+            types::HubMessage::SendToHub {
+                destination_chain: remote_chain.clone(),
+                message: types::Message::LinkToken(types::LinkToken {
+                    token_id: BytesN::from_array(&env, &[255u8; 32]),
+                    token_manager_type: types::TokenManagerType::LockUnlock,
+                    source_token_address: Bytes::from_hex(
+                        &env,
+                        "4F4495243837681061C4743b74B3eEdf548D56A5",
+                    ),
+                    destination_token_address: Bytes::from_hex(
+                        &env,
+                        "1234567890ABCDEF1234567890ABCDEF12345678",
+                    ),
+                    params: Some(Bytes::from_hex(&env, "abcd")),
+                }),
+            },
+            types::HubMessage::SendToHub {
+                destination_chain: remote_chain.clone(),
+                message: types::Message::LinkToken(types::LinkToken {
+                    token_id: BytesN::from_array(&env, &[42u8; 32]),
+                    token_manager_type: types::TokenManagerType::NativeInterchainToken,
+                    source_token_address: Bytes::from_hex(&env, "deadbeef"),
+                    destination_token_address: Bytes::from_hex(&env, "cafebabe"),
+                    params: Some(Bytes::from_hex(&env, "1234567890abcdef")),
+                }),
+            },
+            types::HubMessage::ReceiveFromHub {
+                source_chain: remote_chain.clone(),
+                message: types::Message::LinkToken(types::LinkToken {
+                    token_id: BytesN::from_array(&env, &[0u8; 32]),
+                    token_manager_type: types::TokenManagerType::NativeInterchainToken,
+                    source_token_address: Bytes::from_hex(&env, "00"),
+                    destination_token_address: Bytes::from_hex(&env, "00"),
+                    params: None,
+                }),
+            },
+            types::HubMessage::ReceiveFromHub {
+                source_chain: remote_chain.clone(),
+                message: types::Message::LinkToken(types::LinkToken {
+                    token_id: BytesN::from_array(&env, &[255u8; 32]),
+                    token_manager_type: types::TokenManagerType::LockUnlock,
+                    source_token_address: Bytes::from_hex(
+                        &env,
+                        "4F4495243837681061C4743b74B3eEdf548D56A5",
+                    ),
+                    destination_token_address: Bytes::from_hex(
+                        &env,
+                        "1234567890ABCDEF1234567890ABCDEF12345678",
+                    ),
+                    params: Some(Bytes::from_hex(&env, "abcd")),
+                }),
+            },
+            types::HubMessage::ReceiveFromHub {
+                source_chain: remote_chain,
+                message: types::Message::LinkToken(types::LinkToken {
+                    token_id: BytesN::from_array(&env, &[42u8; 32]),
+                    token_manager_type: types::TokenManagerType::NativeInterchainToken,
+                    source_token_address: Bytes::from_hex(&env, "deadbeef"),
+                    destination_token_address: Bytes::from_hex(&env, "cafebabe"),
+                    params: Some(Bytes::from_hex(&env, "1234567890abcdef")),
+                }),
+            },
+        ];
+
+        let encoded: Vec<_> = cases
+            .iter()
+            .map(|original| {
+                hex::encode(
+                    assert_ok!(original.clone().abi_encode(&env))
+                        .to_buffer::<1024>()
+                        .as_slice(),
+                )
+            })
+            .collect();
+
+        goldie::assert_json!(encoded);
+
+        for original in cases {
+            let encoded = assert_ok!(original.clone().abi_encode(&env));
+            let decoded = HubMessage::abi_decode(&env, &encoded);
+            assert_eq!(original, decoded.unwrap());
+        }
+    }
+
+    #[test]
+    fn register_token_metadata_encode_decode() {
+        let env = Env::default();
+
+        let cases = vec![
+            types::HubMessage::RegisterTokenMetadata(types::RegisterTokenMetadata {
+                decimals: 0,
+                token_address: Bytes::from_hex(&env, "00"),
+            }),
+            types::HubMessage::RegisterTokenMetadata(types::RegisterTokenMetadata {
+                decimals: 18,
+                token_address: Bytes::from_hex(&env, "4F4495243837681061C4743b74B3eEdf548D56A5"),
+            }),
+            types::HubMessage::RegisterTokenMetadata(types::RegisterTokenMetadata {
+                decimals: 255,
+                token_address: Bytes::from_hex(&env, "1234567890ABCDEF1234567890ABCDEF12345678"),
+            }),
+            types::HubMessage::RegisterTokenMetadata(types::RegisterTokenMetadata {
+                decimals: 6,
+                token_address: Bytes::from_hex(&env, "deadbeefcafebabe"),
+            }),
+        ];
+
+        let encoded: Vec<_> = cases
+            .iter()
+            .map(|original| {
+                hex::encode(
+                    assert_ok!(original.clone().abi_encode(&env))
+                        .to_buffer::<1024>()
+                        .as_slice(),
+                )
+            })
+            .collect();
+
+        goldie::assert_json!(encoded);
+
+        for original in cases {
+            let encoded = assert_ok!(original.clone().abi_encode(&env));
+            let decoded = assert_ok!(HubMessage::abi_decode(&env, &encoded));
+            assert_eq!(original, decoded);
+        }
+    }
+
+    #[test]
+    fn to_token_manager_type_fails_invalid_token_manager_type() {
+        let invalid_type: Uint<256, 4> = Uint::from(5u32);
+        let result = to_token_manager_type(invalid_type);
+        assert!(matches!(
+            result,
+            Err(ContractError::InvalidTokenManagerType)
+        ));
+
+        // Test with a value that exceeds u32::MAX
+        let overflow: Uint<256, 4> = Uint::from(u32::MAX) + Uint::from(1);
+        let result = to_token_manager_type(overflow);
+        assert!(matches!(
+            result,
+            Err(ContractError::InvalidTokenManagerType)
+        ));
     }
 
     #[test]

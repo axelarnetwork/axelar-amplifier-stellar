@@ -4,6 +4,7 @@ use stellar_axelar_std::{contracttype, soroban_sdk, Bytes, BytesN, String};
 pub enum Message {
     InterchainTransfer(InterchainTransfer),
     DeployInterchainToken(DeployInterchainToken),
+    LinkToken(LinkToken),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -25,6 +26,21 @@ pub struct DeployInterchainToken {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct RegisterTokenMetadata {
+    pub decimals: u8,
+    pub token_address: Bytes,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct LinkToken {
+    pub token_id: BytesN<32>,
+    pub token_manager_type: TokenManagerType,
+    pub source_token_address: Bytes,
+    pub destination_token_address: Bytes,
+    pub params: Option<Bytes>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum HubMessage {
     SendToHub {
         destination_chain: String,
@@ -34,6 +50,7 @@ pub enum HubMessage {
         source_chain: String,
         message: Message,
     },
+    RegisterTokenMetadata(RegisterTokenMetadata),
 }
 
 /// The type of token manager used for the tokenId.
