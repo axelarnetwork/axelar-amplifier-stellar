@@ -719,8 +719,8 @@ mod tests {
 
         for original in cases {
             let encoded = assert_ok!(original.clone().abi_encode(&env));
-            let decoded = HubMessage::abi_decode(&env, &encoded);
-            assert_eq!(original, decoded.unwrap());
+            let decoded = assert_ok!(HubMessage::abi_decode(&env, &encoded));
+            assert_eq!(original, decoded);
         }
     }
 
