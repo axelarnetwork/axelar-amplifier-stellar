@@ -1,0 +1,26 @@
+[package]
+name = "stellar-token-utils"
+version = "1.0.0"
+edition = { workspace = true }
+description = "Token utilities contract for Stellar asset contract address resolution."
+license = { workspace = true }
+publish = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+cfg-if = { workspace = true }
+stellar-axelar-std = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+goldie = { workspace = true }
+stellar-axelar-std = { workspace = true, features = ["testutils"] }
+stellar-strkey = { workspace = true }
+
+[features]
+library = [] # Exports only the contract interface
+testutils = ["stellar-axelar-std/testutils"]
+
+[lints]
+workspace = true
