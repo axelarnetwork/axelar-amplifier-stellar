@@ -24,7 +24,7 @@ macro_rules! address_to_string {
 
 pub(crate) use address_to_string;
 
-pub fn address_to_str(address: &Address) -> String {
+pub fn address_to_string(address: &Address) -> String {
     address.to_string().to_string()
 }
 
