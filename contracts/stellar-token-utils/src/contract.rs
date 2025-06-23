@@ -13,7 +13,7 @@ impl TokenUtilsInterface for TokenUtils {
         let deployed_address = deployer.deployed_address();
 
         // Return if the asset contract has already been deployed
-        // This prevents failures triggered by frontrunning this method
+        // This prevents failures triggered by frontrunning this creation, when it's part of a multicall
         if Client::new(&env, &deployed_address).try_decimals().is_ok() {
             return deployed_address;
         }
