@@ -66,9 +66,6 @@ pub fn create_asset_xdr(env: &Env, code: &str, issuer: &Address) -> Bytes {
 }
 
 pub fn assert_valid_contract_address(address: &Address) {
-    let address_str = address_to_str(address);
-    assert!(!address_str.is_empty());
-
     let ScAddress::Contract(_) = ScAddress::from_str(&address_str).unwrap() else {
         panic!("not a contract");
     };
