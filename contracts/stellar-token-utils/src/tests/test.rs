@@ -98,10 +98,9 @@ fn create_stellar_asset_contract_consecutive_calls_return_same_address() {
 #[should_panic(
     expected = "Asset code 'INVALID_ASSET_CODE' exceeds maximum length of 12 characters"
 )]
-fn create_stellar_asset_contract_fails_with_invalid_asset_code() {
-    let (env, client) = setup();
+fn create_asset_xdr_fails_with_invalid_asset_code() {
+    let (env, _) = setup();
     let issuer = str_to_address(&env, TEST_ISSUER_1);
-    let asset_xdr = create_asset_xdr(&env, "INVALID_ASSET_CODE", &issuer);
 
-    client.create_stellar_asset_contract(&asset_xdr);
+    create_asset_xdr(&env, "INVALID_ASSET_CODE", &issuer);
 }
