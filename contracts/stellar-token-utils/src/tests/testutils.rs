@@ -42,7 +42,7 @@ pub fn address_to_account_id(address: &Address) -> AccountId {
     account_id
 }
 
-pub fn string_to_asset_code<const N: usize>(code: &str) -> [u8; N] {
+pub fn str_to_asset_code<const N: usize>(code: &str) -> [u8; N] {
     std::array::from_fn(|i| code.as_bytes().get(i).copied().unwrap_or(0))
 }
 
