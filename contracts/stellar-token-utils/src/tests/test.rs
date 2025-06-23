@@ -2,16 +2,14 @@
 extern crate alloc;
 extern crate std;
 
-use alloc::string::ToString;
 use std::vec::Vec;
 
 use stellar_axelar_std::testutils::Address as _;
 use stellar_axelar_std::token::TokenClient;
 use stellar_axelar_std::{bytes, Address, Bytes, String};
 
-use super::testutils::{
-    address_to_string, assert_valid_contract_address, create_asset_xdr, setup, str_to_address,
-};
+use super::testutils::{create_asset_xdr, setup};
+use crate::tests::testutils::{address_to_string, assert_valid_contract_address, str_to_address};
 
 const TEST_ISSUER_1: &str = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5";
 const TEST_ISSUER_2: &str = "GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI";
@@ -97,7 +95,9 @@ fn create_stellar_asset_contract_consecutive_calls_return_same_address() {
 }
 
 #[test]
-#[should_panic(expected = "HostError: Error(Value, InvalidInput)")]
+#[should_panic(
+    expected = "Asset code 'INVALID_ASSET_CODE' exceeds maximum length of 12 characters"
+)]
 fn create_stellar_asset_contract_fails_with_invalid_asset_code() {
     let (env, client) = setup();
     let issuer = str_to_address(&env, TEST_ISSUER_1);

@@ -17,14 +17,14 @@ macro_rules! address_to_string {
     ($addresses:expr) => {
         $addresses
             .iter()
-            .map(|addr| addr.to_string().to_string())
+            .map(|addr| crate::tests::testutils::address_to_str(addr))
             .collect::<std::vec::Vec<std::string::String>>()
     };
 }
 
 pub(crate) use address_to_string;
 
-pub fn address_to_string(address: &Address) -> String {
+pub fn address_to_str(address: &Address) -> String {
     address.to_string().to_string()
 }
 
@@ -51,14 +51,19 @@ pub fn create_asset_xdr(env: &Env, code: &str, issuer: &Address) -> Bytes {
 
     let asset = if code.len() <= 4 {
         XdrAsset::CreditAlphanum4(AlphaNum4 {
-            asset_code: AssetCode4(string_to_asset_code::<4>(code)),
+            asset_code: AssetCode4(str_to_asset_code::<4>(code)),
+            issuer: issuer_account_id,
+        })
+    } else if code.len() <= 12 {
+        XdrAsset::CreditAlphanum12(AlphaNum12 {
+            asset_code: AssetCode12(str_to_asset_code::<12>(code)),
             issuer: issuer_account_id,
         })
     } else {
-        XdrAsset::CreditAlphanum12(AlphaNum12 {
-            asset_code: AssetCode12(string_to_asset_code::<12>(code)),
-            issuer: issuer_account_id,
-        })
+        panic!(
+            "Asset code '{}' exceeds maximum length of 12 characters",
+            code
+        );
     };
 
     let asset_xdr = asset.to_xdr(Limits::none()).unwrap();
@@ -66,6 +71,8 @@ pub fn create_asset_xdr(env: &Env, code: &str, issuer: &Address) -> Bytes {
 }
 
 pub fn assert_valid_contract_address(address: &Address) {
+    let address_str = address_to_str(address);
+
     let ScAddress::Contract(_) = ScAddress::from_str(&address_str).unwrap() else {
         panic!("not a contract");
     };
