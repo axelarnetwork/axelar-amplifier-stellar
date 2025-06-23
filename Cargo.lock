@@ -2190,6 +2190,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "stellar-token-utils"
+version = "1.0.0"
+dependencies = [
+ "cfg-if",
+ "goldie",
+ "stellar-axelar-std",
+ "stellar-strkey",
+]
+
+[[package]]
 name = "stellar-upgrader"
 version = "1.1.2"
 dependencies = [

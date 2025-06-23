@@ -22,6 +22,7 @@ proc-macro2 = { version = "1.0", default-features = false }
 rand = { version = "0.8.5", default-features = false }
 serde = { version = "1.0.152", default-features = false, features = ["derive"] }
 soroban-token-sdk = { version = "22.0.6" }
+stellar-strkey = { version = "0.0.9" }
 stellar-axelar-example = { version = "^1.0.4", path = "contracts/stellar-axelar-example" }
 stellar-axelar-gas-service = { version = "^1.1.2", path = "contracts/stellar-axelar-gas-service" }
 stellar-axelar-gateway = { version = "^1.1.2", path = "contracts/stellar-axelar-gateway" }
@@ -32,6 +33,7 @@ stellar-interchain-token = { version = "^1.1.2", path = "contracts/stellar-inter
 stellar-interchain-token-service = { version = "^1.2.0", path = "contracts/stellar-interchain-token-service" }
 stellar-token-manager = { version = "^1.1.2", path = "contracts/stellar-token-manager" }
 stellar-multicall = { version = "^1.0.2", path = "contracts/stellar-multicall" }
+stellar-token-utils = { version = "^1.0.0", path = "contracts/stellar-token-utils" }
 stellar-upgrader = { version = "^1.1.2", path = "contracts/stellar-upgrader" }
 
 [workspace.lints.clippy]
