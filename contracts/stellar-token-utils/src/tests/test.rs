@@ -79,8 +79,8 @@ fn create_stellar_asset_contract_succeeds_with_different_assets_and_issuers() {
         })
         .collect();
 
-    let address_to_string = address_to_string!(addresses);
-    goldie::assert_json!(address_to_string);
+    let addresses = address_to_string!(addresses);
+    goldie::assert_json!(addresses);
 }
 
 #[test]
