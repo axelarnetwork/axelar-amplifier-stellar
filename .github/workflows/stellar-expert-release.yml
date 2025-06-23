@@ -1,0 +1,116 @@
+
+jobs:
+  release-contract-a:
+    uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@main
+    with:
+      release_name: ${{ github.ref_name }}          # use git tag as unique release name
+      release_description: 'Contract release'       # some boring placeholder text to attach
+      relative_path: '["src/my-awesome-contract"]'  # relative path to your really awesome contract
+      package: 'my-awesome-contract'                # package name to build
+      make_target: 'build-dependencies'             # make target to invoke
+    secrets:  # the authentication token will be automatically created by GitHub
+      release_token: ${{ secrets.GITHUB_TOKEN }}    # don't modify this line
+
+
+name: Stellar Expert WASM Release
+
+permissions:
+  id-token: write
+  contents: write
+  attestations: write
+
+on:
+  push:
+    tags:
+      - 'v*'  # triggered whenever a new tag (previxed with "v") is pushed to the repository
+
+jobs:
+  release-contract-stellar-axelar-example:
+    uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@main
+    with:
+      release_name: ${{ github.ref_name }}
+      release_description: 'Axelar Example Release'
+      package: 'stellar-axelar-example'
+    secrets:
+      release_token: ${{ secrets.GITHUB_TOKEN }}
+
+  release-contract-stellar-axelar-gas-service:
+    uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@main
+    with:
+      release_name: ${{ github.ref_name }}
+      release_description: 'Axelar Gas Service Release'
+      package: 'stellar-axelar-gas-service'
+    secrets:
+      release_token: ${{ secrets.GITHUB_TOKEN }}
+
+  release-contract-stellar-axelar-gateway:
+    uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@main
+    with:
+      release_name: ${{ github.ref_name }}
+      release_description: 'Axelar Gateway Release'
+      package: 'stellar-axelar-gateway'
+    secrets:
+      release_token: ${{ secrets.GITHUB_TOKEN }}
+
+  release-contract-stellar-axelar-operators:
+    uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@main
+    with:
+      release_name: ${{ github.ref_name }}
+      release_description: 'Axelar Operators Release'
+      package: 'stellar-axelar-operators'
+    secrets:
+      release_token: ${{ secrets.GITHUB_TOKEN }}
+
+  release-contract-stellar-interchain-token:
+    uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@main
+    with:
+      release_name: ${{ github.ref_name }}
+      release_description: 'Interchain Token Release'
+      package: 'stellar-interchain-token'
+    secrets:
+      release_token: ${{ secrets.GITHUB_TOKEN }}
+
+  release-contract-stellar-interchain-token-service:
+    uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@main
+    with:
+      release_name: ${{ github.ref_name }}
+      release_description: 'Interchain Token Service Release'
+      package: 'stellar-interchain-token-service'
+    secrets:
+      release_token: ${{ secrets.GITHUB_TOKEN }}
+
+  release-contract-stellar-multicall:
+    uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@main
+    with:
+      release_name: ${{ github.ref_name }}
+      release_description: 'Multicall Release'
+      package: 'stellar-multicall'
+    secrets:
+      release_token: ${{ secrets.GITHUB_TOKEN }}
+
+  release-contract-stellar-token-manager:
+    uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@main
+    with:
+      release_name: ${{ github.ref_name }}
+      release_description: 'Token Manager Release'
+      package: 'stellar-token-manager'
+    secrets:
+      release_token: ${{ secrets.GITHUB_TOKEN }}
+
+  release-contract-stellar-token-utils:
+    uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@main
+    with:
+      release_name: ${{ github.ref_name }}
+      release_description: 'Token Utils Release'
+      package: 'stellar-token-utils'
+    secrets:
+      release_token: ${{ secrets.GITHUB_TOKEN }}
+
+  release-contract-stellar-upgrader:
+    uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@main
+    with:
+      release_name: ${{ github.ref_name }}
+      release_description: 'Upgrader Release'
+      package: 'stellar-upgrader'
+    secrets:
+      release_token: ${{ secrets.GITHUB_TOKEN }}
