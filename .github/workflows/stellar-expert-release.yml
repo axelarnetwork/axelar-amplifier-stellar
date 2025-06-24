@@ -31,6 +31,7 @@ on:
   push:
     tags:
       - "v*" # triggered whenever a new tag (previxed with "v") is pushed to the repository
+  workflow_dispatch:
 
 jobs:
   release-contract:
