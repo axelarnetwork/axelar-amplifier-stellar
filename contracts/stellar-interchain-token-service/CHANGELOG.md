@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-interchain-token-service-v1.2.0...stellar-interchain-token-service-v1.3.0)
+
+### ⛰️ Features
+
+- *(interchain-token-service)* Add link token and register token metadata abi ([#347](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/347)) - ([2274e6a](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/2274e6ad2b1ebb9db55bbb5807c518d1fcdc99dd))
+
+### Contributors
+
+* @ahramy
+
 ## [1.2.0](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-interchain-token-service-v1.1.2...stellar-interchain-token-service-v1.2.0)
 
 ### ⛰️ Features
