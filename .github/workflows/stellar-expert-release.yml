@@ -1,0 +1,57 @@
+# Stellar Expert WASM Release Workflow
+#
+# This workflow automatically builds and releases WASM contracts for all stellar packages
+# when a new version tag is pushed to the repository using the stellar-expert/soroban-build-workflow.
+#
+# Workflow Behavior:
+# 1. Triggered on push of tags starting with "v" (e.g., v1.0.0-stellar-axelar-example)
+# 2. Creates parallel release jobs for each stellar contract package
+# 3. Each job uses stellar-expert/soroban-build-workflow to:
+#    - Compile smart contracts for Soroban WASM runtime
+#    - Create optimized WebAssembly files ready for deployment
+#    - Publish GitHub releases with attached build artifacts
+#    - Include SHA256 hashes of compiled WASM files for verification
+#    - Generate and upload build attestations
+# 4. All jobs run in parallel for faster execution
+# 5. Uses the tag name as the release version
+#
+# Permissions:
+# - id-token: Required for WASM signing and attestation
+# - contents: Required to create releases and upload artifacts
+# - attestations: Required for security attestations
+
+name: Stellar Expert WASM Release
+
+permissions:
+  id-token: write
+  contents: write
+  attestations: write
+
+on:
+  push:
+    tags:
+      - "v*" # triggered whenever a new tag (previxed with "v") is pushed to the repository
+  workflow_dispatch:
+
+jobs:
+  release-contract:
+    uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@main
+    strategy:
+      matrix:
+        package:
+          - stellar-axelar-example
+          - stellar-axelar-gas-service
+          - stellar-axelar-gateway
+          - stellar-axelar-operators
+          - stellar-interchain-token
+          - stellar-interchain-token-service
+          - stellar-multicall
+          - stellar-token-manager
+          - stellar-token-utils
+          - stellar-upgrader
+    with:
+      release_name: ${{ github.ref_name }}
+      release_description: "${{ matrix.package }} Release"
+      package: ${{ matrix.package }}
+    secrets:
+      release_token: ${{ secrets.GITHUB_TOKEN }}
