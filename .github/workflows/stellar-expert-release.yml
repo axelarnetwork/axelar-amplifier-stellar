@@ -13,7 +13,7 @@
 #    - Include SHA256 hashes of compiled WASM files for verification
 #    - Generate and upload build attestations
 # 4. All jobs run in parallel for faster execution
-# 5. Uses the tag name as the release version (e.g., v1.0.0-stellar-axelar-example)
+# 5. Uses the tag name as the release version
 #
 # Permissions:
 # - id-token: Required for WASM signing and attestation
