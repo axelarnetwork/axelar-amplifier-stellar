@@ -259,6 +259,29 @@ pub trait InterchainTokenServiceInterface:
         gas_token: Option<Token>,
     ) -> Result<(), ContractError>;
 
+    /// Registers a custom token as an interchain token on this chain.
+    ///
+    /// Only to be used by the InterchainTokenFactory to register custom tokens to this chain.
+    /// Then link token can be used to register those tokens to other chains.
+    ///
+    /// # Arguments
+    /// - `salt`: A unique salt to deterministically derive the tokenId for the custom token.
+    /// - `token_address`: The address of the custom token contract to register.
+    /// - `token_manager_type`: The type of token manager to use for the token registration (e.g., LockUnlock).
+    ///
+    /// # Returns
+    /// - `Ok(BytesN<32>)`: Returns the derived token ID for the registered custom token.
+    ///
+    /// # Errors
+    /// - [`ContractError::TokenAlreadyRegistered`]: If the token ID is already registered.
+    /// - [`ContractError::InvalidTokenManagerType`]: If the provided token manager type is not allowed for custom tokens.
+    fn register_custom_token(
+        env: &Env,
+        salt: BytesN<32>,
+        token_address: Address,
+        token_manager_type: TokenManagerType,
+    ) -> Result<BytesN<32>, ContractError>;
+
     /// Initiates a cross-chain token transfer.
     ///
     /// Takes tokens from the caller on the source chain and initiates a transfer

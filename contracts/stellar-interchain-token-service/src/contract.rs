@@ -292,6 +292,28 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
     }
 
     #[when_not_paused]
+    fn register_custom_token(
+        env: &Env,
+        salt: BytesN<32>,
+        token_address: Address,
+        token_manager_type: TokenManagerType,
+    ) -> Result<BytesN<32>, ContractError> {
+        // Custom token managers can't be deployed with native interchain token type, which is reserved for interchain tokens
+        ensure!(
+            token_manager_type != TokenManagerType::NativeInterchainToken,
+            ContractError::InvalidTokenManagerType
+        );
+        let token_id = Self::interchain_token_id(env, Address::zero(env), salt);
+
+        Self::ensure_token_not_registered(env, token_id.clone())?;
+
+        let _: Address =
+            Self::deploy_token_manager(env, token_id.clone(), token_address, token_manager_type);
+
+        Ok(token_id)
+    }
+
+    #[when_not_paused]
     fn interchain_transfer(
         env: &Env,
         caller: Address,
