@@ -273,13 +273,14 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         let token_metadata =
             token_metadata::token_metadata(env, &token_address, &Self::native_token_address(env))?;
 
-        let payload = HubMessage::RegisterTokenMetadata(RegisterTokenMetadata {
-            decimals: token_metadata.decimal as u8,
+        // RegisterTokenMetadata expects u8 decimals, but TokenMetadata uses u32.
+        // The unwrap() is safe because token_metadata validation ensures decimals <= 255.
+        let message = HubMessage::RegisterTokenMetadata(RegisterTokenMetadata {
+            decimals: u8::try_from(token_metadata.decimal).unwrap(),
             token_address: token_address.to_string_bytes(),
-        })
-        .abi_encode(env)?;
+        });
 
-        Self::send_to_hub(env, spender, payload, gas_token)?;
+        Self::send_to_hub(env, spender, message, gas_token)?;
 
         TokenMetadataRegisteredEvent {
             token_address,
@@ -353,7 +354,7 @@ impl InterchainTokenService {
     fn send_to_hub(
         env: &Env,
         spender: Address,
-        payload: Bytes,
+        message: HubMessage,
         gas_token: Option<Token>,
     ) -> Result<(), ContractError> {
         let gateway = AxelarGatewayMessagingClient::new(env, &Self::gateway(env));
@@ -361,6 +362,8 @@ impl InterchainTokenService {
 
         let hub_chain = Self::its_hub_chain_name(env);
         let hub_address = Self::its_hub_address(env);
+
+        let payload = message.abi_encode(env)?;
 
         if let Some(gas_token) = gas_token {
             gas_service.pay_gas(
@@ -396,13 +399,12 @@ impl InterchainTokenService {
             ContractError::UntrustedChain
         );
 
-        let payload = HubMessage::SendToHub {
+        let hub_message = HubMessage::SendToHub {
             destination_chain,
             message,
-        }
-        .abi_encode(env)?;
+        };
 
-        Self::send_to_hub(env, caller, payload, gas_token)?;
+        Self::send_to_hub(env, caller, hub_message, gas_token)?;
 
         Ok(())
     }

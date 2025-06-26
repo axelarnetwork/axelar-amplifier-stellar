@@ -17,10 +17,6 @@ fn register_token_metadata_succeeds() {
     let spender = Address::generate(&env);
     let gas_token = setup_gas_token(&env, &spender);
 
-    StellarAssetClient::new(&env, &token.address())
-        .mock_all_auths()
-        .mint(&owner, &1000);
-
     let its_hub_chain = String::from_str(&env, "axelar");
 
     client.mock_all_auths().set_trusted_chain(&its_hub_chain);
