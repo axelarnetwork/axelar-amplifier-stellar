@@ -265,6 +265,7 @@ pub trait InterchainTokenServiceInterface:
     /// Then link token can be used to register those tokens to other chains.
     ///
     /// # Arguments
+    /// - `caller`: Address of the caller initiating the registration.
     /// - `salt`: A unique salt to deterministically derive the tokenId for the custom token.
     /// - `token_address`: The address of the custom token contract to register.
     /// - `token_manager_type`: The type of token manager to use for the token registration (e.g., LockUnlock).
@@ -275,8 +276,12 @@ pub trait InterchainTokenServiceInterface:
     /// # Errors
     /// - [`ContractError::TokenAlreadyRegistered`]: If the token ID is already registered.
     /// - [`ContractError::InvalidTokenManagerType`]: If the provided token manager type is not allowed for custom tokens.
+    ///
+    /// # Authorization
+    /// - The `caller` must authorize.
     fn register_custom_token(
         env: &Env,
+        caller: Address,
         salt: BytesN<32>,
         token_address: Address,
         token_manager_type: TokenManagerType,
