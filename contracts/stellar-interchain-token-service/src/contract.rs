@@ -17,14 +17,16 @@ use stellar_interchain_token::InterchainTokenClient;
 use crate::error::ContractError;
 use crate::event::{
     InterchainTokenDeploymentStartedEvent, InterchainTransferReceivedEvent,
-    InterchainTransferSentEvent, TrustedChainRemovedEvent, TrustedChainSetEvent,
+    InterchainTransferSentEvent, TokenMetadataRegisteredEvent, TrustedChainRemovedEvent,
+    TrustedChainSetEvent,
 };
 use crate::flow_limit::FlowDirection;
 use crate::interface::InterchainTokenServiceInterface;
 use crate::storage::{self, TokenIdConfigValue};
 use crate::token_metadata::TokenMetadataExt;
 use crate::types::{
-    DeployInterchainToken, HubMessage, InterchainTransfer, Message, TokenManagerType,
+    DeployInterchainToken, HubMessage, InterchainTransfer, Message, RegisterTokenMetadata,
+    TokenManagerType,
 };
 use crate::{deployer, flow_limit, token_handler, token_id, token_metadata};
 
@@ -260,6 +262,36 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
     }
 
     #[when_not_paused]
+    fn register_token_metadata(
+        env: &Env,
+        token_address: Address,
+        spender: Address,
+        gas_token: Option<Token>,
+    ) -> Result<(), ContractError> {
+        spender.require_auth();
+
+        let token_metadata =
+            token_metadata::token_metadata(env, &token_address, &Self::native_token_address(env))?;
+
+        // RegisterTokenMetadata expects u8 decimals, but TokenMetadata uses u32.
+        // The unwrap() is safe because token_metadata validation ensures decimals <= 255.
+        let hub_message = HubMessage::RegisterTokenMetadata(RegisterTokenMetadata {
+            decimals: u8::try_from(token_metadata.decimal).unwrap(),
+            token_address: token_address.to_string_bytes(),
+        });
+
+        Self::send_to_hub(env, spender, hub_message, gas_token)?;
+
+        TokenMetadataRegisteredEvent {
+            token_address,
+            decimals: token_metadata.decimal,
+        }
+        .emit(env);
+
+        Ok(())
+    }
+
+    #[when_not_paused]
     fn interchain_transfer(
         env: &Env,
         caller: Address,
@@ -319,6 +351,42 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
 }
 
 impl InterchainTokenService {
+    fn send_to_hub(
+        env: &Env,
+        spender: Address,
+        hub_message: HubMessage,
+        gas_token: Option<Token>,
+    ) -> Result<(), ContractError> {
+        let gateway = AxelarGatewayMessagingClient::new(env, &Self::gateway(env));
+        let gas_service = AxelarGasServiceClient::new(env, &Self::gas_service(env));
+
+        let hub_chain = Self::its_hub_chain_name(env);
+        let hub_address = Self::its_hub_address(env);
+
+        let payload = hub_message.abi_encode(env)?;
+
+        if let Some(gas_token) = gas_token {
+            gas_service.pay_gas(
+                &env.current_contract_address(),
+                &hub_chain,
+                &hub_address,
+                &payload,
+                &spender,
+                &gas_token,
+                &Bytes::new(env),
+            );
+        }
+
+        gateway.call_contract(
+            &env.current_contract_address(),
+            &hub_chain,
+            &hub_address,
+            &payload,
+        );
+
+        Ok(())
+    }
+
     fn pay_gas_and_call_contract(
         env: &Env,
         caller: Address,
@@ -331,36 +399,12 @@ impl InterchainTokenService {
             ContractError::UntrustedChain
         );
 
-        let gateway = AxelarGatewayMessagingClient::new(env, &Self::gateway(env));
-        let gas_service = AxelarGasServiceClient::new(env, &Self::gas_service(env));
-
-        let payload = HubMessage::SendToHub {
+        let hub_message = HubMessage::SendToHub {
             destination_chain,
             message,
-        }
-        .abi_encode(env)?;
+        };
 
-        let hub_chain = Self::its_hub_chain_name(env);
-        let hub_address = Self::its_hub_address(env);
-
-        if let Some(gas_token) = gas_token {
-            gas_service.pay_gas(
-                &env.current_contract_address(),
-                &hub_chain,
-                &hub_address,
-                &payload,
-                &caller,
-                &gas_token,
-                &Bytes::new(env),
-            );
-        }
-
-        gateway.call_contract(
-            &env.current_contract_address(),
-            &hub_chain,
-            &hub_address,
-            &payload,
-        );
+        Self::send_to_hub(env, caller, hub_message, gas_token)?;
 
         Ok(())
     }
