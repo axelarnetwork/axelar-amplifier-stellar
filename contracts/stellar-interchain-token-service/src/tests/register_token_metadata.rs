@@ -1,6 +1,5 @@
 use stellar_axelar_gas_service::testutils::setup_gas_token;
 use stellar_axelar_std::testutils::Address as _;
-use stellar_axelar_std::token::StellarAssetClient;
 use stellar_axelar_std::{assert_auth_err, assert_contract_err, events, Address, String};
 
 use super::utils::setup_env;
