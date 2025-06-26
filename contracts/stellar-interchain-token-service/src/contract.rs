@@ -299,15 +299,16 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
     ) -> Result<BytesN<32>, ContractError> {
         caller.require_auth();
 
-        // Validates the token address and it's associated token metadata
-        let _ =
-            token_metadata::token_metadata(env, &token_address, &Self::native_token_address(env))?;
-
         // Custom token managers can't be deployed with native interchain token type, which is reserved for interchain tokens
         ensure!(
             token_manager_type != TokenManagerType::NativeInterchainToken,
             ContractError::InvalidTokenManagerType
         );
+
+        // Validates the token address and it's associated token metadata
+        let _ =
+            token_metadata::token_metadata(env, &token_address, &Self::native_token_address(env))?;
+
         let token_id = Self::interchain_token_id(env, caller, salt);
 
         let _: Address =
