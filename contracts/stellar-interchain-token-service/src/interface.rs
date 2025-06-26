@@ -259,9 +259,9 @@ pub trait InterchainTokenServiceInterface:
         gas_token: Option<Token>,
     ) -> Result<(), ContractError>;
 
-    /// Registers a custom token as an interchain token on this chain.
+    /// Registers a custom token as an interchain token.
     ///
-    /// Only to be used by the InterchainTokenFactory to register custom tokens to this chain.
+    /// This function is used to register custom tokens on this chain.
     /// Then link token can be used to register those tokens to other chains.
     ///
     /// # Arguments

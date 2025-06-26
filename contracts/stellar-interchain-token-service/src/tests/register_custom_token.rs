@@ -1,5 +1,3 @@
-use std::vec;
-
 use stellar_axelar_std::address::AddressExt;
 use stellar_axelar_std::testutils::Address as _;
 use stellar_axelar_std::{assert_contract_err, events, Address, BytesN};
@@ -36,7 +34,7 @@ fn register_custom_token_succeeds() {
         token.address()
     );
     assert_eq!(client.token_manager_type(&expected_id), token_manager_type);
-    goldie::assert!([token_manager_deployed_event].join("\n\n"));
+    goldie::assert!(token_manager_deployed_event);
 }
 
 #[test]
@@ -78,7 +76,7 @@ fn custom_token_id_derivation() {
 
     let token_id = client.interchain_token_id(&Address::zero(&env), &salt);
 
-    goldie::assert_json!(vec![hex::encode(token_id.to_array())]);
+    goldie::assert!(hex::encode(token_id.to_array()));
 }
 
 #[test]

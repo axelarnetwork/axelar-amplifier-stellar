@@ -24,8 +24,10 @@ fn register_canonical_token_succeeds() {
             .register_canonical_token(&token.address()),
         expected_id
     );
-    let token_manager_deployed_event =
-        events::fmt_emitted_event_at_idx::<TokenManagerDeployedEvent>(&env, TOKEN_MANAGER_DEPLOYED_EVENT_IDX);
+    let token_manager_deployed_event = events::fmt_emitted_event_at_idx::<TokenManagerDeployedEvent>(
+        &env,
+        TOKEN_MANAGER_DEPLOYED_EVENT_IDX,
+    );
 
     assert_eq!(
         client.registered_token_address(&expected_id),
@@ -35,7 +37,7 @@ fn register_canonical_token_succeeds() {
         client.token_manager_type(&expected_id),
         TokenManagerType::LockUnlock
     );
-    goldie::assert!([token_manager_deployed_event].join("\n\n"));
+    goldie::assert!(token_manager_deployed_event);
 }
 
 #[test]

@@ -239,7 +239,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
             token_id.clone(),
             token_address,
             TokenManagerType::LockUnlock,
-        );
+        )?;
 
         Ok(token_id)
     }
@@ -305,10 +305,8 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         );
         let token_id = Self::interchain_token_id(env, Address::zero(env), salt);
 
-        Self::ensure_token_not_registered(env, token_id.clone())?;
-
         let _: Address =
-            Self::deploy_token_manager(env, token_id.clone(), token_address, token_manager_type);
+            Self::deploy_token_manager(env, token_id.clone(), token_address, token_manager_type)?;
 
         Ok(token_id)
     }
@@ -657,7 +655,9 @@ impl InterchainTokenService {
         token_id: BytesN<32>,
         token_address: Address,
         token_manager_type: TokenManagerType,
-    ) -> Address {
+    ) -> Result<Address, ContractError> {
+        Self::ensure_token_not_registered(env, token_id.clone())?;
+
         let token_manager = deployer::deploy_token_manager(
             env,
             Self::token_manager_wasm_hash(env),
@@ -676,7 +676,7 @@ impl InterchainTokenService {
             },
         );
 
-        token_manager
+        Ok(token_manager)
     }
 
     /// Deploy an interchain token on the current chain and its corresponding token manager.
@@ -707,7 +707,7 @@ impl InterchainTokenService {
             token_id,
             token_address.clone(),
             TokenManagerType::NativeInterchainToken,
-        );
+        )?;
 
         // Give minter role to the token manager
         // Check if token_manager is already a minter before adding to avoid MinterAlreadyExists error
