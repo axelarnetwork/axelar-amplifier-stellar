@@ -275,12 +275,12 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
 
         // RegisterTokenMetadata expects u8 decimals, but TokenMetadata uses u32.
         // The unwrap() is safe because token_metadata validation ensures decimals <= 255.
-        let message = HubMessage::RegisterTokenMetadata(RegisterTokenMetadata {
+        let hub_message = HubMessage::RegisterTokenMetadata(RegisterTokenMetadata {
             decimals: u8::try_from(token_metadata.decimal).unwrap(),
             token_address: token_address.to_string_bytes(),
         });
 
-        Self::send_to_hub(env, spender, message, gas_token)?;
+        Self::send_to_hub(env, spender, hub_message, gas_token)?;
 
         TokenMetadataRegisteredEvent {
             token_address,
@@ -354,7 +354,7 @@ impl InterchainTokenService {
     fn send_to_hub(
         env: &Env,
         spender: Address,
-        message: HubMessage,
+        hub_message: HubMessage,
         gas_token: Option<Token>,
     ) -> Result<(), ContractError> {
         let gateway = AxelarGatewayMessagingClient::new(env, &Self::gateway(env));
@@ -363,7 +363,7 @@ impl InterchainTokenService {
         let hub_chain = Self::its_hub_chain_name(env);
         let hub_address = Self::its_hub_address(env);
 
-        let payload = message.abi_encode(env)?;
+        let payload = hub_message.abi_encode(env)?;
 
         if let Some(gas_token) = gas_token {
             gas_service.pay_gas(
