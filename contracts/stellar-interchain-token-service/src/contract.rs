@@ -207,10 +207,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
 
         token_metadata.validate()?;
 
-        let unregistered_token_id = Self::ensure_token_not_registered(env, token_id.clone())?;
-
-        let token_address =
-            Self::deploy_token(env, unregistered_token_id.into(), token_metadata, minter)?;
+        let token_address = Self::deploy_token(env, token_id.clone(), token_metadata, minter)?;
 
         if initial_supply > 0 {
             StellarAssetClient::new(env, &token_address).mint(&caller, &initial_supply);
