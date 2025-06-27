@@ -8,6 +8,26 @@ const PREFIX_CUSTOM_TOKEN_SALT: &str = "custom-token-salt";
 /// This prefix is used along with a salt to generate the token ID
 const PREFIX_TOKEN_ID: &str = "its-interchain-token-id";
 
+/// A newtype wrapper that enforces token registration checks have been performed.
+/// This prevents calling `deploy_token_manager` without first checking that the token ID
+/// is not already registered.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct UnregisteredTokenId(BytesN<32>);
+
+impl UnregisteredTokenId {
+    /// Create a new UnregisteredTokenId. This should only be called after verifying
+    /// that the token ID is not already registered.
+    pub(crate) const fn new(token_id: BytesN<32>) -> Self {
+        Self(token_id)
+    }
+}
+
+impl From<UnregisteredTokenId> for BytesN<32> {
+    fn from(unregistered_token_id: UnregisteredTokenId) -> Self {
+        unregistered_token_id.0
+    }
+}
+
 fn token_id(env: &Env, deploy_salt: BytesN<32>) -> BytesN<32> {
     env.crypto()
         .keccak256(&(PREFIX_TOKEN_ID, Address::zero(env), deploy_salt).to_xdr(env))

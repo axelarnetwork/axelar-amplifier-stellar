@@ -13,6 +13,7 @@ use stellar_axelar_std::{
     Symbol, Upgradable, Val,
 };
 use stellar_interchain_token::InterchainTokenClient;
+use token_id::UnregisteredTokenId;
 
 use crate::error::ContractError;
 use crate::event::{
@@ -26,7 +27,7 @@ use crate::storage::{self, TokenIdConfigValue};
 use crate::token_metadata::TokenMetadataExt;
 use crate::types::{
     DeployInterchainToken, HubMessage, InterchainTransfer, Message, RegisterTokenMetadata,
-    TokenManagerType, UnregisteredTokenId,
+    TokenManagerType,
 };
 use crate::{deployer, flow_limit, token_handler, token_id, token_metadata};
 
@@ -206,7 +207,10 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
 
         token_metadata.validate()?;
 
-        let token_address = Self::deploy_token(env, token_id.clone(), token_metadata, minter)?;
+        let unregistered_token_id = Self::ensure_token_not_registered(env, token_id.clone())?;
+
+        let token_address =
+            Self::deploy_token(env, unregistered_token_id.into(), token_metadata, minter)?;
 
         if initial_supply > 0 {
             StellarAssetClient::new(env, &token_address).mint(&caller, &initial_supply);
@@ -681,7 +685,7 @@ impl InterchainTokenService {
         token_address: Address,
         token_manager_type: TokenManagerType,
     ) -> Address {
-        let token_id = unregistered_token_id.0;
+        let token_id: BytesN<32> = unregistered_token_id.into();
         let token_manager = deployer::deploy_token_manager(
             env,
             Self::token_manager_wasm_hash(env),
@@ -715,13 +719,13 @@ impl InterchainTokenService {
         token_metadata: TokenMetadata,
         minter: Option<Address>,
     ) -> Result<Address, ContractError> {
-        let unregistered_token_id = Self::ensure_token_not_registered(env, token_id)?;
+        let unregistered_token_id = Self::ensure_token_not_registered(env, token_id.clone())?;
 
         let token_address = deployer::deploy_interchain_token(
             env,
             Self::interchain_token_wasm_hash(env),
             minter,
-            unregistered_token_id.0.clone(),
+            unregistered_token_id.clone().into(),
             token_metadata,
         );
         let interchain_token_client = InterchainTokenClient::new(env, &token_address);
@@ -751,7 +755,7 @@ impl InterchainTokenService {
             ContractError::TokenAlreadyRegistered
         );
 
-        Ok(UnregisteredTokenId(token_id))
+        Ok(UnregisteredTokenId::new(token_id))
     }
 }
 
