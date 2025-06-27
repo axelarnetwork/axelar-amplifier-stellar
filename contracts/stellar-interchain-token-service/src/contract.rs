@@ -140,7 +140,12 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
             deployer.clone(),
             salt,
         );
-        token_id::interchain_token_id(env, Self::chain_name_hash(env), deployer, deploy_salt)
+        token_id::interchain_token_id(
+            env,
+            Self::chain_name_hash(env),
+            Address::zero(env),
+            deploy_salt,
+        )
     }
 
     fn interchain_token_address(env: &Env, token_id: BytesN<32>) -> Address {
