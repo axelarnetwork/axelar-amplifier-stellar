@@ -134,12 +134,8 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
     }
 
     fn linked_token_id(env: &Env, deployer: Address, salt: BytesN<32>) -> BytesN<32> {
-        let deploy_salt = token_id::linked_token_deploy_salt(
-            env,
-            Self::chain_name_hash(env),
-            deployer.clone(),
-            salt,
-        );
+        let deploy_salt =
+            token_id::linked_token_deploy_salt(env, Self::chain_name_hash(env), deployer, salt);
         token_id::interchain_token_id(
             env,
             Self::chain_name_hash(env),
