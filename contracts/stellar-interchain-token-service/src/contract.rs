@@ -714,7 +714,7 @@ impl InterchainTokenService {
         token_metadata: TokenMetadata,
         minter: Option<Address>,
     ) -> Result<Address, ContractError> {
-        let unregistered_token_id = Self::ensure_token_not_registered(env, token_id.clone())?;
+        let unregistered_token_id = Self::ensure_token_not_registered(env, token_id)?;
 
         let token_address = deployer::deploy_interchain_token(
             env,
