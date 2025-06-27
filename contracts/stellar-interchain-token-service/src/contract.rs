@@ -321,7 +321,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         let _ =
             token_metadata::token_metadata(env, &token_address, &Self::native_token_address(env))?;
 
-        let token_id = Self::linked_token_id(env, deployer.clone(), salt);
+        let token_id = Self::linked_token_id(env, deployer, salt);
 
         let unregistered_token_id = Self::ensure_token_not_registered(env, token_id.clone())?;
 
@@ -720,7 +720,7 @@ impl InterchainTokenService {
             env,
             Self::interchain_token_wasm_hash(env),
             minter,
-            token_id.clone(),
+            unregistered_token_id.0.clone(),
             token_metadata,
         );
         let interchain_token_client = InterchainTokenClient::new(env, &token_address);
