@@ -67,3 +67,9 @@ pub enum TokenManagerType {
     // LockUnlockFee = 3,
     // MintBurn = 4,
 }
+
+/// A newtype wrapper that enforces token registration checks have been performed.
+/// This prevents calling `deploy_token_manager` without first checking that the token ID
+/// is not already registered.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct UnregisteredTokenId(pub(crate) BytesN<32>);

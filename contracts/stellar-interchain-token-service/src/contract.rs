@@ -26,7 +26,7 @@ use crate::storage::{self, TokenIdConfigValue};
 use crate::token_metadata::TokenMetadataExt;
 use crate::types::{
     DeployInterchainToken, HubMessage, InterchainTransfer, Message, RegisterTokenMetadata,
-    TokenManagerType,
+    TokenManagerType, UnregisteredTokenId,
 };
 use crate::{deployer, flow_limit, token_handler, token_id, token_metadata};
 
@@ -133,6 +133,16 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         token_id::canonical_interchain_token_id(env, Self::chain_name_hash(env), token_address)
     }
 
+    fn linked_token_id(env: &Env, deployer: Address, salt: BytesN<32>) -> BytesN<32> {
+        let deploy_salt = token_id::linked_token_deploy_salt(
+            env,
+            Self::chain_name_hash(env),
+            deployer.clone(),
+            salt,
+        );
+        token_id::interchain_token_id(env, Self::chain_name_hash(env), deployer, deploy_salt)
+    }
+
     fn interchain_token_address(env: &Env, token_id: BytesN<32>) -> Address {
         deployer::interchain_token_address(env, token_id)
     }
@@ -226,18 +236,20 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         env: &Env,
         token_address: Address,
     ) -> Result<BytesN<32>, ContractError> {
-        // Validates the token address and it's associated token metadata
+        // Validates the token address and its associated token metadata
         let _ =
             token_metadata::token_metadata(env, &token_address, &Self::native_token_address(env))?;
 
         let token_id = Self::canonical_interchain_token_id(env, token_address.clone());
 
+        let unregistered_token_id = Self::ensure_token_not_registered(env, token_id.clone())?;
+
         let _: Address = Self::deploy_token_manager(
             env,
-            token_id.clone(),
+            unregistered_token_id,
             token_address,
             TokenManagerType::LockUnlock,
-        )?;
+        );
 
         Ok(token_id)
     }
@@ -292,12 +304,12 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
     #[when_not_paused]
     fn register_custom_token(
         env: &Env,
-        caller: Address,
+        deployer: Address,
         salt: BytesN<32>,
         token_address: Address,
         token_manager_type: TokenManagerType,
     ) -> Result<BytesN<32>, ContractError> {
-        caller.require_auth();
+        deployer.require_auth();
 
         // Custom token managers can't be deployed with native interchain token type, which is reserved for interchain tokens
         ensure!(
@@ -305,14 +317,20 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
             ContractError::InvalidTokenManagerType
         );
 
-        // Validates the token address and it's associated token metadata
+        // Validates the token address and its associated token metadata
         let _ =
             token_metadata::token_metadata(env, &token_address, &Self::native_token_address(env))?;
 
-        let token_id = Self::interchain_token_id(env, caller, salt);
+        let token_id = Self::linked_token_id(env, deployer.clone(), salt);
 
-        let _: Address =
-            Self::deploy_token_manager(env, token_id.clone(), token_address, token_manager_type)?;
+        let unregistered_token_id = Self::ensure_token_not_registered(env, token_id.clone())?;
+
+        let _: Address = Self::deploy_token_manager(
+            env,
+            unregistered_token_id,
+            token_address,
+            token_manager_type,
+        );
 
         Ok(token_id)
     }
@@ -658,12 +676,11 @@ impl InterchainTokenService {
 
     fn deploy_token_manager(
         env: &Env,
-        token_id: BytesN<32>,
+        unregistered_token_id: UnregisteredTokenId,
         token_address: Address,
         token_manager_type: TokenManagerType,
-    ) -> Result<Address, ContractError> {
-        Self::ensure_token_not_registered(env, token_id.clone())?;
-
+    ) -> Address {
+        let token_id = unregistered_token_id.0;
         let token_manager = deployer::deploy_token_manager(
             env,
             Self::token_manager_wasm_hash(env),
@@ -682,7 +699,7 @@ impl InterchainTokenService {
             },
         );
 
-        Ok(token_manager)
+        token_manager
     }
 
     /// Deploy an interchain token on the current chain and its corresponding token manager.
@@ -697,7 +714,7 @@ impl InterchainTokenService {
         token_metadata: TokenMetadata,
         minter: Option<Address>,
     ) -> Result<Address, ContractError> {
-        Self::ensure_token_not_registered(env, token_id.clone())?;
+        let unregistered_token_id = Self::ensure_token_not_registered(env, token_id.clone())?;
 
         let token_address = deployer::deploy_interchain_token(
             env,
@@ -710,10 +727,10 @@ impl InterchainTokenService {
 
         let token_manager = Self::deploy_token_manager(
             env,
-            token_id,
+            unregistered_token_id,
             token_address.clone(),
             TokenManagerType::NativeInterchainToken,
-        )?;
+        );
 
         // Give minter role to the token manager
         // Check if token_manager is already a minter before adding to avoid MinterAlreadyExists error
@@ -724,13 +741,16 @@ impl InterchainTokenService {
         Ok(token_address)
     }
 
-    fn ensure_token_not_registered(env: &Env, token_id: BytesN<32>) -> Result<(), ContractError> {
+    fn ensure_token_not_registered(
+        env: &Env,
+        token_id: BytesN<32>,
+    ) -> Result<UnregisteredTokenId, ContractError> {
         ensure!(
-            storage::try_token_id_config(env, token_id).is_none(),
+            storage::try_token_id_config(env, token_id.clone()).is_none(),
             ContractError::TokenAlreadyRegistered
         );
 
-        Ok(())
+        Ok(UnregisteredTokenId(token_id))
     }
 }
 

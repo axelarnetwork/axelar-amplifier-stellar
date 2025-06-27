@@ -4,6 +4,7 @@ use stellar_axelar_std::{Address, BytesN, Env};
 
 const PREFIX_CANONICAL_TOKEN_SALT: &str = "canonical-token-salt";
 const PREFIX_INTERCHAIN_TOKEN_SALT: &str = "interchain-token-salt";
+const PREFIX_CUSTOM_TOKEN_SALT: &str = "custom-token-salt";
 /// This prefix is used along with a salt to generate the token ID
 const PREFIX_TOKEN_ID: &str = "its-interchain-token-id";
 
@@ -32,6 +33,17 @@ pub fn canonical_interchain_token_id(
         env,
         canonical_token_deploy_salt(env, chain_name_hash, token_address),
     )
+}
+
+pub fn linked_token_deploy_salt(
+    env: &Env,
+    chain_name_hash: BytesN<32>,
+    deployer: Address,
+    salt: BytesN<32>,
+) -> BytesN<32> {
+    env.crypto()
+        .keccak256(&(PREFIX_CUSTOM_TOKEN_SALT, chain_name_hash, deployer, salt).to_xdr(env))
+        .into()
 }
 
 fn interchain_token_deploy_salt(

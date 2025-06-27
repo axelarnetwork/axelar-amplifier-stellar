@@ -9,8 +9,6 @@ use crate::error::ContractError;
 use crate::event::TokenManagerDeployedEvent;
 use crate::types::TokenManagerType;
 
-pub const TOKEN_MANAGER_DEPLOYED_EVENT_IDX: i32 = -1;
-
 #[test]
 fn register_canonical_token_succeeds() {
     let (env, client, _, _, _) = setup_env();
@@ -24,10 +22,8 @@ fn register_canonical_token_succeeds() {
             .register_canonical_token(&token.address()),
         expected_id
     );
-    let token_manager_deployed_event = events::fmt_emitted_event_at_idx::<TokenManagerDeployedEvent>(
-        &env,
-        TOKEN_MANAGER_DEPLOYED_EVENT_IDX,
-    );
+    let token_manager_deployed_event =
+        events::fmt_last_emitted_event::<TokenManagerDeployedEvent>(&env);
 
     assert_eq!(
         client.registered_token_address(&expected_id),
