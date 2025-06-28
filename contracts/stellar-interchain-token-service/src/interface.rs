@@ -63,7 +63,7 @@ pub trait InterchainTokenServiceInterface:
     /// - A `BytesN<32>` value representing the token's unique ID.
     fn interchain_token_id(env: &Env, deployer: Address, salt: BytesN<32>) -> BytesN<32>;
 
-    /// Computes a 32-byte deployment salt for a canonical token.
+    /// Computes a 32-byte token id for a canonical token.
     ///
     /// The salt is derived uniquely from the chain name hash and token address.
     ///
@@ -74,7 +74,7 @@ pub trait InterchainTokenServiceInterface:
     /// - A `BytesN<32>` value representing the computed deployment salt.
     fn canonical_interchain_token_id(env: &Env, token_address: Address) -> BytesN<32>;
 
-    /// Computes a 32-byte deployment salt for a linked token.
+    /// Computes a 32-byte token id for a linked token.
     ///
     /// The salt is derived uniquely from the chain name hash and token address.
     ///

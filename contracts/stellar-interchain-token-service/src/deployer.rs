@@ -4,6 +4,7 @@ use stellar_axelar_std::xdr::ToXdr;
 use stellar_axelar_std::{Address, BytesN, Env};
 
 use crate::event::{InterchainTokenDeployedEvent, TokenManagerDeployedEvent};
+use crate::token_id::UnregisteredTokenId;
 use crate::types::TokenManagerType;
 
 /// This prefix, along with the tokenId, is used to generate the salt for the deterministic interchain token deployment
@@ -39,9 +40,10 @@ pub fn deploy_interchain_token(
     env: &Env,
     interchain_token_wasm_hash: BytesN<32>,
     minter: Option<Address>,
-    token_id: BytesN<32>,
+    unregistered_token_id: UnregisteredTokenId,
     token_metadata: TokenMetadata,
 ) -> Address {
+    let token_id: BytesN<32> = unregistered_token_id.into();
     let deployed_address = env
         .deployer()
         .with_current_contract(interchain_token_deployment_salt(env, token_id.clone()))

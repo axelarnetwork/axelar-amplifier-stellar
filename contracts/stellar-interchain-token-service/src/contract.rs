@@ -135,14 +135,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
     }
 
     fn linked_token_id(env: &Env, deployer: Address, salt: BytesN<32>) -> BytesN<32> {
-        let deploy_salt =
-            token_id::linked_token_deploy_salt(env, Self::chain_name_hash(env), deployer, salt);
-        token_id::interchain_token_id(
-            env,
-            Self::chain_name_hash(env),
-            Address::zero(env),
-            deploy_salt,
-        )
+        token_id::linked_token_id(env, Self::chain_name_hash(env), deployer, salt)
     }
 
     fn interchain_token_address(env: &Env, token_id: BytesN<32>) -> Address {
@@ -207,7 +200,9 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
 
         token_metadata.validate()?;
 
-        let token_address = Self::deploy_token(env, token_id.clone(), token_metadata, minter)?;
+        let unregistered_token_id = token_id::ensure_token_not_registered(env, token_id.clone())?;
+
+        let token_address = Self::deploy_token(env, unregistered_token_id, token_metadata, minter)?;
 
         if initial_supply > 0 {
             StellarAssetClient::new(env, &token_address).mint(&caller, &initial_supply);
@@ -244,7 +239,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
 
         let token_id = Self::canonical_interchain_token_id(env, token_address.clone());
 
-        let unregistered_token_id = Self::ensure_token_not_registered(env, token_id.clone())?;
+        let unregistered_token_id = token_id::ensure_token_not_registered(env, token_id.clone())?;
 
         let _: Address = Self::deploy_token_manager(
             env,
@@ -325,7 +320,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
 
         let token_id = Self::linked_token_id(env, deployer, salt);
 
-        let unregistered_token_id = Self::ensure_token_not_registered(env, token_id.clone())?;
+        let unregistered_token_id = token_id::ensure_token_not_registered(env, token_id.clone())?;
 
         let _: Address = Self::deploy_token_manager(
             env,
@@ -671,7 +666,8 @@ impl InterchainTokenService {
         // Note: attempt to convert a byte string which doesn't represent a valid Soroban address fails at the Host level
         let minter = minter.map(|m| Address::from_string_bytes(&m));
 
-        let _: Address = Self::deploy_token(env, token_id, token_metadata, minter)?;
+        let unregistered_token_id = token_id::ensure_token_not_registered(env, token_id)?;
+        let _: Address = Self::deploy_token(env, unregistered_token_id, token_metadata, minter)?;
 
         Ok(())
     }
@@ -707,22 +703,20 @@ impl InterchainTokenService {
     /// Deploy an interchain token on the current chain and its corresponding token manager.
     ///
     /// # Arguments
-    /// * `token_id` - The token ID for the interchain token being deployed.
+    /// * `unregistered_token_id` - The unregistered token ID for the interchain token being deployed.
     /// * `token_metadata` - The metadata for the interchain token being deployed.
     /// * `minter` - An optional address of an additional minter for the interchain token being deployed.
     fn deploy_token(
         env: &Env,
-        token_id: BytesN<32>,
+        unregistered_token_id: UnregisteredTokenId,
         token_metadata: TokenMetadata,
         minter: Option<Address>,
     ) -> Result<Address, ContractError> {
-        let unregistered_token_id = Self::ensure_token_not_registered(env, token_id)?;
-
         let token_address = deployer::deploy_interchain_token(
             env,
             Self::interchain_token_wasm_hash(env),
             minter,
-            unregistered_token_id.clone().into(),
+            unregistered_token_id.clone(),
             token_metadata,
         );
         let interchain_token_client = InterchainTokenClient::new(env, &token_address);
@@ -741,18 +735,6 @@ impl InterchainTokenService {
         }
 
         Ok(token_address)
-    }
-
-    fn ensure_token_not_registered(
-        env: &Env,
-        token_id: BytesN<32>,
-    ) -> Result<UnregisteredTokenId, ContractError> {
-        ensure!(
-            storage::try_token_id_config(env, token_id.clone()).is_none(),
-            ContractError::TokenAlreadyRegistered
-        );
-
-        Ok(UnregisteredTokenId::new(token_id))
     }
 }
 

@@ -2,6 +2,9 @@ use stellar_axelar_std::address::AddressExt;
 use stellar_axelar_std::xdr::ToXdr;
 use stellar_axelar_std::{Address, BytesN, Env};
 
+use crate::error::ContractError;
+use crate::storage;
+
 const PREFIX_CANONICAL_TOKEN_SALT: &str = "canonical-token-salt";
 const PREFIX_INTERCHAIN_TOKEN_SALT: &str = "interchain-token-salt";
 const PREFIX_CUSTOM_TOKEN_SALT: &str = "custom-token-salt";
@@ -55,7 +58,7 @@ pub fn canonical_interchain_token_id(
     )
 }
 
-pub fn linked_token_deploy_salt(
+fn linked_token_deploy_salt(
     env: &Env,
     chain_name_hash: BytesN<32>,
     deployer: Address,
@@ -64,6 +67,16 @@ pub fn linked_token_deploy_salt(
     env.crypto()
         .keccak256(&(PREFIX_CUSTOM_TOKEN_SALT, chain_name_hash, deployer, salt).to_xdr(env))
         .into()
+}
+
+pub fn linked_token_id(
+    env: &Env,
+    chain_name_hash: BytesN<32>,
+    deployer: Address,
+    salt: BytesN<32>,
+) -> BytesN<32> {
+    let deploy_salt = linked_token_deploy_salt(env, chain_name_hash.clone(), deployer, salt);
+    interchain_token_id(env, chain_name_hash, Address::zero(env), deploy_salt)
 }
 
 fn interchain_token_deploy_salt(
@@ -95,4 +108,16 @@ pub fn interchain_token_id(
         env,
         interchain_token_deploy_salt(env, chain_name_hash, deployer, salt),
     )
+}
+
+pub fn ensure_token_not_registered(
+    env: &Env,
+    token_id: BytesN<32>,
+) -> Result<UnregisteredTokenId, ContractError> {
+    stellar_axelar_std::ensure!(
+        storage::try_token_id_config(env, token_id.clone()).is_none(),
+        ContractError::TokenAlreadyRegistered
+    );
+
+    Ok(UnregisteredTokenId::new(token_id))
 }
