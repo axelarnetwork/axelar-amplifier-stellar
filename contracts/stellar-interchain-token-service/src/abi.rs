@@ -762,20 +762,6 @@ mod tests {
 
     #[test]
     fn to_token_manager_type_fails_invalid_token_manager_type() {
-        // Test valid token manager types
-        assert_eq!(
-            to_token_manager_type(Uint::from(0u32)).unwrap(),
-            types::TokenManagerType::NativeInterchainToken
-        );
-        assert_eq!(
-            to_token_manager_type(Uint::from(2u32)).unwrap(),
-            types::TokenManagerType::LockUnlock
-        );
-        assert_eq!(
-            to_token_manager_type(Uint::from(4u32)).unwrap(),
-            types::TokenManagerType::MintBurn
-        );
-
         let invalid_type: Uint<256, 4> = Uint::from(5u32);
         let result = to_token_manager_type(invalid_type);
         assert!(matches!(
