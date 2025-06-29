@@ -22,6 +22,7 @@ pub fn take_token(
     match token_manager_type {
         TokenManagerType::NativeInterchainToken => token.burn(sender, &amount),
         TokenManagerType::LockUnlock => token.transfer(sender, &token_manager, &amount),
+        TokenManagerType::MintBurn => token.burn(sender, &amount),
     }
 
     Ok(())
@@ -46,6 +47,7 @@ pub fn give_token(
         TokenManagerType::LockUnlock => {
             token_manager.transfer(env, &token_address, recipient, amount)
         }
+        TokenManagerType::MintBurn => token_manager.mint(env, &token_address, recipient, amount),
     }
 
     Ok(())
