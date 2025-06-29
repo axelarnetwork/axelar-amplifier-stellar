@@ -63,7 +63,7 @@ pub trait InterchainTokenServiceInterface:
     /// - A `BytesN<32>` value representing the token's unique ID.
     fn interchain_token_id(env: &Env, deployer: Address, salt: BytesN<32>) -> BytesN<32>;
 
-    /// Computes a 32-byte deployment salt for a canonical token.
+    /// Computes a 32-byte token id for a canonical token.
     ///
     /// The salt is derived uniquely from the chain name hash and token address.
     ///
@@ -73,6 +73,15 @@ pub trait InterchainTokenServiceInterface:
     /// # Returns
     /// - A `BytesN<32>` value representing the computed deployment salt.
     fn canonical_interchain_token_id(env: &Env, token_address: Address) -> BytesN<32>;
+
+    /// Computes a 32-byte token id for a linked token.
+    ///
+    /// The salt is derived uniquely from the chain name hash and token address.
+    ///
+    /// # Parameters
+    /// - `deployer`: The address of the token deployer.
+    /// - `salt`: A unique value used to generate the token ID.
+    fn linked_token_id(env: &Env, deployer: Address, salt: BytesN<32>) -> BytesN<32>;
 
     /// Returns the predicted address of the native interchain token associated with the specified token ID.
     ///
@@ -258,6 +267,34 @@ pub trait InterchainTokenServiceInterface:
         spender: Address,
         gas_token: Option<Token>,
     ) -> Result<(), ContractError>;
+
+    /// Registers a custom token as an interchain token.
+    ///
+    /// This function is used to register custom tokens on this chain.
+    /// Then link token can be used to register those tokens to other chains.
+    ///
+    /// # Arguments
+    /// - `deployer`: Address of the deployer initiating the registration.
+    /// - `salt`: A unique salt to deterministically derive the tokenId for the custom token.
+    /// - `token_address`: The address of the custom token contract to register.
+    /// - `token_manager_type`: The type of token manager to use for the token registration (e.g., LockUnlock).
+    ///
+    /// # Returns
+    /// - `Ok(BytesN<32>)`: Returns the derived token ID for the registered custom token.
+    ///
+    /// # Errors
+    /// - [`ContractError::TokenAlreadyRegistered`]: If the token ID is already registered.
+    /// - [`ContractError::InvalidTokenManagerType`]: If the provided token manager type is not allowed for custom tokens.
+    ///
+    /// # Authorization
+    /// - The `deployer` must authorize.
+    fn register_custom_token(
+        env: &Env,
+        deployer: Address,
+        salt: BytesN<32>,
+        token_address: Address,
+        token_manager_type: TokenManagerType,
+    ) -> Result<BytesN<32>, ContractError>;
 
     /// Initiates a cross-chain token transfer.
     ///
