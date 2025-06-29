@@ -129,3 +129,32 @@ fn register_custom_token_fails_with_invalid_token_address() {
         ContractError::InvalidTokenAddress
     );
 }
+
+#[test]
+fn register_custom_token_with_mint_burn_succeeds() {
+    let (env, client, _, _, _) = setup_env();
+    let owner = Address::generate(&env);
+    let deployer = Address::generate(&env);
+    let token = &env.register_stellar_asset_contract_v2(owner);
+    let salt = BytesN::<32>::from_array(&env, &[2; 32]);
+    let token_manager_type = TokenManagerType::MintBurn;
+    let expected_id = client.linked_token_id(&deployer, &salt);
+
+    let token_id = assert_auth!(
+        &deployer,
+        client.register_custom_token(&deployer, &salt, &token.address(), &token_manager_type)
+    );
+
+    let token_manager_deployed_event =
+        events::fmt_last_emitted_event::<TokenManagerDeployedEvent>(&env);
+
+    assert_eq!(token_id, expected_id);
+
+    assert_eq!(
+        client.registered_token_address(&expected_id),
+        token.address()
+    );
+    assert_eq!(client.token_manager_type(&expected_id), token_manager_type);
+
+    goldie::assert!(token_manager_deployed_event);
+}

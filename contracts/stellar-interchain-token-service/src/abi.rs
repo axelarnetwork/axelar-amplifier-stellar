@@ -300,6 +300,7 @@ fn to_token_manager_type(value: Uint<256, 4>) -> Result<types::TokenManagerType,
     match u32_value {
         0 => Ok(types::TokenManagerType::NativeInterchainToken),
         2 => Ok(types::TokenManagerType::LockUnlock),
+        4 => Ok(types::TokenManagerType::MintBurn),
         _ => Err(ContractError::InvalidTokenManagerType),
     }
 }
@@ -632,6 +633,16 @@ mod tests {
                 destination_chain: remote_chain.clone(),
                 message: types::Message::LinkToken(types::LinkToken {
                     token_id: BytesN::from_array(&env, &[42u8; 32]),
+                    token_manager_type: types::TokenManagerType::MintBurn,
+                    source_token_address: Bytes::from_hex(&env, "deadbeef"),
+                    destination_token_address: Bytes::from_hex(&env, "cafebabe"),
+                    params: Some(Bytes::from_hex(&env, "1234567890abcdef")),
+                }),
+            },
+            types::HubMessage::SendToHub {
+                destination_chain: remote_chain.clone(),
+                message: types::Message::LinkToken(types::LinkToken {
+                    token_id: BytesN::from_array(&env, &[100u8; 32]),
                     token_manager_type: types::TokenManagerType::NativeInterchainToken,
                     source_token_address: Bytes::from_hex(&env, "deadbeef"),
                     destination_token_address: Bytes::from_hex(&env, "cafebabe"),
@@ -665,9 +676,19 @@ mod tests {
                 }),
             },
             types::HubMessage::ReceiveFromHub {
-                source_chain: remote_chain,
+                source_chain: remote_chain.clone(),
                 message: types::Message::LinkToken(types::LinkToken {
                     token_id: BytesN::from_array(&env, &[42u8; 32]),
+                    token_manager_type: types::TokenManagerType::MintBurn,
+                    source_token_address: Bytes::from_hex(&env, "deadbeef"),
+                    destination_token_address: Bytes::from_hex(&env, "cafebabe"),
+                    params: Some(Bytes::from_hex(&env, "1234567890abcdef")),
+                }),
+            },
+            types::HubMessage::ReceiveFromHub {
+                source_chain: remote_chain,
+                message: types::Message::LinkToken(types::LinkToken {
+                    token_id: BytesN::from_array(&env, &[100u8; 32]),
                     token_manager_type: types::TokenManagerType::NativeInterchainToken,
                     source_token_address: Bytes::from_hex(&env, "deadbeef"),
                     destination_token_address: Bytes::from_hex(&env, "cafebabe"),
@@ -741,6 +762,20 @@ mod tests {
 
     #[test]
     fn to_token_manager_type_fails_invalid_token_manager_type() {
+        // Test valid token manager types
+        assert_eq!(
+            to_token_manager_type(Uint::from(0u32)).unwrap(),
+            types::TokenManagerType::NativeInterchainToken
+        );
+        assert_eq!(
+            to_token_manager_type(Uint::from(2u32)).unwrap(),
+            types::TokenManagerType::LockUnlock
+        );
+        assert_eq!(
+            to_token_manager_type(Uint::from(4u32)).unwrap(),
+            types::TokenManagerType::MintBurn
+        );
+
         let invalid_type: Uint<256, 4> = Uint::from(5u32);
         let result = to_token_manager_type(invalid_type);
         assert!(matches!(

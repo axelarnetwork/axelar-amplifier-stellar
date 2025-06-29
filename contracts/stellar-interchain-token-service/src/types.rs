@@ -65,5 +65,5 @@ pub enum TokenManagerType {
     // MintBurnFrom = 1,
     LockUnlock = 2,
     // LockUnlockFee = 3,
-    // MintBurn = 4,
+    MintBurn = 4,
 }
