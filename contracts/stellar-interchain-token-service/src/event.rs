@@ -58,6 +58,16 @@ pub struct TokenMetadataRegisteredEvent {
 }
 
 #[derive(Debug, PartialEq, Eq, IntoEvent)]
+pub struct LinkTokenStartedEvent {
+    pub token_id: BytesN<32>,
+    pub destination_chain: String,
+    pub source_token_address: Bytes,
+    pub destination_token_address: Bytes,
+    pub token_manager_type: TokenManagerType,
+    pub params: Option<Bytes>,
+}
+
+#[derive(Debug, PartialEq, Eq, IntoEvent)]
 pub struct InterchainTransferSentEvent {
     pub token_id: BytesN<32>,
     pub source_address: Address,

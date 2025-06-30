@@ -296,6 +296,40 @@ pub trait InterchainTokenServiceInterface:
         token_manager_type: TokenManagerType,
     ) -> Result<BytesN<32>, ContractError>;
 
+    /// Links a remote token on the destination chain to a local token corresponding to the token ID computed from the provided salt.
+    ///
+    /// A local token must have been registered first using the `register_custom_token` function.
+    ///
+    /// # Arguments
+    /// - `deployer`: Address of the deployer initiating the token linking.
+    /// - `salt`: The salt used to derive the token ID for the custom token registration. The same salt must be used when linking this token on other chains under the same token ID.
+    /// - `destination_chain`: The name of the destination chain. Cannot be the same as the current chain.
+    /// - `destination_token_address`: The token address of the token being linked on the destination chain.
+    /// - `token_manager_type`: The token manager type used for the token link. Cannot be NativeInterchainToken.
+    /// - `link_params`: Additional parameters for the token link depending on the destination chain.
+    /// - `gas_token`: An optional gas token used to pay for cross-chain message execution.
+    ///
+    /// # Returns
+    /// - `Ok(BytesN<32>)`: Returns the token ID corresponding to the linked token.
+    ///
+    /// # Errors
+    /// - [`ContractError::InvalidTokenManagerType`]: If the provided token manager type is NativeInterchainToken.
+    /// - [`ContractError::InvalidDestinationChain`]: If the destination chain is the same as the current chain.
+    /// - Any error propagated from token metadata validation or `pay_gas_and_call_contract`.
+    ///
+    /// # Authorization
+    /// - The `deployer` must authorize.
+    fn link_token(
+        env: &Env,
+        deployer: Address,
+        salt: BytesN<32>,
+        destination_chain: String,
+        destination_token_address: Bytes,
+        token_manager_type: TokenManagerType,
+        link_params: Option<Bytes>,
+        gas_token: Option<Token>,
+    ) -> Result<BytesN<32>, ContractError>;
+
     /// Initiates a cross-chain token transfer.
     ///
     /// Takes tokens from the caller on the source chain and initiates a transfer
