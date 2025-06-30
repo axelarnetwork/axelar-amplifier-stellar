@@ -15,7 +15,7 @@ const LINK_TOKEN_STARTED_WITH_GAS_EVENT_IDX: i32 = -4;
 const LINK_TOKEN_STARTED_WITHOUT_GAS_EVENT_IDX: i32 = -2;
 
 #[test]
-fn link_token_succeeds_with_() {
+fn link_token_succeeds_with_token_manager_type_lock_unlock() {
     let (env, client, _, gas_service, _) = setup_env();
     let deployer = Address::generate(&env);
     let gas_token = setup_gas_token(&env, &deployer);
@@ -114,7 +114,50 @@ fn link_token_succeeds_with_() {
 }
 
 #[test]
-fn link_token_succeeds_without_link_params_and_gas_token() {
+fn link_token_succeeds_with_token_manager_type_mint_burn() {
+    let (env, client, _, _, _) = setup_env();
+    let deployer = Address::generate(&env);
+    let owner = Address::generate(&env);
+    let token = &env.register_stellar_asset_contract_v2(owner);
+    let salt = BytesN::<32>::from_array(&env, &[2; 32]);
+    let token_manager_type = TokenManagerType::MintBurn;
+    let destination_chain = String::from_str(&env, "ethereum");
+    let destination_token_address = Bytes::from_array(&env, &[2; 32]);
+    let link_params: Option<Bytes> = None;
+    let gas_token: Option<Token> = None;
+
+    let expected_id = client.linked_token_id(&deployer, &salt);
+    client.mock_all_auths().register_custom_token(
+        &deployer,
+        &salt,
+        &token.address(),
+        &token_manager_type,
+    );
+
+    client
+        .mock_all_auths()
+        .set_trusted_chain(&destination_chain);
+
+    let token_id = client.mock_all_auths().link_token(
+        &deployer,
+        &salt,
+        &destination_chain,
+        &destination_token_address,
+        &token_manager_type,
+        &link_params,
+        &gas_token,
+    );
+
+    assert_eq!(token_id, expected_id);
+
+    goldie::assert!(events::fmt_emitted_event_at_idx::<LinkTokenStartedEvent>(
+        &env,
+        LINK_TOKEN_STARTED_WITHOUT_GAS_EVENT_IDX
+    ));
+}
+
+#[test]
+fn link_token_succeeds_without_gas_token() {
     let (env, client, _, _, _) = setup_env();
     let deployer = Address::generate(&env);
     let owner = Address::generate(&env);
@@ -172,49 +215,6 @@ fn link_token_succeeds_without_link_params_and_gas_token() {
 }
 
 #[test]
-fn link_token_succeeds_with_mint_burn_type() {
-    let (env, client, _, _, _) = setup_env();
-    let deployer = Address::generate(&env);
-    let owner = Address::generate(&env);
-    let token = &env.register_stellar_asset_contract_v2(owner);
-    let salt = BytesN::<32>::from_array(&env, &[2; 32]);
-    let token_manager_type = TokenManagerType::MintBurn;
-    let destination_chain = String::from_str(&env, "ethereum");
-    let destination_token_address = Bytes::from_array(&env, &[2; 32]);
-    let link_params: Option<Bytes> = None;
-    let gas_token: Option<Token> = None;
-
-    let expected_id = client.linked_token_id(&deployer, &salt);
-    client.mock_all_auths().register_custom_token(
-        &deployer,
-        &salt,
-        &token.address(),
-        &token_manager_type,
-    );
-
-    client
-        .mock_all_auths()
-        .set_trusted_chain(&destination_chain);
-
-    let token_id = client.mock_all_auths().link_token(
-        &deployer,
-        &salt,
-        &destination_chain,
-        &destination_token_address,
-        &token_manager_type,
-        &link_params,
-        &gas_token,
-    );
-
-    assert_eq!(token_id, expected_id);
-
-    goldie::assert!(events::fmt_emitted_event_at_idx::<LinkTokenStartedEvent>(
-        &env,
-        LINK_TOKEN_STARTED_WITHOUT_GAS_EVENT_IDX
-    ));
-}
-
-#[test]
 fn link_token_fails_when_paused() {
     let (env, client, _, _, _) = setup_env();
     let deployer = Address::generate(&env);
@@ -267,7 +267,7 @@ fn link_token_fails_with_native_interchain_token_type() {
 }
 
 #[test]
-fn link_token_fails_with_same_destination_chain() {
+fn link_token_fails_with_invalid_destination_chain() {
     let (env, client, _, _, _) = setup_env();
     let deployer = Address::generate(&env);
     let salt = BytesN::<32>::from_array(&env, &[1; 32]);

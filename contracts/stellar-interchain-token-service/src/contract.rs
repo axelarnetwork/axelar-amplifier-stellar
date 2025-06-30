@@ -373,8 +373,8 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
             token_id: token_id.clone(),
             destination_chain: destination_chain.clone(),
             source_token_address: token_address.to_string_bytes(),
-            destination_token_address: destination_token_address,
-            token_manager_type: token_manager_type,
+            destination_token_address,
+            token_manager_type,
             params: link_params,
         }
         .emit(env);
