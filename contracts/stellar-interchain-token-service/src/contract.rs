@@ -18,16 +18,16 @@ use token_id::UnregisteredTokenId;
 use crate::error::ContractError;
 use crate::event::{
     InterchainTokenDeploymentStartedEvent, InterchainTransferReceivedEvent,
-    InterchainTransferSentEvent, TokenMetadataRegisteredEvent, TrustedChainRemovedEvent,
-    TrustedChainSetEvent,
+    InterchainTransferSentEvent, LinkTokenStartedEvent, TokenMetadataRegisteredEvent,
+    TrustedChainRemovedEvent, TrustedChainSetEvent,
 };
 use crate::flow_limit::FlowDirection;
 use crate::interface::InterchainTokenServiceInterface;
 use crate::storage::{self, TokenIdConfigValue};
 use crate::token_metadata::TokenMetadataExt;
 use crate::types::{
-    DeployInterchainToken, HubMessage, InterchainTransfer, Message, RegisterTokenMetadata,
-    TokenManagerType,
+    DeployInterchainToken, HubMessage, InterchainTransfer, LinkToken, Message,
+    RegisterTokenMetadata, TokenManagerType,
 };
 use crate::{deployer, flow_limit, token_handler, token_id, token_metadata};
 
@@ -328,6 +328,58 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
             token_address,
             token_manager_type,
         );
+
+        Ok(token_id)
+    }
+
+    #[when_not_paused]
+    fn link_token(
+        env: &Env,
+        deployer: Address,
+        salt: BytesN<32>,
+        destination_chain: String,
+        destination_token_address: Bytes,
+        token_manager_type: TokenManagerType,
+        link_params: Option<Bytes>,
+        gas_token: Option<Token>,
+    ) -> Result<BytesN<32>, ContractError> {
+        deployer.require_auth();
+
+        // Custom token managers can't be deployed with native interchain token type, which is reserved for interchain tokens
+        ensure!(
+            token_manager_type != TokenManagerType::NativeInterchainToken,
+            ContractError::InvalidTokenManagerType
+        );
+
+        ensure!(
+            destination_chain != Self::chain_name(env),
+            ContractError::InvalidDestinationChain
+        );
+
+        let token_id = Self::linked_token_id(env, deployer.clone(), salt);
+        let token_address = Self::token_id_config(env, token_id.clone())?.token_address;
+        let _ =
+            token_metadata::token_metadata(env, &token_address, &Self::native_token_address(env))?;
+
+        let message = Message::LinkToken(LinkToken {
+            token_id: token_id.clone(),
+            token_manager_type,
+            source_token_address: token_address.to_string_bytes(),
+            destination_token_address: destination_token_address.clone(),
+            params: link_params.clone(),
+        });
+
+        LinkTokenStartedEvent {
+            token_id: token_id.clone(),
+            destination_chain: destination_chain.clone(),
+            source_token_address: token_address.to_string_bytes(),
+            destination_token_address: destination_token_address,
+            token_manager_type: token_manager_type,
+            params: link_params,
+        }
+        .emit(env);
+
+        Self::pay_gas_and_call_contract(env, deployer, destination_chain, message, gas_token)?;
 
         Ok(token_id)
     }

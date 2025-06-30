@@ -1,0 +1,21 @@
+LinkTokenStartedEvent {
+    token_id: BytesN<32>(4, 43, 221, 235, 105, 176, 252, 241, 155, 75, 38, 143, 140, 174, 161, 208, 141, 155, 87, 21, 138, 43, 237, 139, 9, 236, 248, 156, 127, 72, 236, 170),
+    destination_chain: String(ethereum),
+    source_token_address: Bytes(67, 65, 87, 71, 88, 66, 70, 67, 74, 65, 54, 78, 54, 52, 90, 54, 72, 69, 67, 69, 51, 52, 79, 81, 52, 89, 70, 65, 55, 87, 74, 80, 78, 80, 55, 68, 89, 68, 83, 82, 90, 78, 75, 88, 84, 52, 55, 52, 75, 69, 52, 73, 89, 51, 68, 53),
+    destination_token_address: Bytes(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2),
+    token_manager_type: LockUnlock,
+    params: Some(
+        Bytes(3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3),
+    ),
+}
+
+Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVAX5)
+
+link_token_started {
+    #[topic] token_id: BytesN < 32 >,
+    #[topic] destination_chain: String,
+    #[topic] source_token_address: Bytes,
+    #[topic] destination_token_address: Bytes,
+    #[topic] token_manager_type: TokenManagerType,
+    #[topic] params: Option < Bytes >,
+}
