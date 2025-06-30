@@ -1,0 +1,15 @@
+TokenManagerDeployedEvent {
+    token_id: BytesN<32>(206, 178, 161, 32, 231, 52, 173, 114, 139, 53, 201, 122, 176, 225, 185, 62, 66, 204, 234, 122, 157, 215, 139, 163, 247, 154, 41, 8, 169, 199, 85, 202),
+    token_address: Contract(CCF7HWZ6PBT2MQ6AUBKXM4CPWAR2PO6ND34WXLB32NDAYD7KIKBAAS7I),
+    token_manager: Contract(CA7NJJ5ODSWJT4O22VKAXPXM5C4MT5OKLCMNAPSQAJ7SG72J3Q46ACWU),
+    token_manager_type: MintBurn,
+}
+
+Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVAX5)
+
+token_manager_deployed {
+    #[topic] token_id: BytesN < 32 >,
+    #[topic] token_address: Address,
+    #[topic] token_manager: Address,
+    #[topic] token_manager_type: TokenManagerType,
+}

@@ -12,7 +12,7 @@ pub const REGISTER_TOKEN_METADATA_EVENT_IDX: i32 = -1;
 fn register_token_metadata_succeeds() {
     let (env, client, _, _, _) = setup_env();
     let owner = Address::generate(&env);
-    let token = &env.register_stellar_asset_contract_v2(owner.clone());
+    let token = &env.register_stellar_asset_contract_v2(owner);
     let spender = Address::generate(&env);
     let gas_token = setup_gas_token(&env, &spender);
 
@@ -20,11 +20,9 @@ fn register_token_metadata_succeeds() {
 
     client.mock_all_auths().set_trusted_chain(&its_hub_chain);
 
-    client.mock_all_auths().register_token_metadata(
-        &token.address(),
-        &spender,
-        &Some(gas_token.clone()),
-    );
+    client
+        .mock_all_auths()
+        .register_token_metadata(&token.address(), &spender, &Some(gas_token));
 
     goldie::assert!(events::fmt_emitted_event_at_idx::<
         TokenMetadataRegisteredEvent,
@@ -35,14 +33,14 @@ fn register_token_metadata_succeeds() {
 fn register_token_metadata_fails_when_paused() {
     let (env, client, _, _, _) = setup_env();
     let owner = Address::generate(&env);
-    let token = &env.register_stellar_asset_contract_v2(owner.clone());
+    let token = &env.register_stellar_asset_contract_v2(owner);
     let spender = Address::generate(&env);
     let gas_token = setup_gas_token(&env, &spender);
 
     client.mock_all_auths().pause();
 
     assert_contract_err!(
-        client.try_register_token_metadata(&token.address(), &spender, &Some(gas_token.clone())),
+        client.try_register_token_metadata(&token.address(), &spender, &Some(gas_token)),
         ContractError::ContractPaused
     );
 }
@@ -58,7 +56,7 @@ fn register_token_metadata_fails_with_invalid_token() {
         client.mock_all_auths().try_register_token_metadata(
             &token_address,
             &spender,
-            &Some(gas_token.clone())
+            &Some(gas_token)
         ),
         ContractError::InvalidTokenAddress
     );
