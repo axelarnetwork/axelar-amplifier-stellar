@@ -20,7 +20,7 @@ pub struct UnregisteredTokenId(BytesN<32>);
 impl UnregisteredTokenId {
     /// Create a new UnregisteredTokenId. This should only be called after verifying
     /// that the token ID is not already registered.
-    pub(crate) const fn new(token_id: BytesN<32>) -> Self {
+    const fn new(token_id: BytesN<32>) -> Self {
         Self(token_id)
     }
 }

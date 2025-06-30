@@ -141,6 +141,26 @@ fn custom_token_id_derivation() {
 }
 
 #[test]
+fn register_custom_token_fails_with_native_interchain_token_type() {
+    let (env, client, _, _, _) = setup_env();
+    let owner = Address::generate(&env);
+    let deployer = Address::generate(&env);
+    let token = &env.register_stellar_asset_contract_v2(owner);
+    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
+    let token_manager_type = TokenManagerType::NativeInterchainToken;
+
+    assert_contract_err!(
+        client.mock_all_auths().try_register_custom_token(
+            &deployer,
+            &salt,
+            &token.address(),
+            &token_manager_type
+        ),
+        ContractError::InvalidTokenManagerType
+    );
+}
+
+#[test]
 fn register_custom_token_fails_with_invalid_token_address() {
     let (env, client, _, _, _) = setup_env();
     let deployer = Address::generate(&env);
