@@ -384,7 +384,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         Ok(token_id)
     }
 
-    #[when_not_paused]
+    #[when_not_paused]  
     fn interchain_transfer(
         env: &Env,
         caller: Address,
