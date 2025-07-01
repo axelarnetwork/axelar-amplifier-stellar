@@ -14,7 +14,7 @@ use crate::event::{
 };
 use crate::testutils::setup_its_token;
 use crate::types::{
-    DeployInterchainToken, HubMessage, InterchainTransfer, LinkToken, Message, TokenManagerType,
+    DeployInterchainToken, HubMessage, InterchainTransfer, Message, TokenManagerType,
 };
 
 #[test]
