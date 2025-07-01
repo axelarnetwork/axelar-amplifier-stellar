@@ -301,7 +301,7 @@ pub trait InterchainTokenServiceInterface:
     /// A local token must have been registered first using the `register_custom_token` function.
     ///
     /// # Arguments
-    /// - `deployer`: Address of the deployer initiating the token linking.
+    /// - `deployer`: Address of the deployer initiating the token linking. It will also pay the cross-chain gas.
     /// - `salt`: The salt used to derive the token ID for the custom token registration. The same salt must be used when linking this token on other chains under the same token ID.
     /// - `destination_chain`: The name of the destination chain. Cannot be the same as the current chain.
     /// - `destination_token_address`: The token address of the token being linked on the destination chain.
