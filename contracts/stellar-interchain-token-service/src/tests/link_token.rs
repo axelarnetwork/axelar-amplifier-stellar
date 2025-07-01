@@ -546,7 +546,7 @@ fn link_token_fails_with_empty_destination_token_address() {
             &link_params,
             &gas_token
         ),
-        ContractError::InvalidDestinationAddress
+        ContractError::InvalidDestinationTokenAddress
     );
 }
 

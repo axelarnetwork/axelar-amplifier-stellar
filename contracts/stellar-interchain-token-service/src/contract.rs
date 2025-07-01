@@ -347,7 +347,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
 
         ensure!(
             !destination_token_address.is_empty(),
-            ContractError::InvalidDestinationAddress
+            ContractError::InvalidDestinationTokenAddress
         );
 
         // Custom token managers can't be deployed with native interchain token type, which is reserved for interchain tokens
