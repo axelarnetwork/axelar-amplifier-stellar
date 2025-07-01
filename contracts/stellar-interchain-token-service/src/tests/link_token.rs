@@ -405,7 +405,7 @@ fn link_token_fails_with_invalid_destination_chain() {
     let (env, client, _, _, _) = setup_env();
     let deployer = Address::generate(&env);
     let salt = BytesN::<32>::from_array(&env, &[1; 32]);
-    let destination_chain = client.chain_name(); // Same as current chain
+    let destination_chain = client.chain_name();
     let destination_token_address = Bytes::from_array(&env, &[2; 32]);
     let token_manager_type = TokenManagerType::LockUnlock;
     let link_params: Option<Bytes> = None;
@@ -481,6 +481,31 @@ fn link_token_fails_with_untrusted_chain() {
             &gas_token
         ),
         ContractError::UntrustedChain
+    );
+}
+
+#[test]
+fn link_token_fails_with_empty_destination_token_address() {
+    let (env, client, _, _, _) = setup_env();
+    let deployer = Address::generate(&env);
+    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
+    let destination_chain = String::from_str(&env, "ethereum");
+    let destination_token_address = Bytes::new(&env);
+    let token_manager_type = TokenManagerType::LockUnlock;
+    let link_params: Option<Bytes> = None;
+    let gas_token: Option<Token> = None;
+
+    assert_contract_err!(
+        client.mock_all_auths().try_link_token(
+            &deployer,
+            &salt,
+            &destination_chain,
+            &destination_token_address,
+            &token_manager_type,
+            &link_params,
+            &gas_token
+        ),
+        ContractError::InvalidDestinationAddress
     );
 }
 
