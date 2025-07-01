@@ -306,7 +306,7 @@ pub trait InterchainTokenServiceInterface:
     /// - `destination_chain`: The name of the destination chain. Cannot be the same as the current chain.
     /// - `destination_token_address`: The token address of the token being linked on the destination chain.
     /// - `token_manager_type`: The token manager type used for the token link. Cannot be `[TokenManagerType::NativeInterchainToken]`.
-    /// - `link_params`: Additional parameters for the token link depending on the destination chain.
+    /// - `link_params`: Optional Additional parameters for the token link depending on the destination chain.
     /// - `gas_token`: An optional gas token used to pay for cross-chain message execution.
     ///
     /// # Returns

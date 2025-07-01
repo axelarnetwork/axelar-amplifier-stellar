@@ -356,15 +356,8 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
             ContractError::InvalidTokenManagerType
         );
 
-        ensure!(
-            destination_chain != Self::chain_name(env),
-            ContractError::InvalidDestinationChain
-        );
-
         let token_id = Self::linked_token_id(env, deployer.clone(), salt);
         let token_address = Self::token_id_config(env, token_id.clone())?.token_address;
-        let _ =
-            token_metadata::token_metadata(env, &token_address, &Self::native_token_address(env))?;
 
         let message = Message::LinkToken(LinkToken {
             token_id: token_id.clone(),
@@ -493,6 +486,11 @@ impl InterchainTokenService {
         gas_token: Option<Token>,
     ) -> Result<(), ContractError> {
         ensure!(
+            destination_chain != Self::chain_name(env),
+            ContractError::InvalidDestinationChain
+        );
+
+        ensure!(
             Self::is_trusted_chain(env, destination_chain.clone()),
             ContractError::UntrustedChain
         );
@@ -591,11 +589,6 @@ impl InterchainTokenService {
         destination_chain: String,
         gas_token: Option<Token>,
     ) -> Result<(), ContractError> {
-        ensure!(
-            destination_chain != Self::chain_name(env),
-            ContractError::InvalidDestinationChain
-        );
-
         let token_address = Self::token_id_config(env, token_id.clone())?.token_address;
         let TokenMetadata {
             name,
@@ -623,33 +616,6 @@ impl InterchainTokenService {
         .emit(env);
 
         Self::pay_gas_and_call_contract(env, caller, destination_chain, message, gas_token)?;
-
-        Ok(())
-    }
-
-    fn execute_link_token_message(
-        env: &Env,
-        LinkToken {
-            token_id,
-            token_manager_type,
-            source_token_address: _,
-            destination_token_address,
-            params: _,
-        }: LinkToken,
-    ) -> Result<(), ContractError> {
-        ensure!(
-            token_manager_type != TokenManagerType::NativeInterchainToken,
-            ContractError::InvalidTokenManagerType
-        );
-
-        let unregistered_token_id = token_id::ensure_token_not_registered(env, token_id)?;
-
-        let _: Address = Self::deploy_token_manager(
-            env,
-            unregistered_token_id,
-            Address::from_string_bytes(&destination_token_address),
-            token_manager_type,
-        );
 
         Ok(())
     }
@@ -845,7 +811,7 @@ impl CustomAxelarExecutable for InterchainTokenService {
                 Self::execute_transfer_message(env, &source_chain, message_id, message)
             }
             Message::DeployInterchainToken(message) => Self::execute_deploy_message(env, message),
-            Message::LinkToken(message) => Self::execute_link_token_message(env, message),
+            Message::LinkToken(_) => Err(ContractError::InvalidMessageType),
         }?;
 
         Ok(())

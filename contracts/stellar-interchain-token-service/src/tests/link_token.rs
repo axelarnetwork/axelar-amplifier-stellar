@@ -7,7 +7,10 @@ use stellar_axelar_std::{
     assert_contract_err, auth_invocation, events, Address, Bytes, BytesN, IntoVal, String, Symbol,
 };
 
-use super::utils::setup_env;
+use super::utils::{
+    setup_env, setup_test_data, TestData, TEST_SALT, TEST_TRANSFER_AMOUNT,
+    TEST_TRANSFER_DESTINATION_ADDRESS, TEST_TRANSFER_DESTINATION_CHAIN,
+};
 use crate::error::ContractError;
 use crate::event::LinkTokenStartedEvent;
 use crate::types::{HubMessage, LinkToken, Message, TokenManagerType};
@@ -18,14 +21,17 @@ const LINK_TOKEN_STARTED_WITHOUT_GAS_EVENT_IDX: i32 = -2;
 #[test]
 fn link_token_succeeds_with_token_manager_type_lock_unlock() {
     let (env, client, _, gas_service, _) = setup_env();
-    let deployer = Address::generate(&env);
-    let gas_token = setup_gas_token(&env, &deployer);
-    let owner = Address::generate(&env);
-    let token = &env.register_stellar_asset_contract_v2(owner);
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
+    let test_data = setup_test_data(&env);
+    let TestData {
+        deployer,
+        token,
+        salt,
+        destination_chain,
+        destination_token_address,
+    } = test_data;
     let token_manager_type = TokenManagerType::LockUnlock;
-    let destination_chain = String::from_str(&env, "ethereum");
-    let destination_token_address = Bytes::from_array(&env, &[2; 32]);
+
+    let gas_token = setup_gas_token(&env, &deployer);
 
     let token_id = client.linked_token_id(&deployer, &salt);
     client.mock_all_auths().register_custom_token(
@@ -112,9 +118,9 @@ fn link_token_succeeds_with_token_manager_type_lock_unlock() {
 
     assert_eq!(env.auths(), link_token_auth);
 
-    let transfer_amount = 1000i128;
-    let transfer_destination_address = Bytes::from_array(&env, &[3; 32]);
-    let transfer_destination_chain = String::from_str(&env, "avalanche");
+    let transfer_amount = TEST_TRANSFER_AMOUNT;
+    let transfer_destination_address = Bytes::from_array(&env, &TEST_TRANSFER_DESTINATION_ADDRESS);
+    let transfer_destination_chain = String::from_str(&env, TEST_TRANSFER_DESTINATION_CHAIN);
 
     client
         .mock_all_auths()
@@ -157,14 +163,16 @@ fn link_token_succeeds_with_token_manager_type_lock_unlock() {
 #[test]
 fn link_token_succeeds_with_token_manager_type_mint_burn() {
     let (env, client, _, gas_service, _) = setup_env();
-    let deployer = Address::generate(&env);
-    let gas_token = setup_gas_token(&env, &deployer);
-    let owner = Address::generate(&env);
-    let token = &env.register_stellar_asset_contract_v2(owner);
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
+    let test_data = setup_test_data(&env);
+    let TestData {
+        deployer,
+        token,
+        salt,
+        destination_chain,
+        destination_token_address,
+    } = test_data;
     let token_manager_type = TokenManagerType::MintBurn;
-    let destination_chain = String::from_str(&env, "ethereum");
-    let destination_token_address = Bytes::from_array(&env, &[2; 32]);
+    let gas_token = setup_gas_token(&env, &deployer);
 
     let token_id = client.linked_token_id(&deployer, &salt);
     client.mock_all_auths().register_custom_token(
@@ -251,9 +259,9 @@ fn link_token_succeeds_with_token_manager_type_mint_burn() {
 
     assert_eq!(env.auths(), link_token_auth);
 
-    let transfer_amount = 1000i128;
-    let transfer_destination_address = Bytes::from_array(&env, &[3; 32]);
-    let transfer_destination_chain = String::from_str(&env, "avalanche");
+    let transfer_amount = TEST_TRANSFER_AMOUNT;
+    let transfer_destination_address = Bytes::from_array(&env, &TEST_TRANSFER_DESTINATION_ADDRESS);
+    let transfer_destination_chain = String::from_str(&env, TEST_TRANSFER_DESTINATION_CHAIN);
 
     client
         .mock_all_auths()
@@ -293,13 +301,15 @@ fn link_token_succeeds_with_token_manager_type_mint_burn() {
 #[test]
 fn link_token_succeeds_without_gas_token() {
     let (env, client, _, _, _) = setup_env();
-    let deployer = Address::generate(&env);
-    let owner = Address::generate(&env);
-    let token = &env.register_stellar_asset_contract_v2(owner);
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
+    let test_data = setup_test_data(&env);
+    let TestData {
+        deployer,
+        token,
+        salt,
+        destination_chain,
+        destination_token_address,
+    } = test_data;
     let token_manager_type = TokenManagerType::LockUnlock;
-    let destination_chain = String::from_str(&env, "ethereum");
-    let destination_token_address = Bytes::from_array(&env, &[2; 32]);
     let link_params: Option<Bytes> = None;
     let gas_token: Option<Token> = None;
 
@@ -351,10 +361,14 @@ fn link_token_succeeds_without_gas_token() {
 #[test]
 fn link_token_fails_when_paused() {
     let (env, client, _, _, _) = setup_env();
-    let deployer = Address::generate(&env);
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
-    let destination_chain = String::from_str(&env, "ethereum");
-    let destination_token_address = Bytes::from_array(&env, &[2; 32]);
+    let test_data = setup_test_data(&env);
+    let TestData {
+        deployer,
+        token: _,
+        salt,
+        destination_chain,
+        destination_token_address,
+    } = test_data;
     let token_manager_type = TokenManagerType::LockUnlock;
     let link_params: Option<Bytes> = None;
     let gas_token: Option<Token> = None;
@@ -378,10 +392,14 @@ fn link_token_fails_when_paused() {
 #[test]
 fn link_token_fails_with_native_interchain_token_type() {
     let (env, client, _, _, _) = setup_env();
-    let deployer = Address::generate(&env);
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
-    let destination_chain = String::from_str(&env, "ethereum");
-    let destination_token_address = Bytes::from_array(&env, &[2; 32]);
+    let test_data = setup_test_data(&env);
+    let TestData {
+        deployer,
+        token: _,
+        salt,
+        destination_chain,
+        destination_token_address,
+    } = test_data;
     let token_manager_type = TokenManagerType::NativeInterchainToken;
     let link_params: Option<Bytes> = None;
     let gas_token: Option<Token> = None;
@@ -403,19 +421,31 @@ fn link_token_fails_with_native_interchain_token_type() {
 #[test]
 fn link_token_fails_with_invalid_destination_chain() {
     let (env, client, _, _, _) = setup_env();
-    let deployer = Address::generate(&env);
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
-    let destination_chain = client.chain_name();
-    let destination_token_address = Bytes::from_array(&env, &[2; 32]);
+    let test_data = setup_test_data(&env);
+    let TestData {
+        deployer,
+        token,
+        salt,
+        destination_chain: _,
+        destination_token_address,
+    } = test_data;
     let token_manager_type = TokenManagerType::LockUnlock;
     let link_params: Option<Bytes> = None;
     let gas_token: Option<Token> = None;
+
+    let _ = client.linked_token_id(&deployer, &salt);
+    client.mock_all_auths().register_custom_token(
+        &deployer,
+        &salt,
+        &token.address(),
+        &token_manager_type,
+    );
 
     assert_contract_err!(
         client.mock_all_auths().try_link_token(
             &deployer,
             &salt,
-            &destination_chain,
+            &client.chain_name(),
             &destination_token_address,
             &token_manager_type,
             &link_params,
@@ -428,10 +458,14 @@ fn link_token_fails_with_invalid_destination_chain() {
 #[test]
 fn link_token_fails_with_invalid_token_id() {
     let (env, client, _, _, _) = setup_env();
-    let deployer = Address::generate(&env);
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
-    let destination_chain = String::from_str(&env, "ethereum");
-    let destination_token_address = Bytes::from_array(&env, &[2; 32]);
+    let test_data = setup_test_data(&env);
+    let TestData {
+        deployer,
+        token: _,
+        salt,
+        destination_chain,
+        destination_token_address,
+    } = test_data;
     let token_manager_type = TokenManagerType::LockUnlock;
     let link_params: Option<Bytes> = None;
     let gas_token: Option<Token> = None;
@@ -453,13 +487,15 @@ fn link_token_fails_with_invalid_token_id() {
 #[test]
 fn link_token_fails_with_untrusted_chain() {
     let (env, client, _, _, _) = setup_env();
-    let deployer = Address::generate(&env);
-    let owner = Address::generate(&env);
-    let token = &env.register_stellar_asset_contract_v2(owner);
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
+    let test_data = setup_test_data(&env);
+    let TestData {
+        deployer,
+        token,
+        salt,
+        destination_chain,
+        destination_token_address,
+    } = test_data;
     let token_manager_type = TokenManagerType::LockUnlock;
-    let destination_chain = String::from_str(&env, "ethereum");
-    let destination_token_address = Bytes::from_array(&env, &[2; 32]);
     let link_params: Option<Bytes> = None;
     let gas_token: Option<Token> = None;
 
@@ -487,10 +523,15 @@ fn link_token_fails_with_untrusted_chain() {
 #[test]
 fn link_token_fails_with_empty_destination_token_address() {
     let (env, client, _, _, _) = setup_env();
-    let deployer = Address::generate(&env);
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
-    let destination_chain = String::from_str(&env, "ethereum");
-    let destination_token_address = Bytes::new(&env);
+
+    let test_data = setup_test_data(&env);
+    let TestData {
+        deployer,
+        token: _,
+        salt,
+        destination_chain,
+        destination_token_address: _,
+    } = test_data;
     let token_manager_type = TokenManagerType::LockUnlock;
     let link_params: Option<Bytes> = None;
     let gas_token: Option<Token> = None;
@@ -500,7 +541,7 @@ fn link_token_fails_with_empty_destination_token_address() {
             &deployer,
             &salt,
             &destination_chain,
-            &destination_token_address,
+            &Bytes::new(&env),
             &token_manager_type,
             &link_params,
             &gas_token
@@ -513,7 +554,7 @@ fn link_token_fails_with_empty_destination_token_address() {
 fn linked_token_id_derivation() {
     let (env, client, _, _, _) = setup_env();
     let deployer = Address::generate(&env);
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
+    let salt = BytesN::<32>::from_array(&env, &TEST_SALT);
 
     let token_id = client.linked_token_id(&deployer, &salt);
 

@@ -4,15 +4,20 @@ use stellar_axelar_std::{assert_auth, assert_contract_err, events, Address, Byte
 use super::utils::setup_env;
 use crate::error::ContractError;
 use crate::event::TokenManagerDeployedEvent;
+use crate::tests::utils::{setup_test_data, TestData};
 use crate::types::TokenManagerType;
 
 #[test]
 fn register_custom_token_succeeds_with_token_manager_type_lock_unlock() {
     let (env, client, _, _, _) = setup_env();
-    let owner = Address::generate(&env);
-    let deployer = Address::generate(&env);
-    let token = &env.register_stellar_asset_contract_v2(owner);
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
+    let test_data = setup_test_data(&env);
+    let TestData {
+        deployer,
+        token,
+        salt,
+        destination_chain: _,
+        destination_token_address: _,
+    } = test_data;
     let token_manager_type = TokenManagerType::LockUnlock;
     let expected_id = client.linked_token_id(&deployer, &salt);
 
@@ -38,10 +43,14 @@ fn register_custom_token_succeeds_with_token_manager_type_lock_unlock() {
 #[test]
 fn register_custom_token_succeeds_with_token_manager_type_mint_burn() {
     let (env, client, _, _, _) = setup_env();
-    let owner = Address::generate(&env);
-    let deployer = Address::generate(&env);
-    let token = &env.register_stellar_asset_contract_v2(owner);
-    let salt = BytesN::<32>::from_array(&env, &[2; 32]);
+    let test_data = setup_test_data(&env);
+    let TestData {
+        deployer,
+        token,
+        salt,
+        destination_chain: _,
+        destination_token_address: _,
+    } = test_data;
     let token_manager_type = TokenManagerType::MintBurn;
     let expected_id = client.linked_token_id(&deployer, &salt);
 
@@ -67,10 +76,14 @@ fn register_custom_token_succeeds_with_token_manager_type_mint_burn() {
 #[test]
 fn register_custom_token_fails_with_token_manager_type_native_interchain_token() {
     let (env, client, _, _, _) = setup_env();
-    let owner = Address::generate(&env);
-    let deployer = Address::generate(&env);
-    let token = &env.register_stellar_asset_contract_v2(owner);
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
+    let test_data = setup_test_data(&env);
+    let TestData {
+        deployer,
+        token,
+        salt,
+        destination_chain: _,
+        destination_token_address: _,
+    } = test_data;
     let token_manager_type = TokenManagerType::NativeInterchainToken;
 
     assert_contract_err!(
@@ -105,10 +118,14 @@ fn register_custom_token_fails_when_paused() {
 #[test]
 fn register_custom_token_fails_if_already_registered() {
     let (env, client, _, _, _) = setup_env();
-    let owner = Address::generate(&env);
-    let deployer = Address::generate(&env);
-    let token = &env.register_stellar_asset_contract_v2(owner);
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
+    let test_data = setup_test_data(&env);
+    let TestData {
+        deployer,
+        token,
+        salt,
+        destination_chain: _,
+        destination_token_address: _,
+    } = test_data;
     let token_manager_type = TokenManagerType::LockUnlock;
 
     client.mock_all_auths().register_custom_token(
@@ -143,10 +160,14 @@ fn custom_token_id_derivation() {
 #[test]
 fn register_custom_token_fails_with_native_interchain_token_type() {
     let (env, client, _, _, _) = setup_env();
-    let owner = Address::generate(&env);
-    let deployer = Address::generate(&env);
-    let token = &env.register_stellar_asset_contract_v2(owner);
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
+    let test_data = setup_test_data(&env);
+    let TestData {
+        deployer,
+        token,
+        salt,
+        destination_chain: _,
+        destination_token_address: _,
+    } = test_data;
     let token_manager_type = TokenManagerType::NativeInterchainToken;
 
     assert_contract_err!(
@@ -163,9 +184,15 @@ fn register_custom_token_fails_with_native_interchain_token_type() {
 #[test]
 fn register_custom_token_fails_with_invalid_token_address() {
     let (env, client, _, _, _) = setup_env();
-    let deployer = Address::generate(&env);
     let invalid_token_address = Address::generate(&env); // Not a valid token contract
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
+    let test_data = setup_test_data(&env);
+    let TestData {
+        deployer,
+        token: _,
+        salt,
+        destination_chain: _,
+        destination_token_address: _,
+    } = test_data;
     let token_manager_type = TokenManagerType::LockUnlock;
 
     assert_contract_err!(
