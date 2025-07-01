@@ -219,8 +219,10 @@ fn deploy_remote_token_fails_local_deployment() {
     let (env, client, _, _, _) = setup_env();
 
     let spender = Address::generate(&env);
+    let gas_token = setup_gas_token(&env, &spender);
     let minter: Option<Address> = None;
     let salt = BytesN::<32>::from_array(&env, &[1; 32]);
+    let destination_chain = client.chain_name();
     let token_metadata = TokenMetadata::new(&env, "name", "symbol", 6);
     let initial_supply = 1;
 
@@ -236,8 +238,8 @@ fn deploy_remote_token_fails_local_deployment() {
         client.mock_all_auths().try_deploy_remote_interchain_token(
             &spender,
             &salt,
-            &client.chain_name(),
-            &Some(setup_gas_token(&env, &Address::generate(&env)))
+            &destination_chain,
+            &Some(gas_token)
         ),
         ContractError::InvalidDestinationChain
     );

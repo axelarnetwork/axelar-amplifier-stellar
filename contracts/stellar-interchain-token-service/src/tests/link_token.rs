@@ -429,6 +429,7 @@ fn link_token_fails_with_invalid_destination_chain() {
         destination_chain: _,
         destination_token_address,
     } = test_data;
+    let destination_chain = client.chain_name();
     let token_manager_type = TokenManagerType::LockUnlock;
     let link_params: Option<Bytes> = None;
     let gas_token: Option<Token> = None;
@@ -445,7 +446,7 @@ fn link_token_fails_with_invalid_destination_chain() {
         client.mock_all_auths().try_link_token(
             &deployer,
             &salt,
-            &client.chain_name(),
+            &destination_chain,
             &destination_token_address,
             &token_manager_type,
             &link_params,
