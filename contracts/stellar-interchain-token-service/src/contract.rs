@@ -637,7 +637,7 @@ impl InterchainTokenService {
             ContractError::InvalidTokenManagerType
         );
 
-        let unregistered_token_id = token_id::ensure_token_not_registered(env, token_id.clone())?;
+        let unregistered_token_id = token_id::ensure_token_not_registered(env, token_id)?;
 
         let _: Address = Self::deploy_token_manager(
             env,

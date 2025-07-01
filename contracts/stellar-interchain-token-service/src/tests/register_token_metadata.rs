@@ -66,7 +66,7 @@ fn register_token_metadata_fails_with_invalid_token() {
 fn register_token_metadata_fails_with_unauthorized() {
     let (env, client, _, _, _) = setup_env();
     let owner = Address::generate(&env);
-    let token = &env.register_stellar_asset_contract_v2(owner.clone());
+    let token = &env.register_stellar_asset_contract_v2(owner);
     let spender = Address::generate(&env);
     let gas_token = setup_gas_token(&env, &spender);
 
