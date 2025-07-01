@@ -622,6 +622,33 @@ impl InterchainTokenService {
         Ok(())
     }
 
+    fn execute_link_token_message(
+        env: &Env,
+        LinkToken {
+            token_id,
+            token_manager_type,
+            source_token_address: _,
+            destination_token_address,
+            params: _,
+        }: LinkToken,
+    ) -> Result<(), ContractError> {
+        ensure!(
+            token_manager_type != TokenManagerType::NativeInterchainToken,
+            ContractError::InvalidTokenManagerType
+        );
+
+        let unregistered_token_id = token_id::ensure_token_not_registered(env, token_id.clone())?;
+
+        let _: Address = Self::deploy_token_manager(
+            env,
+            unregistered_token_id,
+            Address::from_string_bytes(&destination_token_address),
+            token_manager_type,
+        );
+
+        Ok(())
+    }
+
     fn execute_transfer_message(
         env: &Env,
         source_chain: &String,
@@ -813,7 +840,7 @@ impl CustomAxelarExecutable for InterchainTokenService {
                 Self::execute_transfer_message(env, &source_chain, message_id, message)
             }
             Message::DeployInterchainToken(message) => Self::execute_deploy_message(env, message),
-            Message::LinkToken(_) => Err(ContractError::InvalidMessageType),
+            Message::LinkToken(message) => Self::execute_link_token_message(env, message),
         }?;
 
         Ok(())
