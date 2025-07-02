@@ -6,7 +6,6 @@ use crate::error::ContractError;
 use crate::event::TokenManagerDeployedEvent;
 use crate::types::TokenManagerType;
 
-// Register custom token specific test constants
 const TEST_SALT: [u8; 32] = [1; 32];
 
 struct RegisterCustomTokenTestData {
@@ -197,7 +196,7 @@ fn register_custom_token_fails_with_native_interchain_token_type() {
 #[test]
 fn register_custom_token_fails_with_invalid_token_address() {
     let (env, client, _, _, _) = setup_env();
-    let invalid_token_address = Address::generate(&env); // Not a valid token contract
+    let invalid_token_address = Address::generate(&env);
     let test_data = setup_register_custom_token_test_data(&env);
     let RegisterCustomTokenTestData {
         deployer,

@@ -15,7 +15,6 @@ use crate::types::{HubMessage, LinkToken, Message, TokenManagerType};
 const LINK_TOKEN_STARTED_WITH_GAS_EVENT_IDX: i32 = -4;
 const LINK_TOKEN_STARTED_WITHOUT_GAS_EVENT_IDX: i32 = -2;
 
-// Link token specific test constants
 const TEST_SALT: [u8; 32] = [1; 32];
 const TEST_DESTINATION_CHAIN: &str = "ethereum";
 const TEST_DESTINATION_TOKEN_ADDRESS: [u8; 32] = [2; 32];
