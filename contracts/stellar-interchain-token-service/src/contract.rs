@@ -18,8 +18,8 @@ use token_id::UnregisteredTokenId;
 use crate::error::ContractError;
 use crate::event::{
     InterchainTokenDeploymentStartedEvent, InterchainTransferReceivedEvent,
-    InterchainTransferSentEvent, LinkTokenStartedEvent, TokenMetadataRegisteredEvent,
-    TrustedChainRemovedEvent, TrustedChainSetEvent,
+    InterchainTransferSentEvent, LinkTokenStartedEvent, TokenLinkedEvent,
+    TokenMetadataRegisteredEvent, TrustedChainRemovedEvent, TrustedChainSetEvent,
 };
 use crate::flow_limit::FlowDirection;
 use crate::interface::InterchainTokenServiceInterface;
@@ -729,12 +729,13 @@ impl InterchainTokenService {
 
     fn execute_link_token_message(
         env: &Env,
+        source_chain: String,
         LinkToken {
             token_id,
             token_manager_type,
-            source_token_address: _,
+            source_token_address,
             destination_token_address,
-            params: _,
+            params,
         }: LinkToken,
     ) -> Result<(), ContractError> {
         let token_address = Address::from_string_bytes(&destination_token_address);
@@ -744,6 +745,16 @@ impl InterchainTokenService {
             token_metadata::token_metadata(env, &token_address, &Self::native_token_address(env))?;
 
         let unregistered_token_id = token_id::ensure_token_not_registered(env, token_id)?;
+
+        TokenLinkedEvent {
+            source_chain,
+            token_id: unregistered_token_id.clone().into(),
+            source_token_address,
+            destination_token_address,
+            token_manager_type,
+            params,
+        }
+        .emit(env);
 
         let _: Address = Self::deploy_token_manager(
             env,
@@ -844,7 +855,9 @@ impl CustomAxelarExecutable for InterchainTokenService {
                 Self::execute_transfer_message(env, &source_chain, message_id, message)
             }
             Message::DeployInterchainToken(message) => Self::execute_deploy_message(env, message),
-            Message::LinkToken(message) => Self::execute_link_token_message(env, message),
+            Message::LinkToken(message) => {
+                Self::execute_link_token_message(env, source_chain, message)
+            }
         }?;
 
         Ok(())

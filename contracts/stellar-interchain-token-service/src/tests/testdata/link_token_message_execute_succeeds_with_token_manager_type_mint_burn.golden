@@ -1,15 +1,21 @@
-TokenManagerDeployedEvent {
+TokenLinkedEvent {
+    source_chain: String(ethereum),
     token_id: BytesN<32>(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-    token_address: Contract(CCF7CGAN3G4L2LJV6EB3GZKQSQY6YGJ4XEQYQVA7GXOYRGIQXSIWVBTI),
-    token_manager: Contract(CCSVDGI4C4HI4NXYPFHVGDBMW336KYFMJ7WE75VKRA5LFL5F7EBZTHLZ),
+    source_token_address: Bytes(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2),
+    destination_token_address: Bytes(67, 67, 70, 55, 67, 71, 65, 78, 51, 71, 52, 76, 50, 76, 74, 86, 54, 69, 66, 51, 71, 90, 75, 81, 83, 81, 89, 54, 89, 71, 74, 52, 88, 69, 81, 89, 81, 86, 65, 55, 71, 88, 79, 89, 82, 71, 73, 81, 88, 83, 73, 87, 86, 66, 84, 73),
     token_manager_type: MintBurn,
+    params: Some(
+        Bytes(3, 3, 3, 3, 3, 3, 3, 3),
+    ),
 }
 
 Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVAX5)
 
-token_manager_deployed {
+token_linked {
+    #[topic] source_chain: String,
     #[topic] token_id: BytesN < 32 >,
-    #[topic] token_address: Address,
-    #[topic] token_manager: Address,
+    #[topic] source_token_address: Bytes,
+    #[topic] destination_token_address: Bytes,
     #[topic] token_manager_type: TokenManagerType,
+    #[topic] params: Option < Bytes >,
 }

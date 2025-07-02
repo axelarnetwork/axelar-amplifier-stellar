@@ -10,7 +10,8 @@ use stellar_interchain_token::InterchainTokenClient;
 use super::utils::{setup_env, TokenMetadataExt};
 use crate::error::ContractError;
 use crate::event::{
-    InterchainTokenDeployedEvent, InterchainTransferReceivedEvent, TokenManagerDeployedEvent,
+    InterchainTokenDeployedEvent, InterchainTransferReceivedEvent, TokenLinkedEvent,
+    TokenManagerDeployedEvent,
 };
 use crate::testutils::setup_its_token;
 use crate::types::{
@@ -20,21 +21,20 @@ use crate::types::{
 const LINK_TOKEN_TEST_MESSAGE_ID: &str = "test";
 const LINK_TOKEN_TEST_ORIGINAL_SOURCE_CHAIN: &str = "ethereum";
 
-struct LinkTokenMessageExecuteTestData {
+struct LinkTokenTestData {
+    hub_message: HubMessage,
     source_chain: String,
     source_address: String,
-    original_source_chain: String,
     message_id: String,
     destination_token_address: Address,
     token_id: BytesN<32>,
-    source_token_address: Bytes,
-    params: Option<Bytes>,
 }
 
-fn setup_link_token_message_execute_test_data(
+fn link_token_test_data(
     env: &Env,
     client: &crate::InterchainTokenServiceClient,
-) -> LinkTokenMessageExecuteTestData {
+    token_manager_type: TokenManagerType,
+) -> LinkTokenTestData {
     let source_chain = client.its_hub_chain_name();
     let source_address = client.its_hub_address();
     let original_source_chain = String::from_str(env, LINK_TOKEN_TEST_ORIGINAL_SOURCE_CHAIN);
@@ -46,15 +46,24 @@ fn setup_link_token_message_execute_test_data(
     let source_token_address = Bytes::from_array(env, &[2u8; 32]);
     let params = Some(Bytes::from_array(env, &[3u8; 8]));
 
-    LinkTokenMessageExecuteTestData {
+    let hub_message = HubMessage::ReceiveFromHub {
+        source_chain: original_source_chain.clone(),
+        message: Message::LinkToken(LinkToken {
+            token_id: token_id.clone(),
+            token_manager_type,
+            source_token_address,
+            destination_token_address: destination_token_address.to_string_bytes(),
+            params,
+        }),
+    };
+
+    LinkTokenTestData {
+        hub_message,
         source_chain,
         source_address,
-        original_source_chain,
         message_id,
         destination_token_address,
         token_id,
-        source_token_address,
-        params,
     }
 }
 
@@ -738,42 +747,22 @@ fn deploy_interchain_token_message_execute_fails_token_already_deployed() {
 #[test]
 fn link_token_message_execute_succeeds_with_token_manager_type_lock_unlock() {
     let (env, client, gateway_client, _, signers) = setup_env();
-    let test_data = setup_link_token_message_execute_test_data(&env, &client);
-    let LinkTokenMessageExecuteTestData {
-        source_chain,
-        source_address,
-        original_source_chain,
-        message_id,
-        destination_token_address,
-        token_id,
-        source_token_address,
-        params,
-    } = test_data;
-    let token_manager_type = TokenManagerType::LockUnlock;
+    let test_data = link_token_test_data(&env, &client, TokenManagerType::LockUnlock);
 
-    client
-        .mock_all_auths()
-        .set_trusted_chain(&original_source_chain);
+    client.mock_all_auths().set_trusted_chain(&String::from_str(
+        &env,
+        LINK_TOKEN_TEST_ORIGINAL_SOURCE_CHAIN,
+    ));
 
-    let msg = HubMessage::ReceiveFromHub {
-        source_chain: original_source_chain,
-        message: Message::LinkToken(LinkToken {
-            token_id: token_id.clone(),
-            token_manager_type,
-            source_token_address,
-            destination_token_address: destination_token_address.to_string_bytes(),
-            params,
-        }),
-    };
-    let payload = msg.abi_encode(&env).unwrap();
+    let payload = test_data.hub_message.abi_encode(&env).unwrap();
     let payload_hash: BytesN<32> = env.crypto().keccak256(&payload).into();
 
     let messages = vec![
         &env,
         GatewayMessage {
-            source_chain: source_chain.clone(),
-            message_id: message_id.clone(),
-            source_address: source_address.clone(),
+            source_chain: test_data.source_chain.clone(),
+            message_id: test_data.message_id.clone(),
+            source_address: test_data.source_address.clone(),
             contract_address: client.address.clone(),
             payload_hash,
         },
@@ -781,59 +770,42 @@ fn link_token_message_execute_succeeds_with_token_manager_type_lock_unlock() {
 
     approve_gateway_messages(&env, &gateway_client, signers, messages);
 
-    client.execute(&source_chain, &message_id, &source_address, &payload);
+    client.execute(
+        &test_data.source_chain,
+        &test_data.message_id,
+        &test_data.source_address,
+        &payload,
+    );
 
-    let token_manager_deployed_event =
-        events::fmt_last_emitted_event::<TokenManagerDeployedEvent>(&env);
+    let token_linked_event = events::fmt_emitted_event_at_idx::<TokenLinkedEvent>(&env, -2);
 
     assert_eq!(
-        client.registered_token_address(&token_id),
-        destination_token_address
+        client.registered_token_address(&test_data.token_id),
+        test_data.destination_token_address
     );
-    assert_eq!(client.token_manager_type(&token_id), token_manager_type);
 
-    goldie::assert!(token_manager_deployed_event);
+    goldie::assert!(token_linked_event);
 }
 
 #[test]
 fn link_token_message_execute_succeeds_with_token_manager_type_mint_burn() {
     let (env, client, gateway_client, _, signers) = setup_env();
-    let test_data = setup_link_token_message_execute_test_data(&env, &client);
-    let LinkTokenMessageExecuteTestData {
-        source_chain,
-        source_address,
-        original_source_chain,
-        message_id,
-        destination_token_address,
-        token_id,
-        source_token_address,
-        params,
-    } = test_data;
-    let token_manager_type = TokenManagerType::MintBurn;
+    let test_data = link_token_test_data(&env, &client, TokenManagerType::MintBurn);
 
-    client
-        .mock_all_auths()
-        .set_trusted_chain(&original_source_chain);
+    client.mock_all_auths().set_trusted_chain(&String::from_str(
+        &env,
+        LINK_TOKEN_TEST_ORIGINAL_SOURCE_CHAIN,
+    ));
 
-    let msg = HubMessage::ReceiveFromHub {
-        source_chain: original_source_chain,
-        message: Message::LinkToken(LinkToken {
-            token_id: token_id.clone(),
-            token_manager_type,
-            source_token_address,
-            destination_token_address: destination_token_address.to_string_bytes(),
-            params,
-        }),
-    };
-    let payload = msg.abi_encode(&env).unwrap();
+    let payload = test_data.hub_message.abi_encode(&env).unwrap();
     let payload_hash: BytesN<32> = env.crypto().keccak256(&payload).into();
 
     let messages = vec![
         &env,
         GatewayMessage {
-            source_chain: source_chain.clone(),
-            message_id: message_id.clone(),
-            source_address: source_address.clone(),
+            source_chain: test_data.source_chain.clone(),
+            message_id: test_data.message_id.clone(),
+            source_address: test_data.source_address.clone(),
             contract_address: client.address.clone(),
             payload_hash,
         },
@@ -841,86 +813,43 @@ fn link_token_message_execute_succeeds_with_token_manager_type_mint_burn() {
 
     approve_gateway_messages(&env, &gateway_client, signers, messages);
 
-    client.execute(&source_chain, &message_id, &source_address, &payload);
+    client.execute(
+        &test_data.source_chain,
+        &test_data.message_id,
+        &test_data.source_address,
+        &payload,
+    );
 
-    let token_manager_deployed_event =
-        events::fmt_last_emitted_event::<TokenManagerDeployedEvent>(&env);
+    let token_linked_event = events::fmt_emitted_event_at_idx::<TokenLinkedEvent>(&env, -2);
 
     assert_eq!(
-        client.registered_token_address(&token_id),
-        destination_token_address
+        client.registered_token_address(&test_data.token_id),
+        test_data.destination_token_address
     );
-    assert_eq!(client.token_manager_type(&token_id), token_manager_type);
 
-    goldie::assert!(token_manager_deployed_event);
+    goldie::assert!(token_linked_event);
 }
 
 #[test]
 fn link_token_message_execute_fails_with_native_interchain_token_type() {
     let (env, client, _gateway_client, _, _signers) = setup_env();
-    let test_data = setup_link_token_message_execute_test_data(&env, &client);
-    let LinkTokenMessageExecuteTestData {
-        source_chain: _,
-        source_address: _,
-        original_source_chain,
-        message_id: _,
-        destination_token_address,
-        token_id,
-        source_token_address,
-        params,
-    } = test_data;
-    let token_manager_type = TokenManagerType::NativeInterchainToken;
+    let test_data = link_token_test_data(&env, &client, TokenManagerType::NativeInterchainToken);
 
-    client
-        .mock_all_auths()
-        .set_trusted_chain(&original_source_chain);
-
-    let msg = HubMessage::ReceiveFromHub {
-        source_chain: original_source_chain,
-        message: Message::LinkToken(LinkToken {
-            token_id,
-            token_manager_type,
-            source_token_address,
-            destination_token_address: destination_token_address.to_string_bytes(),
-            params,
-        }),
-    };
-
-    let err = msg.abi_encode(&env).unwrap_err();
+    let err = test_data.hub_message.abi_encode(&env).unwrap_err();
     assert_eq!(err, ContractError::InvalidTokenManagerType);
 }
 
 #[test]
 fn link_token_message_execute_fails_with_already_linked_token() {
     let (env, client, gateway_client, _, signers) = setup_env();
-    let test_data = setup_link_token_message_execute_test_data(&env, &client);
-    let LinkTokenMessageExecuteTestData {
-        source_chain,
-        source_address,
-        original_source_chain,
-        message_id: _,
-        destination_token_address,
-        token_id,
-        source_token_address,
-        params,
-    } = test_data;
-    let token_manager_type = TokenManagerType::LockUnlock;
+    let test_data = link_token_test_data(&env, &client, TokenManagerType::LockUnlock);
 
-    client
-        .mock_all_auths()
-        .set_trusted_chain(&original_source_chain);
+    client.mock_all_auths().set_trusted_chain(&String::from_str(
+        &env,
+        LINK_TOKEN_TEST_ORIGINAL_SOURCE_CHAIN,
+    ));
 
-    let msg = HubMessage::ReceiveFromHub {
-        source_chain: original_source_chain,
-        message: Message::LinkToken(LinkToken {
-            token_id,
-            token_manager_type,
-            source_token_address,
-            destination_token_address: destination_token_address.to_string_bytes(),
-            params,
-        }),
-    };
-    let payload = msg.abi_encode(&env).unwrap();
+    let payload = test_data.hub_message.abi_encode(&env).unwrap();
     let payload_hash: BytesN<32> = env.crypto().keccak256(&payload).into();
 
     let first_message_id = String::from_str(&env, "first_link_token");
@@ -929,16 +858,16 @@ fn link_token_message_execute_fails_with_already_linked_token() {
     let messages = vec![
         &env,
         GatewayMessage {
-            source_chain: source_chain.clone(),
+            source_chain: test_data.source_chain.clone(),
             message_id: first_message_id.clone(),
-            source_address: source_address.clone(),
+            source_address: test_data.source_address.clone(),
             contract_address: client.address.clone(),
             payload_hash: payload_hash.clone(),
         },
         GatewayMessage {
-            source_chain: source_chain.clone(),
+            source_chain: test_data.source_chain.clone(),
             message_id: second_message_id.clone(),
-            source_address: source_address.clone(),
+            source_address: test_data.source_address.clone(),
             contract_address: client.address.clone(),
             payload_hash,
         },
@@ -946,10 +875,20 @@ fn link_token_message_execute_fails_with_already_linked_token() {
 
     approve_gateway_messages(&env, &gateway_client, signers, messages);
 
-    client.execute(&source_chain, &first_message_id, &source_address, &payload);
+    client.execute(
+        &test_data.source_chain,
+        &first_message_id,
+        &test_data.source_address,
+        &payload,
+    );
 
     assert_contract_err!(
-        client.try_execute(&source_chain, &second_message_id, &source_address, &payload),
+        client.try_execute(
+            &test_data.source_chain,
+            &second_message_id,
+            &test_data.source_address,
+            &payload
+        ),
         ContractError::TokenAlreadyRegistered
     );
 }
