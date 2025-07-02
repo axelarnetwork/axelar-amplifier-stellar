@@ -746,22 +746,22 @@ impl InterchainTokenService {
 
         let unregistered_token_id = token_id::ensure_token_not_registered(env, token_id)?;
 
+        let _: Address = Self::deploy_token_manager(
+            env,
+            unregistered_token_id.clone(),
+            token_address,
+            token_manager_type,
+        );
+
         LinkTokenReceivedEvent {
             source_chain,
-            token_id: unregistered_token_id.clone().into(),
+            token_id: unregistered_token_id.into(),
             source_token_address,
             destination_token_address,
             token_manager_type,
             params,
         }
         .emit(env);
-
-        let _: Address = Self::deploy_token_manager(
-            env,
-            unregistered_token_id,
-            token_address,
-            token_manager_type,
-        );
 
         Ok(())
     }

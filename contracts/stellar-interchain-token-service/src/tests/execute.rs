@@ -777,8 +777,7 @@ fn link_token_message_execute_succeeds_with_token_manager_type_lock_unlock() {
         &payload,
     );
 
-    let link_token_received_event =
-        events::fmt_emitted_event_at_idx::<LinkTokenReceivedEvent>(&env, -2);
+    let link_token_received_event = events::fmt_last_emitted_event::<LinkTokenReceivedEvent>(&env);
 
     assert_eq!(
         client.registered_token_address(&test_data.token_id),
@@ -821,8 +820,7 @@ fn link_token_message_execute_succeeds_with_token_manager_type_mint_burn() {
         &payload,
     );
 
-    let link_token_received_event =
-        events::fmt_emitted_event_at_idx::<LinkTokenReceivedEvent>(&env, -2);
+    let link_token_received_event = events::fmt_last_emitted_event::<LinkTokenReceivedEvent>(&env);
 
     assert_eq!(
         client.registered_token_address(&test_data.token_id),
