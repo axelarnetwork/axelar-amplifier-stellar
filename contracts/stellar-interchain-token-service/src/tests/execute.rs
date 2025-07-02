@@ -17,6 +17,47 @@ use crate::types::{
     DeployInterchainToken, HubMessage, InterchainTransfer, LinkToken, Message, TokenManagerType,
 };
 
+const LINK_TOKEN_TEST_MESSAGE_ID: &str = "test";
+const LINK_TOKEN_TEST_ORIGINAL_SOURCE_CHAIN: &str = "ethereum";
+
+struct LinkTokenMessageExecuteTestData {
+    source_chain: String,
+    source_address: String,
+    original_source_chain: String,
+    message_id: String,
+    destination_token_address: Address,
+    token_id: BytesN<32>,
+    source_token_address: Bytes,
+    params: Option<Bytes>,
+}
+
+fn setup_link_token_message_execute_test_data(
+    env: &Env,
+    client: &crate::InterchainTokenServiceClient,
+) -> LinkTokenMessageExecuteTestData {
+    let source_chain = client.its_hub_chain_name();
+    let source_address = client.its_hub_address();
+    let original_source_chain = String::from_str(env, LINK_TOKEN_TEST_ORIGINAL_SOURCE_CHAIN);
+    let message_id = String::from_str(env, LINK_TOKEN_TEST_MESSAGE_ID);
+    let owner = Address::generate(env);
+    let token = env.register_stellar_asset_contract_v2(owner);
+    let destination_token_address = token.address();
+    let token_id = BytesN::from_array(env, &[1u8; 32]);
+    let source_token_address = Bytes::from_array(env, &[2u8; 32]);
+    let params = Some(Bytes::from_array(env, &[3u8; 8]));
+
+    LinkTokenMessageExecuteTestData {
+        source_chain,
+        source_address,
+        original_source_chain,
+        message_id,
+        destination_token_address,
+        token_id,
+        source_token_address,
+        params,
+    }
+}
+
 #[test]
 fn interchain_transfer_message_execute_succeeds() {
     let (env, client, gateway_client, _, signers) = setup_env();
@@ -697,17 +738,18 @@ fn deploy_interchain_token_message_execute_fails_token_already_deployed() {
 #[test]
 fn link_token_message_execute_succeeds_with_token_manager_type_lock_unlock() {
     let (env, client, gateway_client, _, signers) = setup_env();
-
-    let source_chain = client.its_hub_chain_name();
-    let source_address = client.its_hub_address();
-    let original_source_chain = String::from_str(&env, "ethereum");
-    let owner = Address::generate(&env);
-    let token = env.register_stellar_asset_contract_v2(owner);
-    let destination_token_address = token.address();
-
-    let token_id = BytesN::from_array(&env, &[1u8; 32]);
+    let test_data = setup_link_token_message_execute_test_data(&env, &client);
+    let LinkTokenMessageExecuteTestData {
+        source_chain,
+        source_address,
+        original_source_chain,
+        message_id,
+        destination_token_address,
+        token_id,
+        source_token_address,
+        params,
+    } = test_data;
     let token_manager_type = TokenManagerType::LockUnlock;
-    let source_token_address = Bytes::from_array(&env, &[2u8; 32]);
 
     client
         .mock_all_auths()
@@ -720,10 +762,9 @@ fn link_token_message_execute_succeeds_with_token_manager_type_lock_unlock() {
             token_manager_type,
             source_token_address,
             destination_token_address: destination_token_address.to_string_bytes(),
-            params: None,
+            params,
         }),
     };
-    let message_id = String::from_str(&env, "test");
     let payload = msg.abi_encode(&env).unwrap();
     let payload_hash: BytesN<32> = env.crypto().keccak256(&payload).into();
 
@@ -757,18 +798,18 @@ fn link_token_message_execute_succeeds_with_token_manager_type_lock_unlock() {
 #[test]
 fn link_token_message_execute_succeeds_with_token_manager_type_mint_burn() {
     let (env, client, gateway_client, _, signers) = setup_env();
-
-    let source_chain = client.its_hub_chain_name();
-    let source_address = client.its_hub_address();
-    let original_source_chain = String::from_str(&env, "ethereum");
-    let owner = Address::generate(&env);
-    let token = env.register_stellar_asset_contract_v2(owner);
-    let destination_token_address = token.address();
-
-    let token_id = BytesN::from_array(&env, &[2u8; 32]);
+    let test_data = setup_link_token_message_execute_test_data(&env, &client);
+    let LinkTokenMessageExecuteTestData {
+        source_chain,
+        source_address,
+        original_source_chain,
+        message_id,
+        destination_token_address,
+        token_id,
+        source_token_address,
+        params,
+    } = test_data;
     let token_manager_type = TokenManagerType::MintBurn;
-    let source_token_address = Bytes::from_array(&env, &[3u8; 32]);
-    let params = Some(Bytes::from_array(&env, &[4u8; 8]));
 
     client
         .mock_all_auths()
@@ -784,7 +825,6 @@ fn link_token_message_execute_succeeds_with_token_manager_type_mint_burn() {
             params,
         }),
     };
-    let message_id = String::from_str(&env, "test");
     let payload = msg.abi_encode(&env).unwrap();
     let payload_hash: BytesN<32> = env.crypto().keccak256(&payload).into();
 
@@ -818,17 +858,18 @@ fn link_token_message_execute_succeeds_with_token_manager_type_mint_burn() {
 #[test]
 fn link_token_message_execute_fails_with_native_interchain_token_type() {
     let (env, client, _gateway_client, _, _signers) = setup_env();
-
-    let _source_chain = client.its_hub_chain_name();
-    let _source_address = client.its_hub_address();
-    let original_source_chain = String::from_str(&env, "ethereum");
-    let owner = Address::generate(&env);
-    let token = env.register_stellar_asset_contract_v2(owner);
-    let destination_token_address = token.address();
-
-    let token_id = BytesN::from_array(&env, &[3u8; 32]);
+    let test_data = setup_link_token_message_execute_test_data(&env, &client);
+    let LinkTokenMessageExecuteTestData {
+        source_chain: _,
+        source_address: _,
+        original_source_chain,
+        message_id: _,
+        destination_token_address,
+        token_id,
+        source_token_address,
+        params,
+    } = test_data;
     let token_manager_type = TokenManagerType::NativeInterchainToken;
-    let source_token_address = Bytes::from_array(&env, &[4u8; 32]);
 
     client
         .mock_all_auths()
@@ -841,10 +882,9 @@ fn link_token_message_execute_fails_with_native_interchain_token_type() {
             token_manager_type,
             source_token_address,
             destination_token_address: destination_token_address.to_string_bytes(),
-            params: None,
+            params,
         }),
     };
-    let _message_id = String::from_str(&env, "test");
 
     let err = msg.abi_encode(&env).unwrap_err();
     assert_eq!(err, ContractError::InvalidTokenManagerType);
@@ -853,17 +893,18 @@ fn link_token_message_execute_fails_with_native_interchain_token_type() {
 #[test]
 fn link_token_message_execute_fails_with_already_linked_token() {
     let (env, client, gateway_client, _, signers) = setup_env();
-
-    let source_chain = client.its_hub_chain_name();
-    let source_address = client.its_hub_address();
-    let original_source_chain = String::from_str(&env, "ethereum");
-    let owner = Address::generate(&env);
-    let token = env.register_stellar_asset_contract_v2(owner);
-    let destination_token_address = token.address();
-
-    let token_id = BytesN::from_array(&env, &[4u8; 32]);
+    let test_data = setup_link_token_message_execute_test_data(&env, &client);
+    let LinkTokenMessageExecuteTestData {
+        source_chain,
+        source_address,
+        original_source_chain,
+        message_id: _,
+        destination_token_address,
+        token_id,
+        source_token_address,
+        params,
+    } = test_data;
     let token_manager_type = TokenManagerType::LockUnlock;
-    let source_token_address = Bytes::from_array(&env, &[5u8; 32]);
 
     client
         .mock_all_auths()
@@ -876,7 +917,7 @@ fn link_token_message_execute_fails_with_already_linked_token() {
             token_manager_type,
             source_token_address,
             destination_token_address: destination_token_address.to_string_bytes(),
-            params: None,
+            params,
         }),
     };
     let payload = msg.abi_encode(&env).unwrap();
