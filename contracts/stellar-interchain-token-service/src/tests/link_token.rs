@@ -424,27 +424,28 @@ fn link_token_fails_with_native_interchain_token_type() {
     let test_data = setup_link_token_test_data(&env);
     let LinkTokenTestData {
         deployer,
-        token: _,
+        token,
         salt,
         destination_chain,
         destination_token_address,
     } = test_data;
     let token_manager_type = TokenManagerType::NativeInterchainToken;
     let link_params: Option<Bytes> = None;
-    let gas_token: Option<Token> = None;
 
-    assert_contract_err!(
-        client.mock_all_auths().try_link_token(
-            &deployer,
-            &salt,
-            &destination_chain,
-            &destination_token_address,
-            &token_manager_type,
-            &link_params,
-            &gas_token
-        ),
-        ContractError::InvalidTokenManagerType
-    );
+    let token_id = client.linked_token_id(&deployer, &salt);
+    let message = Message::LinkToken(LinkToken {
+        token_id,
+        token_manager_type,
+        source_token_address: token.address().to_string_bytes(),
+        destination_token_address: destination_token_address.clone(),
+        params: link_params.clone(),
+    });
+    let payload = HubMessage::SendToHub {
+        destination_chain: destination_chain.clone(),
+        message,
+    };
+    let err = payload.abi_encode(&env).unwrap_err();
+    assert_eq!(err, ContractError::InvalidTokenManagerType);
 }
 
 #[test]

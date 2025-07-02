@@ -106,15 +106,23 @@ impl Message {
                 source_token_address,
                 destination_token_address,
                 params,
-            }) => LinkToken {
-                messageType: MessageType::LinkToken.into(),
-                tokenId: FixedBytes::<32>::new(token_id.into()),
-                tokenManagerType: U256::from(token_manager_type as u32),
-                sourceToken: source_token_address.to_alloc_vec().into(),
-                destinationToken: destination_token_address.to_alloc_vec().into(),
-                params: into_vec(params).into(),
+            }) => {
+                // LinkToken messages cannot use NativeInterchainToken type, which is reserved for interchain tokens
+                ensure!(
+                    token_manager_type != types::TokenManagerType::NativeInterchainToken,
+                    ContractError::InvalidTokenManagerType
+                );
+
+                LinkToken {
+                    messageType: MessageType::LinkToken.into(),
+                    tokenId: FixedBytes::<32>::new(token_id.into()),
+                    tokenManagerType: U256::from(token_manager_type as u32),
+                    sourceToken: source_token_address.to_alloc_vec().into(),
+                    destinationToken: destination_token_address.to_alloc_vec().into(),
+                    params: into_vec(params).into(),
+                }
+                .abi_encode_params()
             }
-            .abi_encode_params(),
         };
         Ok(Bytes::from_slice(env, &msg))
     }
@@ -156,9 +164,17 @@ impl Message {
                 let decoded = LinkToken::abi_decode_params(&payload, true)
                     .map_err(|_| ContractError::AbiDecodeFailed)?;
 
+                let token_manager_type = to_token_manager_type(decoded.tokenManagerType)?;
+
+                // LinkToken messages cannot use NativeInterchainToken type, which is reserved for interchain tokens
+                ensure!(
+                    token_manager_type != types::TokenManagerType::NativeInterchainToken,
+                    ContractError::InvalidTokenManagerType
+                );
+
                 Ok(Self::LinkToken(types::LinkToken {
                     token_id: BytesN::from_array(env, &decoded.tokenId.into()),
-                    token_manager_type: to_token_manager_type(decoded.tokenManagerType)?,
+                    token_manager_type,
                     source_token_address: Bytes::from_slice(env, decoded.sourceToken.as_ref()),
                     destination_token_address: Bytes::from_slice(
                         env,
@@ -606,16 +622,6 @@ mod tests {
             types::HubMessage::SendToHub {
                 destination_chain: remote_chain.clone(),
                 message: types::Message::LinkToken(types::LinkToken {
-                    token_id: BytesN::from_array(&env, &[0u8; 32]),
-                    token_manager_type: types::TokenManagerType::NativeInterchainToken,
-                    source_token_address: Bytes::from_hex(&env, "00"),
-                    destination_token_address: Bytes::from_hex(&env, "00"),
-                    params: None,
-                }),
-            },
-            types::HubMessage::SendToHub {
-                destination_chain: remote_chain.clone(),
-                message: types::Message::LinkToken(types::LinkToken {
                     token_id: BytesN::from_array(&env, &[255u8; 32]),
                     token_manager_type: types::TokenManagerType::LockUnlock,
                     source_token_address: Bytes::from_hex(
@@ -639,26 +645,6 @@ mod tests {
                     params: Some(Bytes::from_hex(&env, "1234567890abcdef")),
                 }),
             },
-            types::HubMessage::SendToHub {
-                destination_chain: remote_chain.clone(),
-                message: types::Message::LinkToken(types::LinkToken {
-                    token_id: BytesN::from_array(&env, &[100u8; 32]),
-                    token_manager_type: types::TokenManagerType::NativeInterchainToken,
-                    source_token_address: Bytes::from_hex(&env, "deadbeef"),
-                    destination_token_address: Bytes::from_hex(&env, "cafebabe"),
-                    params: Some(Bytes::from_hex(&env, "1234567890abcdef")),
-                }),
-            },
-            types::HubMessage::ReceiveFromHub {
-                source_chain: remote_chain.clone(),
-                message: types::Message::LinkToken(types::LinkToken {
-                    token_id: BytesN::from_array(&env, &[0u8; 32]),
-                    token_manager_type: types::TokenManagerType::NativeInterchainToken,
-                    source_token_address: Bytes::from_hex(&env, "00"),
-                    destination_token_address: Bytes::from_hex(&env, "00"),
-                    params: None,
-                }),
-            },
             types::HubMessage::ReceiveFromHub {
                 source_chain: remote_chain.clone(),
                 message: types::Message::LinkToken(types::LinkToken {
@@ -673,23 +659,13 @@ mod tests {
                         "1234567890ABCDEF1234567890ABCDEF12345678",
                     ),
                     params: Some(Bytes::from_hex(&env, "abcd")),
-                }),
-            },
-            types::HubMessage::ReceiveFromHub {
-                source_chain: remote_chain.clone(),
-                message: types::Message::LinkToken(types::LinkToken {
-                    token_id: BytesN::from_array(&env, &[42u8; 32]),
-                    token_manager_type: types::TokenManagerType::MintBurn,
-                    source_token_address: Bytes::from_hex(&env, "deadbeef"),
-                    destination_token_address: Bytes::from_hex(&env, "cafebabe"),
-                    params: Some(Bytes::from_hex(&env, "1234567890abcdef")),
                 }),
             },
             types::HubMessage::ReceiveFromHub {
                 source_chain: remote_chain,
                 message: types::Message::LinkToken(types::LinkToken {
-                    token_id: BytesN::from_array(&env, &[100u8; 32]),
-                    token_manager_type: types::TokenManagerType::NativeInterchainToken,
+                    token_id: BytesN::from_array(&env, &[42u8; 32]),
+                    token_manager_type: types::TokenManagerType::MintBurn,
                     source_token_address: Bytes::from_hex(&env, "deadbeef"),
                     destination_token_address: Bytes::from_hex(&env, "cafebabe"),
                     params: Some(Bytes::from_hex(&env, "1234567890abcdef")),
@@ -772,6 +748,55 @@ mod tests {
         // Test with a value that exceeds u32::MAX
         let overflow: Uint<256, 4> = Uint::from(u32::MAX) + Uint::from(1);
         let result = to_token_manager_type(overflow);
+        assert!(matches!(
+            result,
+            Err(ContractError::InvalidTokenManagerType)
+        ));
+    }
+
+    #[test]
+    fn link_token_encode_decode_fails_with_native_interchain_token_type() {
+        let env = Env::default();
+        let remote_chain = String::from_str(&env, "chain");
+
+        // Test encoding fails with NativeInterchainToken
+        let link_token_with_native = types::HubMessage::SendToHub {
+            destination_chain: remote_chain.clone(),
+            message: types::Message::LinkToken(types::LinkToken {
+                token_id: BytesN::from_array(&env, &[0u8; 32]),
+                token_manager_type: types::TokenManagerType::NativeInterchainToken,
+                source_token_address: Bytes::from_hex(&env, "00"),
+                destination_token_address: Bytes::from_hex(&env, "00"),
+                params: None,
+            }),
+        };
+
+        let result = link_token_with_native.abi_encode(&env);
+        assert!(matches!(
+            result,
+            Err(ContractError::InvalidTokenManagerType)
+        ));
+
+        // Test decoding fails with NativeInterchainToken
+        // First create a valid LinkToken payload with LockUnlock type
+        let valid_link_token = types::Message::LinkToken(types::LinkToken {
+            token_id: BytesN::from_array(&env, &[0u8; 32]),
+            token_manager_type: types::TokenManagerType::LockUnlock,
+            source_token_address: Bytes::from_hex(&env, "00"),
+            destination_token_address: Bytes::from_hex(&env, "00"),
+            params: None,
+        });
+
+        let mut payload = valid_link_token.abi_encode(&env).unwrap().to_alloc_vec();
+
+        // Manually modify the tokenManagerType field to 0 (NativeInterchainToken)
+        // The structure is: messageType(32) + tokenId(32) + tokenManagerType(32) + ...
+        // So tokenManagerType starts at byte 64
+        for i in 64..96 {
+            payload[i] = 0;
+        }
+
+        let result = Message::abi_decode(&env, &Bytes::from_slice(&env, &payload));
         assert!(matches!(
             result,
             Err(ContractError::InvalidTokenManagerType)

@@ -1,0 +1,15 @@
+TokenManagerDeployedEvent {
+    token_id: BytesN<32>(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+    token_address: Contract(CCF7CGAN3G4L2LJV6EB3GZKQSQY6YGJ4XEQYQVA7GXOYRGIQXSIWVBTI),
+    token_manager: Contract(CCSVDGI4C4HI4NXYPFHVGDBMW336KYFMJ7WE75VKRA5LFL5F7EBZTHLZ),
+    token_manager_type: LockUnlock,
+}
+
+Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVAX5)
+
+token_manager_deployed {
+    #[topic] token_id: BytesN < 32 >,
+    #[topic] token_address: Address,
+    #[topic] token_manager: Address,
+    #[topic] token_manager_type: TokenManagerType,
+}
