@@ -485,9 +485,9 @@ impl InterchainTokenService {
         message: Message,
         gas_token: Option<Token>,
     ) -> Result<(), ContractError> {
-        // Only validate destination chain for non-interchain transfer messages.
-        // Self-transfers are allowed for interchain transfers as they can be useful
-        // when broadcasting to a batch of chains that includes the current chain.
+        // Validate the destination chain only for non-interchain transfer messages.
+        // Self-transfers are allowed only in interchain transfers, as they may be useful
+        // when broadcasting to a batch that includes the current chain.
         if !matches!(message, Message::InterchainTransfer(_)) {
             ensure!(
                 destination_chain != Self::chain_name(env),
