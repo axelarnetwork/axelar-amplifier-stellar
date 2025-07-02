@@ -1,0 +1,19 @@
+LinkTokenStartedEvent {
+    token_id: BytesN<32>(4, 43, 221, 235, 105, 176, 252, 241, 155, 75, 38, 143, 140, 174, 161, 208, 141, 155, 87, 21, 138, 43, 237, 139, 9, 236, 248, 156, 127, 72, 236, 170),
+    destination_chain: String(ethereum),
+    source_token_address: Bytes(67, 67, 70, 55, 72, 87, 90, 54, 80, 66, 84, 50, 77, 81, 54, 65, 85, 66, 75, 88, 77, 52, 67, 80, 87, 65, 82, 50, 80, 79, 54, 78, 68, 51, 52, 87, 88, 76, 66, 51, 50, 78, 68, 65, 89, 68, 55, 75, 73, 75, 66, 65, 65, 83, 55, 73),
+    destination_token_address: Bytes(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2),
+    token_manager_type: MintBurn,
+    params: None,
+}
+
+Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVAX5)
+
+link_token_started {
+    #[topic] token_id: BytesN < 32 >,
+    #[topic] destination_chain: String,
+    #[topic] source_token_address: Bytes,
+    #[topic] destination_token_address: Bytes,
+    #[topic] token_manager_type: TokenManagerType,
+    #[topic] params: Option < Bytes >,
+}

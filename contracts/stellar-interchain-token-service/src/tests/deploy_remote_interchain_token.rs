@@ -220,8 +220,19 @@ fn deploy_remote_token_fails_local_deployment() {
 
     let spender = Address::generate(&env);
     let gas_token = setup_gas_token(&env, &spender);
+    let minter: Option<Address> = None;
     let salt = BytesN::<32>::from_array(&env, &[1; 32]);
     let destination_chain = client.chain_name();
+    let token_metadata = TokenMetadata::new(&env, "name", "symbol", 6);
+    let initial_supply = 1;
+
+    let _ = client.mock_all_auths().deploy_interchain_token(
+        &spender,
+        &salt,
+        &token_metadata,
+        &initial_supply,
+        &minter,
+    );
 
     assert_contract_err!(
         client.mock_all_auths().try_deploy_remote_interchain_token(

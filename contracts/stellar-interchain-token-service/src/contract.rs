@@ -18,16 +18,16 @@ use token_id::UnregisteredTokenId;
 use crate::error::ContractError;
 use crate::event::{
     InterchainTokenDeploymentStartedEvent, InterchainTransferReceivedEvent,
-    InterchainTransferSentEvent, TokenMetadataRegisteredEvent, TrustedChainRemovedEvent,
-    TrustedChainSetEvent,
+    InterchainTransferSentEvent, LinkTokenStartedEvent, TokenMetadataRegisteredEvent,
+    TrustedChainRemovedEvent, TrustedChainSetEvent,
 };
 use crate::flow_limit::FlowDirection;
 use crate::interface::InterchainTokenServiceInterface;
 use crate::storage::{self, TokenIdConfigValue};
 use crate::token_metadata::TokenMetadataExt;
 use crate::types::{
-    DeployInterchainToken, HubMessage, InterchainTransfer, Message, RegisterTokenMetadata,
-    TokenManagerType,
+    DeployInterchainToken, HubMessage, InterchainTransfer, LinkToken, Message,
+    RegisterTokenMetadata, TokenManagerType,
 };
 use crate::{deployer, flow_limit, token_handler, token_id, token_metadata};
 
@@ -333,6 +333,56 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
     }
 
     #[when_not_paused]
+    fn link_token(
+        env: &Env,
+        deployer: Address,
+        salt: BytesN<32>,
+        destination_chain: String,
+        destination_token_address: Bytes,
+        token_manager_type: TokenManagerType,
+        link_params: Option<Bytes>,
+        gas_token: Option<Token>,
+    ) -> Result<BytesN<32>, ContractError> {
+        deployer.require_auth();
+
+        ensure!(
+            !destination_token_address.is_empty(),
+            ContractError::InvalidDestinationTokenAddress
+        );
+
+        // Custom token managers can't be deployed with native interchain token type, which is reserved for interchain tokens
+        ensure!(
+            token_manager_type != TokenManagerType::NativeInterchainToken,
+            ContractError::InvalidTokenManagerType
+        );
+
+        let token_id = Self::linked_token_id(env, deployer.clone(), salt);
+        let token_address = Self::token_id_config(env, token_id.clone())?.token_address;
+
+        let message = Message::LinkToken(LinkToken {
+            token_id: token_id.clone(),
+            token_manager_type,
+            source_token_address: token_address.to_string_bytes(),
+            destination_token_address: destination_token_address.clone(),
+            params: link_params.clone(),
+        });
+
+        LinkTokenStartedEvent {
+            token_id: token_id.clone(),
+            destination_chain: destination_chain.clone(),
+            source_token_address: token_address.to_string_bytes(),
+            destination_token_address,
+            token_manager_type,
+            params: link_params,
+        }
+        .emit(env);
+
+        Self::pay_gas_and_call_contract(env, deployer, destination_chain, message, gas_token)?;
+
+        Ok(token_id)
+    }
+
+    #[when_not_paused]
     fn interchain_transfer(
         env: &Env,
         caller: Address,
@@ -435,6 +485,16 @@ impl InterchainTokenService {
         message: Message,
         gas_token: Option<Token>,
     ) -> Result<(), ContractError> {
+        // Validate the destination chain only for non-interchain transfer messages.
+        // Self-transfers are allowed only in interchain transfers, as they may be useful
+        // when broadcasting to a batch that includes the current chain.
+        if !matches!(message, Message::InterchainTransfer(_)) {
+            ensure!(
+                destination_chain != Self::chain_name(env),
+                ContractError::InvalidDestinationChain
+            );
+        }
+
         ensure!(
             Self::is_trusted_chain(env, destination_chain.clone()),
             ContractError::UntrustedChain
@@ -534,11 +594,6 @@ impl InterchainTokenService {
         destination_chain: String,
         gas_token: Option<Token>,
     ) -> Result<(), ContractError> {
-        ensure!(
-            destination_chain != Self::chain_name(env),
-            ContractError::InvalidDestinationChain
-        );
-
         let token_address = Self::token_id_config(env, token_id.clone())?.token_address;
         let TokenMetadata {
             name,
