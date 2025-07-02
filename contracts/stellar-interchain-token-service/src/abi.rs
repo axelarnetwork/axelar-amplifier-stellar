@@ -166,10 +166,7 @@ impl Message {
 
                 Ok(Self::LinkToken(types::LinkToken {
                     token_id: BytesN::from_array(env, &decoded.tokenId.into()),
-                    token_manager_type: to_token_manager_type(
-                        decoded.tokenManagerType,
-                        message_type,
-                    )?,
+                    token_manager_type: to_token_manager_type(decoded.tokenManagerType)?,
                     source_token_address: Bytes::from_slice(env, decoded.sourceToken.as_ref()),
                     destination_token_address: Bytes::from_slice(
                         env,
@@ -300,10 +297,11 @@ fn to_i128(value: Uint<256, 4>) -> Result<i128, ContractError> {
     Ok(i128_value)
 }
 
-fn to_token_manager_type(
-    value: Uint<256, 4>,
-    message_type: MessageType,
-) -> Result<types::TokenManagerType, ContractError> {
+/// Converts a U256 value to a TokenManagerType for LinkToken messages.
+///
+/// Only accepts LockUnlock (2) and MintBurn (4) types. Rejects NativeInterchainToken (0)
+/// as it's reserved for interchain tokens, not for linking existing tokens.
+fn to_token_manager_type(value: Uint<256, 4>) -> Result<types::TokenManagerType, ContractError> {
     // Safe conversion: check if the value fits in a u32 before converting
     if value > Uint::from(u32::MAX) {
         return Err(ContractError::InvalidTokenManagerType);
@@ -311,21 +309,12 @@ fn to_token_manager_type(
 
     let u32_value = value.to::<u32>();
 
-    let token_manager_type = match u32_value {
-        0 => types::TokenManagerType::NativeInterchainToken,
-        2 => types::TokenManagerType::LockUnlock,
-        4 => types::TokenManagerType::MintBurn,
-        _ => return Err(ContractError::InvalidTokenManagerType),
-    };
-
-    // LinkToken messages cannot use NativeInterchainToken type, which is reserved for interchain tokens
-    if message_type == MessageType::LinkToken
-        && token_manager_type == types::TokenManagerType::NativeInterchainToken
-    {
-        return Err(ContractError::InvalidTokenManagerType);
+    match u32_value {
+        0 => Err(ContractError::InvalidTokenManagerType),
+        2 => Ok(types::TokenManagerType::LockUnlock),
+        4 => Ok(types::TokenManagerType::MintBurn),
+        _ => Err(ContractError::InvalidTokenManagerType),
     }
-
-    Ok(token_manager_type)
 }
 
 fn into_vec(value: Option<Bytes>) -> alloc::vec::Vec<u8> {
@@ -355,6 +344,7 @@ mod tests {
     use stellar_axelar_std::{assert_ok, Bytes, BytesN, Env, String};
 
     use super::*;
+    use crate::types::TokenManagerType;
 
     #[test]
     fn soroban_str_to_std_string() {
@@ -745,8 +735,9 @@ mod tests {
 
     #[test]
     fn to_token_manager_type_fails_invalid_token_manager_type() {
+        // Test with invalid token manager type
         let invalid_type: Uint<256, 4> = Uint::from(5u32);
-        let result = to_token_manager_type(invalid_type, MessageType::LinkToken);
+        let result = to_token_manager_type(invalid_type);
         assert!(matches!(
             result,
             Err(ContractError::InvalidTokenManagerType)
@@ -754,26 +745,18 @@ mod tests {
 
         // Test with a value that exceeds u32::MAX
         let overflow: Uint<256, 4> = Uint::from(u32::MAX) + Uint::from(1);
-        let result = to_token_manager_type(overflow, MessageType::LinkToken);
+        let result = to_token_manager_type(overflow);
         assert!(matches!(
             result,
             Err(ContractError::InvalidTokenManagerType)
         ));
-    }
 
-    #[test]
-    fn to_token_manager_type_accepts_native_interchain_token_for_non_link_token_messages() {
+        // Test that NativeInterchainToken (0) is rejected for LinkToken messages
         let native_type: Uint<256, 4> = Uint::from(0u32);
-        let result = to_token_manager_type(native_type, MessageType::InterchainTransfer);
+        let result = to_token_manager_type(native_type);
         assert!(matches!(
             result,
-            Ok(types::TokenManagerType::NativeInterchainToken)
-        ));
-
-        let result = to_token_manager_type(native_type, MessageType::DeployInterchainToken);
-        assert!(matches!(
-            result,
-            Ok(types::TokenManagerType::NativeInterchainToken)
+            Err(ContractError::InvalidTokenManagerType)
         ));
     }
 
@@ -805,7 +788,7 @@ mod tests {
         let link_token = LinkToken {
             messageType: MessageType::LinkToken.into(),
             tokenId: FixedBytes::<32>::new([0u8; 32]),
-            tokenManagerType: U256::from(0u32), // NativeInterchainToken
+            tokenManagerType: U256::from(TokenManagerType::NativeInterchainToken as u32),
             sourceToken: vec![0u8].into(),
             destinationToken: vec![0u8].into(),
             params: vec![].into(),

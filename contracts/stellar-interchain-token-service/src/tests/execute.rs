@@ -10,7 +10,7 @@ use stellar_interchain_token::InterchainTokenClient;
 use super::utils::{setup_env, TokenMetadataExt};
 use crate::error::ContractError;
 use crate::event::{
-    InterchainTokenDeployedEvent, InterchainTransferReceivedEvent, TokenLinkedEvent,
+    InterchainTokenDeployedEvent, InterchainTransferReceivedEvent, LinkTokenReceivedEvent,
     TokenManagerDeployedEvent,
 };
 use crate::testutils::setup_its_token;
@@ -777,7 +777,7 @@ fn link_token_message_execute_succeeds_with_token_manager_type_lock_unlock() {
         &payload,
     );
 
-    let token_linked_event = events::fmt_last_emitted_event::<TokenLinkedEvent>(&env);
+    let token_linked_event = events::fmt_last_emitted_event::<LinkTokenReceivedEvent>(&env);
 
     assert_eq!(
         client.registered_token_address(&test_data.token_id),
@@ -820,7 +820,7 @@ fn link_token_message_execute_succeeds_with_token_manager_type_mint_burn() {
         &payload,
     );
 
-    let token_linked_event = events::fmt_last_emitted_event::<TokenLinkedEvent>(&env);
+    let token_linked_event = events::fmt_last_emitted_event::<LinkTokenReceivedEvent>(&env);
 
     assert_eq!(
         client.registered_token_address(&test_data.token_id),

@@ -1,4 +1,4 @@
-TokenLinkedEvent {
+LinkTokenReceivedEvent {
     source_chain: String(ethereum),
     token_id: BytesN<32>(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
     source_token_address: Bytes(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2),
@@ -11,7 +11,7 @@ TokenLinkedEvent {
 
 Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVAX5)
 
-token_linked {
+link_token_received {
     #[topic] source_chain: String,
     #[topic] token_id: BytesN < 32 >,
     #[topic] source_token_address: Bytes,

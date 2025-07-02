@@ -68,7 +68,7 @@ pub struct LinkTokenStartedEvent {
 }
 
 #[derive(Debug, PartialEq, Eq, IntoEvent)]
-pub struct TokenLinkedEvent {
+pub struct LinkTokenReceivedEvent {
     pub source_chain: String,
     pub token_id: BytesN<32>,
     pub source_token_address: Bytes,

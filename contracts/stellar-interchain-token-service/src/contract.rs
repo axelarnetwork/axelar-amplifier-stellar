@@ -18,7 +18,7 @@ use token_id::UnregisteredTokenId;
 use crate::error::ContractError;
 use crate::event::{
     InterchainTokenDeploymentStartedEvent, InterchainTransferReceivedEvent,
-    InterchainTransferSentEvent, LinkTokenStartedEvent, TokenLinkedEvent,
+    InterchainTransferSentEvent, LinkTokenReceivedEvent, LinkTokenStartedEvent,
     TokenMetadataRegisteredEvent, TrustedChainRemovedEvent, TrustedChainSetEvent,
 };
 use crate::flow_limit::FlowDirection;
@@ -753,7 +753,7 @@ impl InterchainTokenService {
             token_manager_type,
         );
 
-        TokenLinkedEvent {
+        LinkTokenReceivedEvent {
             source_chain,
             token_id: unregistered_token_id.into(),
             source_token_address,
