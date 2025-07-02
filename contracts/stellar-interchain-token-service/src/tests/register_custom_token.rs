@@ -4,19 +4,40 @@ use stellar_axelar_std::{assert_auth, assert_contract_err, events, Address, Byte
 use super::utils::setup_env;
 use crate::error::ContractError;
 use crate::event::TokenManagerDeployedEvent;
-use crate::tests::utils::{setup_test_data, TestData};
 use crate::types::TokenManagerType;
+
+// Register custom token specific test constants
+const TEST_SALT: [u8; 32] = [1; 32];
+
+struct RegisterCustomTokenTestData {
+    deployer: Address,
+    token: stellar_axelar_std::testutils::StellarAssetContract,
+    salt: BytesN<32>,
+}
+
+fn setup_register_custom_token_test_data(
+    env: &stellar_axelar_std::Env,
+) -> RegisterCustomTokenTestData {
+    let deployer = Address::generate(env);
+    let owner = Address::generate(&env);
+    let token = env.register_stellar_asset_contract_v2(owner);
+    let salt = BytesN::<32>::from_array(env, &TEST_SALT);
+
+    RegisterCustomTokenTestData {
+        deployer,
+        token,
+        salt,
+    }
+}
 
 #[test]
 fn register_custom_token_succeeds_with_token_manager_type_lock_unlock() {
     let (env, client, _, _, _) = setup_env();
-    let test_data = setup_test_data(&env);
-    let TestData {
+    let test_data = setup_register_custom_token_test_data(&env);
+    let RegisterCustomTokenTestData {
         deployer,
         token,
         salt,
-        destination_chain: _,
-        destination_token_address: _,
     } = test_data;
     let token_manager_type = TokenManagerType::LockUnlock;
     let expected_id = client.linked_token_id(&deployer, &salt);
@@ -43,13 +64,11 @@ fn register_custom_token_succeeds_with_token_manager_type_lock_unlock() {
 #[test]
 fn register_custom_token_succeeds_with_token_manager_type_mint_burn() {
     let (env, client, _, _, _) = setup_env();
-    let test_data = setup_test_data(&env);
-    let TestData {
+    let test_data = setup_register_custom_token_test_data(&env);
+    let RegisterCustomTokenTestData {
         deployer,
         token,
         salt,
-        destination_chain: _,
-        destination_token_address: _,
     } = test_data;
     let token_manager_type = TokenManagerType::MintBurn;
     let expected_id = client.linked_token_id(&deployer, &salt);
@@ -76,13 +95,11 @@ fn register_custom_token_succeeds_with_token_manager_type_mint_burn() {
 #[test]
 fn register_custom_token_fails_with_token_manager_type_native_interchain_token() {
     let (env, client, _, _, _) = setup_env();
-    let test_data = setup_test_data(&env);
-    let TestData {
+    let test_data = setup_register_custom_token_test_data(&env);
+    let RegisterCustomTokenTestData {
         deployer,
         token,
         salt,
-        destination_chain: _,
-        destination_token_address: _,
     } = test_data;
     let token_manager_type = TokenManagerType::NativeInterchainToken;
 
@@ -118,13 +135,11 @@ fn register_custom_token_fails_when_paused() {
 #[test]
 fn register_custom_token_fails_if_already_registered() {
     let (env, client, _, _, _) = setup_env();
-    let test_data = setup_test_data(&env);
-    let TestData {
+    let test_data = setup_register_custom_token_test_data(&env);
+    let RegisterCustomTokenTestData {
         deployer,
         token,
         salt,
-        destination_chain: _,
-        destination_token_address: _,
     } = test_data;
     let token_manager_type = TokenManagerType::LockUnlock;
 
@@ -160,13 +175,11 @@ fn custom_token_id_derivation() {
 #[test]
 fn register_custom_token_fails_with_native_interchain_token_type() {
     let (env, client, _, _, _) = setup_env();
-    let test_data = setup_test_data(&env);
-    let TestData {
+    let test_data = setup_register_custom_token_test_data(&env);
+    let RegisterCustomTokenTestData {
         deployer,
         token,
         salt,
-        destination_chain: _,
-        destination_token_address: _,
     } = test_data;
     let token_manager_type = TokenManagerType::NativeInterchainToken;
 
@@ -185,13 +198,11 @@ fn register_custom_token_fails_with_native_interchain_token_type() {
 fn register_custom_token_fails_with_invalid_token_address() {
     let (env, client, _, _, _) = setup_env();
     let invalid_token_address = Address::generate(&env); // Not a valid token contract
-    let test_data = setup_test_data(&env);
-    let TestData {
+    let test_data = setup_register_custom_token_test_data(&env);
+    let RegisterCustomTokenTestData {
         deployer,
         token: _,
         salt,
-        destination_chain: _,
-        destination_token_address: _,
     } = test_data;
     let token_manager_type = TokenManagerType::LockUnlock;
 

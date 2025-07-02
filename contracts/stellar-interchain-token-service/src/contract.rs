@@ -485,10 +485,15 @@ impl InterchainTokenService {
         message: Message,
         gas_token: Option<Token>,
     ) -> Result<(), ContractError> {
-        ensure!(
-            destination_chain != Self::chain_name(env),
-            ContractError::InvalidDestinationChain
-        );
+        // Only validate destination chain for non-interchain transfer messages.
+        // Self-transfers are allowed for interchain transfers as they can be useful
+        // when broadcasting to a batch of chains that includes the current chain.
+        if !matches!(message, Message::InterchainTransfer(_)) {
+            ensure!(
+                destination_chain != Self::chain_name(env),
+                ContractError::InvalidDestinationChain
+            );
+        }
 
         ensure!(
             Self::is_trusted_chain(env, destination_chain.clone()),

@@ -7,10 +7,7 @@ use stellar_axelar_std::{
     assert_contract_err, auth_invocation, events, Address, Bytes, BytesN, IntoVal, String, Symbol,
 };
 
-use super::utils::{
-    setup_env, setup_test_data, TestData, TEST_SALT, TEST_TRANSFER_AMOUNT,
-    TEST_TRANSFER_DESTINATION_ADDRESS, TEST_TRANSFER_DESTINATION_CHAIN,
-};
+use super::utils::setup_env;
 use crate::error::ContractError;
 use crate::event::LinkTokenStartedEvent;
 use crate::types::{HubMessage, LinkToken, Message, TokenManagerType};
@@ -18,11 +15,44 @@ use crate::types::{HubMessage, LinkToken, Message, TokenManagerType};
 const LINK_TOKEN_STARTED_WITH_GAS_EVENT_IDX: i32 = -4;
 const LINK_TOKEN_STARTED_WITHOUT_GAS_EVENT_IDX: i32 = -2;
 
+// Link token specific test constants
+const TEST_SALT: [u8; 32] = [1; 32];
+const TEST_DESTINATION_CHAIN: &str = "ethereum";
+const TEST_DESTINATION_TOKEN_ADDRESS: [u8; 32] = [2; 32];
+const TEST_TRANSFER_AMOUNT: i128 = 1000;
+const TEST_TRANSFER_DESTINATION_ADDRESS: [u8; 32] = [3; 32];
+const TEST_TRANSFER_DESTINATION_CHAIN: &str = "avalanche";
+
+struct LinkTokenTestData {
+    deployer: Address,
+    token: stellar_axelar_std::testutils::StellarAssetContract,
+    salt: BytesN<32>,
+    destination_chain: String,
+    destination_token_address: Bytes,
+}
+
+fn setup_link_token_test_data(env: &stellar_axelar_std::Env) -> LinkTokenTestData {
+    let deployer = Address::generate(env);
+    let owner = Address::generate(&env);
+    let token = env.register_stellar_asset_contract_v2(owner);
+    let salt = BytesN::<32>::from_array(env, &TEST_SALT);
+    let destination_chain = String::from_str(env, TEST_DESTINATION_CHAIN);
+    let destination_token_address = Bytes::from_array(env, &TEST_DESTINATION_TOKEN_ADDRESS);
+
+    LinkTokenTestData {
+        deployer,
+        token,
+        salt,
+        destination_chain,
+        destination_token_address,
+    }
+}
+
 #[test]
 fn link_token_succeeds_with_token_manager_type_lock_unlock() {
     let (env, client, _, gas_service, _) = setup_env();
-    let test_data = setup_test_data(&env);
-    let TestData {
+    let test_data = setup_link_token_test_data(&env);
+    let LinkTokenTestData {
         deployer,
         token,
         salt,
@@ -163,8 +193,8 @@ fn link_token_succeeds_with_token_manager_type_lock_unlock() {
 #[test]
 fn link_token_succeeds_with_token_manager_type_mint_burn() {
     let (env, client, _, gas_service, _) = setup_env();
-    let test_data = setup_test_data(&env);
-    let TestData {
+    let test_data = setup_link_token_test_data(&env);
+    let LinkTokenTestData {
         deployer,
         token,
         salt,
@@ -301,8 +331,8 @@ fn link_token_succeeds_with_token_manager_type_mint_burn() {
 #[test]
 fn link_token_succeeds_without_gas_token() {
     let (env, client, _, _, _) = setup_env();
-    let test_data = setup_test_data(&env);
-    let TestData {
+    let test_data = setup_link_token_test_data(&env);
+    let LinkTokenTestData {
         deployer,
         token,
         salt,
@@ -361,8 +391,8 @@ fn link_token_succeeds_without_gas_token() {
 #[test]
 fn link_token_fails_when_paused() {
     let (env, client, _, _, _) = setup_env();
-    let test_data = setup_test_data(&env);
-    let TestData {
+    let test_data = setup_link_token_test_data(&env);
+    let LinkTokenTestData {
         deployer,
         token: _,
         salt,
@@ -392,8 +422,8 @@ fn link_token_fails_when_paused() {
 #[test]
 fn link_token_fails_with_native_interchain_token_type() {
     let (env, client, _, _, _) = setup_env();
-    let test_data = setup_test_data(&env);
-    let TestData {
+    let test_data = setup_link_token_test_data(&env);
+    let LinkTokenTestData {
         deployer,
         token: _,
         salt,
@@ -421,8 +451,8 @@ fn link_token_fails_with_native_interchain_token_type() {
 #[test]
 fn link_token_fails_with_invalid_destination_chain() {
     let (env, client, _, _, _) = setup_env();
-    let test_data = setup_test_data(&env);
-    let TestData {
+    let test_data = setup_link_token_test_data(&env);
+    let LinkTokenTestData {
         deployer,
         token,
         salt,
@@ -459,8 +489,8 @@ fn link_token_fails_with_invalid_destination_chain() {
 #[test]
 fn link_token_fails_with_invalid_token_id() {
     let (env, client, _, _, _) = setup_env();
-    let test_data = setup_test_data(&env);
-    let TestData {
+    let test_data = setup_link_token_test_data(&env);
+    let LinkTokenTestData {
         deployer,
         token: _,
         salt,
@@ -488,8 +518,8 @@ fn link_token_fails_with_invalid_token_id() {
 #[test]
 fn link_token_fails_with_untrusted_chain() {
     let (env, client, _, _, _) = setup_env();
-    let test_data = setup_test_data(&env);
-    let TestData {
+    let test_data = setup_link_token_test_data(&env);
+    let LinkTokenTestData {
         deployer,
         token,
         salt,
@@ -525,8 +555,8 @@ fn link_token_fails_with_untrusted_chain() {
 fn link_token_fails_with_empty_destination_token_address() {
     let (env, client, _, _, _) = setup_env();
 
-    let test_data = setup_test_data(&env);
-    let TestData {
+    let test_data = setup_link_token_test_data(&env);
+    let LinkTokenTestData {
         deployer,
         token: _,
         salt,

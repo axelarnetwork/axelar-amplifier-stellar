@@ -139,6 +139,36 @@ fn interchain_transfer_canonical_token_send_succeeds() {
 }
 
 #[test]
+fn interchain_transfer_self_transfer_succeeds() {
+    let (env, client, _, _, _) = setup_env();
+
+    let amount = 1000;
+    let (sender, gas_token, token_id) = setup_sender(&env, &client, amount);
+
+    let destination_chain = client.chain_name();
+    let destination_address = Bytes::from_hex(&env, "4F4495243837681061C4743b74B3eEdf548D56A5");
+    let data = Some(Bytes::from_hex(&env, "abcd"));
+
+    client
+        .mock_all_auths()
+        .set_trusted_chain(&destination_chain);
+
+    client.mock_all_auths().interchain_transfer(
+        &sender,
+        &token_id,
+        &destination_chain,
+        &destination_address,
+        &amount,
+        &data,
+        &Some(gas_token),
+    );
+
+    goldie::assert!(events::fmt_emitted_event_at_idx::<
+        InterchainTransferSentEvent,
+    >(&env, -4));
+}
+
+#[test]
 fn interchain_transfer_send_fails_when_paused() {
     let (env, client, _, _, _) = setup_env();
     client.mock_all_auths().pause();
