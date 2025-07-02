@@ -164,12 +164,12 @@ impl Message {
                 let decoded = LinkToken::abi_decode_params(&payload, true)
                     .map_err(|_| ContractError::AbiDecodeFailed)?;
 
-                let token_manager_type =
-                    to_token_manager_type(decoded.tokenManagerType, message_type)?;
-
                 Ok(Self::LinkToken(types::LinkToken {
                     token_id: BytesN::from_array(env, &decoded.tokenId.into()),
-                    token_manager_type,
+                    token_manager_type: to_token_manager_type(
+                        decoded.tokenManagerType,
+                        message_type,
+                    )?,
                     source_token_address: Bytes::from_slice(env, decoded.sourceToken.as_ref()),
                     destination_token_address: Bytes::from_slice(
                         env,
@@ -304,6 +304,7 @@ fn to_token_manager_type(
     value: Uint<256, 4>,
     message_type: MessageType,
 ) -> Result<types::TokenManagerType, ContractError> {
+    // Safe conversion: check if the value fits in a u32 before converting
     if value > Uint::from(u32::MAX) {
         return Err(ContractError::InvalidTokenManagerType);
     }
@@ -781,7 +782,6 @@ mod tests {
         let env = Env::default();
         let remote_chain = String::from_str(&env, "chain");
 
-        // Test encoding fails with NativeInterchainToken
         let link_token_with_native = types::HubMessage::SendToHub {
             destination_chain: remote_chain.clone(),
             message: types::Message::LinkToken(types::LinkToken {
