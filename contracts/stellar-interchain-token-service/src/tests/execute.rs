@@ -777,14 +777,15 @@ fn link_token_message_execute_succeeds_with_token_manager_type_lock_unlock() {
         &payload,
     );
 
-    let token_linked_event = events::fmt_last_emitted_event::<LinkTokenReceivedEvent>(&env);
+    let link_token_received_event =
+        events::fmt_emitted_event_at_idx::<LinkTokenReceivedEvent>(&env, -2);
 
     assert_eq!(
         client.registered_token_address(&test_data.token_id),
         test_data.destination_token_address
     );
 
-    goldie::assert!(token_linked_event);
+    goldie::assert!(link_token_received_event);
 }
 
 #[test]
@@ -820,14 +821,15 @@ fn link_token_message_execute_succeeds_with_token_manager_type_mint_burn() {
         &payload,
     );
 
-    let token_linked_event = events::fmt_last_emitted_event::<LinkTokenReceivedEvent>(&env);
+    let link_token_received_event =
+        events::fmt_emitted_event_at_idx::<LinkTokenReceivedEvent>(&env, -2);
 
     assert_eq!(
         client.registered_token_address(&test_data.token_id),
         test_data.destination_token_address
     );
 
-    goldie::assert!(token_linked_event);
+    goldie::assert!(link_token_received_event);
 }
 
 #[test]
