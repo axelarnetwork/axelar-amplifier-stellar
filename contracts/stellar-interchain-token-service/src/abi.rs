@@ -735,7 +735,6 @@ mod tests {
 
     #[test]
     fn to_token_manager_type_fails_invalid_token_manager_type() {
-        // Test with invalid token manager type
         let invalid_type: Uint<256, 4> = Uint::from(5u32);
         let result = to_token_manager_type(invalid_type);
         assert!(matches!(
@@ -743,7 +742,6 @@ mod tests {
             Err(ContractError::InvalidTokenManagerType)
         ));
 
-        // Test with a value that exceeds u32::MAX
         let overflow: Uint<256, 4> = Uint::from(u32::MAX) + Uint::from(1);
         let result = to_token_manager_type(overflow);
         assert!(matches!(
@@ -751,7 +749,6 @@ mod tests {
             Err(ContractError::InvalidTokenManagerType)
         ));
 
-        // Test that NativeInterchainToken (0) is rejected for LinkToken messages
         let native_type: Uint<256, 4> = Uint::from(0u32);
         let result = to_token_manager_type(native_type);
         assert!(matches!(
