@@ -47,7 +47,7 @@ fn register_custom_token_succeeds_with_token_manager_type_lock_unlock() {
     );
 
     let token_manager_deployed_event =
-        events::fmt_last_emitted_event::<TokenManagerDeployedEvent>(&env);
+        events::fmt_emitted_event_at_idx::<TokenManagerDeployedEvent>(&env, -2);
 
     assert_eq!(token_id, expected_id);
 

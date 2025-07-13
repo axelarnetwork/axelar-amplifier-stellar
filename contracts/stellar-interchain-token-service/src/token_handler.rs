@@ -1,5 +1,6 @@
 use stellar_axelar_std::token::TokenClient;
 use stellar_axelar_std::{Address, Env};
+use stellar_interchain_token::InterchainTokenClient;
 use stellar_token_manager::TokenManagerClient;
 
 use crate::error::ContractError;
@@ -51,4 +52,41 @@ pub fn give_token(
     }
 
     Ok(())
+}
+
+/// Prepares a token manager after it is deployed.
+/// This function handles the post-deployment setup based on the token manager type.
+///
+/// # Arguments
+/// * `token_manager_type` - The type of token manager that was deployed
+/// * `token_manager` - The address of the deployed token manager
+/// * `token_address` - The address of the token contract
+pub fn post_token_manager_deploy(
+    env: &Env,
+    token_manager_type: TokenManagerType,
+    token_manager: Address,
+    token_address: Address,
+) {
+    match token_manager_type {
+        // For native interchain token managers, we transfer mintership to the token manager.
+        TokenManagerType::NativeInterchainToken => {
+            let interchain_token_client = InterchainTokenClient::new(env, &token_address);
+            // Check if token_manager is already a minter before adding to avoid MinterAlreadyExists error
+            if !interchain_token_client.is_minter(&token_manager) {
+                interchain_token_client.add_minter(&token_manager);
+            }
+        }
+        // For lock/unlock token managers, the ITS contract needs an approval from the token manager
+        // to transfer tokens on its behalf.
+        TokenManagerType::LockUnlock => {
+            let token_manager_client = TokenManagerClient::new(env, &token_manager);
+            token_manager_client.approve_service(
+                env,
+                &token_address,
+                &env.current_contract_address(),
+            );
+        }
+        // For mint/burn token managers, no additional setup is required
+        TokenManagerType::MintBurn => {}
+    }
 }

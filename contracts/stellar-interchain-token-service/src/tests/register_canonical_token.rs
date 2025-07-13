@@ -23,7 +23,7 @@ fn register_canonical_token_succeeds() {
         expected_id
     );
     let token_manager_deployed_event =
-        events::fmt_last_emitted_event::<TokenManagerDeployedEvent>(&env);
+        events::fmt_emitted_event_at_idx::<TokenManagerDeployedEvent>(&env, -2);
 
     assert_eq!(
         client.registered_token_address(&expected_id),
