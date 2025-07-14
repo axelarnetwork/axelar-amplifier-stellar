@@ -77,7 +77,7 @@ pub fn post_token_manager_deploy(
             }
         }
         // For lock/unlock token managers, no additional setup is required due to Stellar's
-        // account abstraction, which eliminates the need for ERC20-like approvals.
+        // account abstraction, which eliminates the need for ERC20-like approvals used on EVM chains.
         TokenManagerType::LockUnlock => {}
         // For mint/burn token managers, no additional setup is required
         TokenManagerType::MintBurn => {}
