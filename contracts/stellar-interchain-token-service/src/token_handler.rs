@@ -68,7 +68,7 @@ pub fn post_token_manager_deploy(
     token_address: Address,
 ) {
     match token_manager_type {
-        // For native interchain token managers, we transfer mintership to the token manager.
+        // For native interchain token managers, we add the token manager as an additional minter.
         TokenManagerType::NativeInterchainToken => {
             let interchain_token_client = InterchainTokenClient::new(env, &token_address);
             // Check if token_manager is already a minter before adding to avoid MinterAlreadyExists error
@@ -76,16 +76,9 @@ pub fn post_token_manager_deploy(
                 interchain_token_client.add_minter(&token_manager);
             }
         }
-        // For lock/unlock token managers, the ITS contract needs an approval from the token manager
-        // to transfer tokens on its behalf.
-        TokenManagerType::LockUnlock => {
-            let token_manager_client = TokenManagerClient::new(env, &token_manager);
-            token_manager_client.approve_service(
-                env,
-                &token_address,
-                &env.current_contract_address(),
-            );
-        }
+        // For lock/unlock token managers, no additional setup is required due to Stellar's
+        // account abstraction, which eliminates the need for ERC20-like approvals.
+        TokenManagerType::LockUnlock => {}
         // For mint/burn token managers, no additional setup is required
         TokenManagerType::MintBurn => {}
     }
