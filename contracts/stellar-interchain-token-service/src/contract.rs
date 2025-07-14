@@ -12,7 +12,6 @@ use stellar_axelar_std::{
     Address, AxelarExecutable, Bytes, BytesN, Env, IntoVal, Operatable, Ownable, Pausable, String,
     Symbol, Upgradable, Val,
 };
-use stellar_interchain_token::InterchainTokenClient;
 use token_id::UnregisteredTokenId;
 
 use crate::error::ContractError;
@@ -785,10 +784,17 @@ impl InterchainTokenService {
             env,
             token_id,
             TokenIdConfigValue {
-                token_address,
+                token_address: token_address.clone(),
                 token_manager: token_manager.clone(),
                 token_manager_type,
             },
+        );
+
+        token_handler::post_token_manager_deploy(
+            env,
+            token_manager_type,
+            token_manager.clone(),
+            token_address,
         );
 
         token_manager
@@ -813,20 +819,13 @@ impl InterchainTokenService {
             unregistered_token_id.clone(),
             token_metadata,
         );
-        let interchain_token_client = InterchainTokenClient::new(env, &token_address);
 
-        let token_manager = Self::deploy_token_manager(
+        let _ = Self::deploy_token_manager(
             env,
             unregistered_token_id,
             token_address.clone(),
             TokenManagerType::NativeInterchainToken,
         );
-
-        // Give minter role to the token manager
-        // Check if token_manager is already a minter before adding to avoid MinterAlreadyExists error
-        if !interchain_token_client.is_minter(&token_manager) {
-            interchain_token_client.add_minter(&token_manager);
-        }
 
         Ok(token_address)
     }
