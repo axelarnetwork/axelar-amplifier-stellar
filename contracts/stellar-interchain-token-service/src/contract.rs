@@ -439,6 +439,29 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
 
         Ok(())
     }
+
+    fn test_execute(
+        env: &Env,
+        recipient: Address,
+        token_address: Address,
+        token_manager: Address,
+        amount: i128,
+    ) -> Result<(), ContractError> {
+        token_handler::test_execute(env, &recipient, &token_address, &token_manager, amount)?;
+
+        Ok(())
+    }
+
+    #[only_operator]
+    fn add_minter(env: &Env, token_address: Address, minter: Address) -> Result<(), ContractError> {
+        let interchain_token_client = InterchainTokenClient::new(env, &token_address);
+
+        if !interchain_token_client.is_minter(&minter) {
+            interchain_token_client.add_minter(&minter);
+        }
+
+        Ok(())
+    }
 }
 
 impl InterchainTokenService {
