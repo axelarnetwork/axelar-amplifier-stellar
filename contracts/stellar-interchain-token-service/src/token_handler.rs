@@ -38,16 +38,46 @@ pub fn give_token(
     }: TokenIdConfigValue,
     amount: i128,
 ) -> Result<(), ContractError> {
-    let token_manager = TokenManagerClient::new(env, &token_manager);
+    let token_manager_client = TokenManagerClient::new(env, &token_manager);
 
     match token_manager_type {
         TokenManagerType::NativeInterchainToken => {
-            token_manager.mint(env, &token_address, recipient, amount)
+            token_manager_client.mint(env, &token_address, recipient, amount)
         }
         TokenManagerType::LockUnlock => {
-            token_manager.transfer(env, &token_address, recipient, amount)
+            token_manager_client.transfer(env, &token_address, recipient, amount)
         }
-        TokenManagerType::MintBurn => token_manager.mint(env, &token_address, recipient, amount),
+        TokenManagerType::MintBurn => {
+            if stellar_interchain_token::InterchainTokenClient::new(&env, &token_address)
+                .try_is_minter(&token_manager)
+                .is_ok()
+            {
+                token_manager_client.mint_from(env, &token_address, recipient, amount);
+            } else {
+                token_manager_client.mint(env, &token_address, recipient, amount);
+            }
+        }
+    }
+
+    Ok(())
+}
+
+pub fn test_execute(
+    env: &Env,
+    recipient: &Address,
+    token_address: &Address,
+    token_manager: &Address,
+    amount: i128,
+) -> Result<(), ContractError> {
+    let token_manager_client = TokenManagerClient::new(env, &token_manager);
+
+    if stellar_interchain_token::InterchainTokenClient::new(&env, &token_address)
+        .try_is_minter(&token_manager)
+        .is_ok()
+    {
+        token_manager_client.mint_from(env, &token_address, recipient, amount);
+    } else {
+        token_manager_client.mint(env, &token_address, recipient, amount);
     }
 
     Ok(())

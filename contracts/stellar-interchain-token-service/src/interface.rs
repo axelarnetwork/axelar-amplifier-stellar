@@ -365,4 +365,14 @@ pub trait InterchainTokenServiceInterface:
         metadata: Option<Bytes>,
         gas_token: Option<Token>,
     ) -> Result<(), ContractError>;
+
+    fn test_execute(
+        env: &Env,
+        recipient: Address,
+        token_address: Address,
+        token_manager: Address,
+        amount: i128,
+    ) -> Result<(), ContractError>;
+
+    fn add_minter(env: &Env, token_address: Address, minter: Address) -> Result<(), ContractError>;
 }
