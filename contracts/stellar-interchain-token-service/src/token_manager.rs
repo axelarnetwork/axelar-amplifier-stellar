@@ -5,11 +5,11 @@ pub trait TokenManagerClientExt {
     /// Transfer `amount` of tokens from the token manager to `recipient`.
     fn transfer(&self, env: &Env, token_address: &Address, recipient: &Address, amount: i128);
 
-    /// Mint `amount` of tokens to `recipient`.
-    fn mint(&self, env: &Env, token_address: &Address, recipient: &Address, amount: i128);
-
     /// Mint `amount` of tokens from the token manager to `recipient`.
     fn mint_from(&self, env: &Env, token_address: &Address, recipient: &Address, amount: i128);
+
+    /// Mint `amount` of tokens to `recipient`.
+    fn mint(&self, env: &Env, token_address: &Address, recipient: &Address, amount: i128);
 }
 
 impl TokenManagerClientExt for TokenManagerClient<'_> {
