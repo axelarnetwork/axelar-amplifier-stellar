@@ -451,6 +451,9 @@ fn link_token_with_stellar_classic_asset_source_lock_unlock_destination_mint_bur
         destination_manager_type,
     );
 
+    // No need to pre-fund source stellar classic asset for LockUnlock
+    // No need to pre-fund destination stellar classic asset for MintBurn (to mint the tokens)
+
     // Transfer ownership to the destination token manager
     StellarAssetClient::new(&test_env.env, &asset_setup.destination_token_address)
         .mock_all_auths()
@@ -483,6 +486,8 @@ fn link_token_with_stellar_classic_asset_source_mint_burn_destination_lock_unloc
         &asset_setup.destination_token_address,
         destination_manager_type,
     );
+
+    // No need to pre-fund source stellar classic asset for MintBurn (to burn the tokens)
 
     // Pre-fund destination token manager for LockUnlock (to unlock the tokens)
     StellarAssetClient::new(&test_env.env, &asset_setup.destination_token_address)
@@ -517,12 +522,13 @@ fn link_token_with_interchain_token_source_lock_unlock_destination_mint_burn() {
         destination_manager_type,
     );
 
-    // Pre-fund source interchain token for LockUnlock (to lock the tokens)
+    // Pre-fund source interchain token for LockUnlock
     InterchainTokenClient::new(&test_env.env, &token_setup.source_token_address)
         .mock_all_auths()
         .mint(&test_env.deployer, &test_env.initial_supply);
 
     // Add minter permission to destination token manager
+    // No need to pre-fund destination interchain token for MintBurn (to mint the tokens)
     InterchainTokenClient::new(&test_env.env, &token_setup.destination_token_address)
         .mock_all_auths()
         .add_minter(&destination_token_manager);
