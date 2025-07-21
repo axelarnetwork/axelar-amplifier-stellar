@@ -365,4 +365,24 @@ pub trait InterchainTokenServiceInterface:
         metadata: Option<Bytes>,
         gas_token: Option<Token>,
     ) -> Result<(), ContractError>;
+
+    /// Adds a minter role to the specified interchain token.
+    ///
+    /// This function grants minting permissions to the specified address for the given token.
+    /// The minter will be able to mint new tokens after this operation completes successfully.
+    ///
+    /// # Arguments
+    /// - `token_address`: The address of the interchain token contract.
+    /// - `minter`: The address to be granted minting permissions.
+    ///
+    /// # Returns
+    /// - `Ok(())`: If the minter was successfully added.
+    ///
+    /// # Errors
+    /// - [`ContractError::InvalidMinter`]: If the minter address is invalid.
+    /// - [`ContractError::InvalidTokenAddress`]: If the token address is invalid or the token contract doesn't exist.
+    ///
+    /// # Authorization
+    /// - [`OperatableInterface::operator`] must authorize.
+    fn add_minter(env: &Env, token_address: Address, minter: Address) -> Result<(), ContractError>;
 }

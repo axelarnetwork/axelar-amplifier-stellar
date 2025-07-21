@@ -7,6 +7,9 @@ pub trait TokenManagerClientExt {
 
     /// Mint `amount` of tokens to `recipient`.
     fn mint(&self, env: &Env, token_address: &Address, recipient: &Address, amount: i128);
+
+    /// Mint `amount` of tokens from the token manager to `recipient`.
+    fn mint_from(&self, env: &Env, token_address: &Address, recipient: &Address, amount: i128);
 }
 
 impl TokenManagerClientExt for TokenManagerClient<'_> {
@@ -24,6 +27,14 @@ impl TokenManagerClientExt for TokenManagerClient<'_> {
     }
 
     fn mint(&self, env: &Env, token_address: &Address, recipient: &Address, amount: i128) {
+        let _: Val = self.execute(
+            token_address,
+            &Symbol::new(env, "mint"),
+            &vec![env, recipient.to_val(), amount.into_val(env)],
+        );
+    }
+
+    fn mint_from(&self, env: &Env, token_address: &Address, recipient: &Address, amount: i128) {
         let _: Val = self.execute(
             token_address,
             &Symbol::new(env, "mint_from"),

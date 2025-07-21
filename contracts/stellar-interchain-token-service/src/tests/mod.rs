@@ -1,3 +1,4 @@
+mod add_minter;
 mod deploy_interchain_token;
 mod deploy_remote_canonical_token;
 mod deploy_remote_interchain_token;
