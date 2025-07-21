@@ -17,7 +17,6 @@ use stellar_axelar_std::{
     assert_contract_err, assert_ok, auth_invocation, events, vec, Address, Bytes, BytesN, Env,
     IntoVal, String, Symbol,
 };
-
 use stellar_interchain_token_service::testutils::setup_its;
 use stellar_interchain_token_service::InterchainTokenServiceClient;
 
