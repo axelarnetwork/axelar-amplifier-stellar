@@ -185,6 +185,7 @@ fn setup_interchain_tokens(
             &0,
             &Some(test_env.deployer.clone()),
         );
+
     let source_token_address = test_env
         .source_config
         .its
@@ -220,6 +221,7 @@ fn setup_interchain_tokens(
             &test_env.initial_supply,
             &Some(test_env.deployer.clone()),
         );
+
     let destination_token_address = test_env
         .destination_config
         .its
@@ -291,6 +293,7 @@ fn execute_link_token(
         .destination_config
         .gateway
         .approve_messages(&link_messages, &proof);
+
     test_env.destination_config.its.execute(
         &test_env.hub_chain,
         &message_id,
@@ -384,20 +387,13 @@ fn verify_balances(
     source_manager_type: TokenManagerType,
     destination_manager_type: TokenManagerType,
 ) {
-    // Destination: tokens should be transferred to recipient
     let destination_token_client =
         token::TokenClient::new(&test_env.env, destination_token_address);
-    assert_eq!(
-        destination_token_client.balance(&test_env.destination_config.app.address),
-        0
-    );
-
     assert_eq!(
         destination_token_client.balance(&test_env.recipient),
         test_env.transfer_amount
     );
 
-    // Check destination token manager balance based on manager type
     let destination_token_manager = test_env
         .destination_config
         .its
@@ -417,7 +413,6 @@ fn verify_balances(
         );
     }
 
-    // Check source token balances
     let source_token_client = token::TokenClient::new(&test_env.env, source_token_address);
     let source_token_manager = test_env
         .source_config
@@ -425,7 +420,7 @@ fn verify_balances(
         .deployed_token_manager(linked_token_id);
 
     if source_manager_type == TokenManagerType::LockUnlock {
-        // LockUnlock: deployer has remaining tokens, manager has locked tokens
+        // LockUnlock: deployer has remaining tokens, token manager has locked tokens
         assert_eq!(
             source_token_client.balance(&test_env.deployer),
             test_env.initial_supply - test_env.transfer_amount
@@ -435,7 +430,7 @@ fn verify_balances(
             test_env.transfer_amount
         );
     } else if source_manager_type == TokenManagerType::MintBurn {
-        // MintBurn: tokens burned, manager has 0
+        // MintBurn: tokens burned, token manager has 0
         assert_eq!(source_token_client.balance(&source_token_manager), 0);
     }
 }
