@@ -78,8 +78,10 @@ pub fn post_token_manager_deploy(
         }
         // For lock/unlock token managers, no additional setup is required due to Stellar's
         // account abstraction, which eliminates the need for ERC20-like approvals used on EVM chains.
+        // The token manager can directly transfer tokens as needed.
         TokenManagerType::LockUnlock => {}
-        // For mint/burn token managers, no additional setup is required
+        // Minter permissions are handled separately based on the specific token implementation
+        // (e.g., Stellar Classic Assets require admin transfer, Interchain Tokens require add_minter).
         TokenManagerType::MintBurn => {}
     }
 }
