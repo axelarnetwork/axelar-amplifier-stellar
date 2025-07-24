@@ -81,7 +81,7 @@ pub fn post_token_manager_deploy(
         // The token manager can directly transfer tokens as needed.
         TokenManagerType::LockUnlock => {}
         // Minter permissions are handled separately based on the specific token implementation
-        // (e.g., Stellar Classic Assets require admin transfer, Interchain Tokens require add_minter).
+        // (e.g., Stellar Classic Assets require admin transfer, Stellar Custom Tokens need to grant minter role).
         TokenManagerType::MintBurn => {}
     }
 }
