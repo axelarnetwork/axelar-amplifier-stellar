@@ -1,5 +1,6 @@
 use stellar_axelar_std::token::TokenClient;
 use stellar_axelar_std::{Address, Env};
+use stellar_interchain_token::InterchainTokenClient;
 use stellar_token_manager::TokenManagerClient;
 
 use crate::error::ContractError;
@@ -51,4 +52,36 @@ pub fn give_token(
     }
 
     Ok(())
+}
+
+/// Prepares a token manager after it is deployed.
+/// This function handles the post-deployment setup based on the token manager type.
+///
+/// # Arguments
+/// * `token_manager_type` - The type of token manager that was deployed
+/// * `token_manager` - The address of the deployed token manager
+/// * `token_address` - The address of the token contract
+pub fn post_token_manager_deploy(
+    env: &Env,
+    token_manager_type: TokenManagerType,
+    token_manager: Address,
+    token_address: Address,
+) {
+    match token_manager_type {
+        // For native interchain token managers, we add the token manager as an additional minter.
+        TokenManagerType::NativeInterchainToken => {
+            let interchain_token_client = InterchainTokenClient::new(env, &token_address);
+            // Check if token_manager is already a minter before adding to avoid MinterAlreadyExists error
+            if !interchain_token_client.is_minter(&token_manager) {
+                interchain_token_client.add_minter(&token_manager);
+            }
+        }
+        // For lock/unlock token managers, no additional setup is required due to Stellar's
+        // account abstraction, which eliminates the need for ERC20-like approvals used on EVM chains.
+        // The token manager can directly transfer tokens as needed.
+        TokenManagerType::LockUnlock => {}
+        // Minter permissions are handled separately based on the specific token implementation
+        // (e.g., Stellar Classic Assets require admin transfer, Stellar Custom Tokens need to grant minter role).
+        TokenManagerType::MintBurn => {}
+    }
 }
