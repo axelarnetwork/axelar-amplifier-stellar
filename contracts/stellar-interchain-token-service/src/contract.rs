@@ -820,7 +820,7 @@ impl InterchainTokenService {
             token_metadata,
         );
 
-        let _ = Self::deploy_token_manager(
+        Self::deploy_token_manager(
             env,
             unregistered_token_id,
             token_address.clone(),
