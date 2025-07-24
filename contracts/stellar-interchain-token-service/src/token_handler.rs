@@ -39,16 +39,25 @@ pub fn give_token(
     }: TokenIdConfigValue,
     amount: i128,
 ) -> Result<(), ContractError> {
-    let token_manager = TokenManagerClient::new(env, &token_manager);
+    let token_manager_client = TokenManagerClient::new(env, &token_manager);
 
     match token_manager_type {
         TokenManagerType::NativeInterchainToken => {
-            token_manager.mint(env, &token_address, recipient, amount)
+            token_manager_client.mint_from(env, &token_address, recipient, amount)
         }
         TokenManagerType::LockUnlock => {
-            token_manager.transfer(env, &token_address, recipient, amount)
+            token_manager_client.transfer(env, &token_address, recipient, amount)
         }
-        TokenManagerType::MintBurn => token_manager.mint(env, &token_address, recipient, amount),
+        TokenManagerType::MintBurn => {
+            if InterchainTokenClient::new(env, &token_address)
+                .try_token_id()
+                .is_ok()
+            {
+                token_manager_client.mint_from(env, &token_address, recipient, amount);
+            } else {
+                token_manager_client.mint(env, &token_address, recipient, amount);
+            }
+        }
     }
 
     Ok(())
