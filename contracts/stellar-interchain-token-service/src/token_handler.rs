@@ -43,7 +43,7 @@ pub fn give_token(
 
     match token_manager_type {
         TokenManagerType::NativeInterchainToken => {
-            token_manager.mint(env, &token_address, recipient, amount)
+            token_manager.mint_from(env, &token_address, recipient, amount)
         }
         TokenManagerType::LockUnlock => {
             token_manager.transfer(env, &token_address, recipient, amount)
@@ -80,8 +80,8 @@ pub fn post_token_manager_deploy(
         // account abstraction, which eliminates the need for ERC20-like approvals used on EVM chains.
         // The token manager can directly transfer tokens as needed.
         TokenManagerType::LockUnlock => {}
-        // Minter permissions are handled separately based on the specific token implementation
-        // (e.g., Stellar Classic Assets require admin transfer, Stellar Custom Tokens need to grant minter role).
+        // For mint/burn token managers, set the token manager as the admin manually.
+        // (e.g., Stellar Classic Assets and Custom Tokens require admin transfer).
         TokenManagerType::MintBurn => {}
     }
 }
