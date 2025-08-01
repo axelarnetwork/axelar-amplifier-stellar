@@ -831,7 +831,7 @@ fn link_token_message_execute_succeeds_with_token_manager_type_mint_burn() {
 }
 
 #[test]
-fn interchain_transfer_execute_succeedswith_token_manager_type_mint_burn() {
+fn interchain_transfer_execute_succeeds_with_token_manager_type_mint_burn() {
     let (env, client, gateway_client, _, signers) = setup_env();
 
     let deployer = Address::generate(&env);
