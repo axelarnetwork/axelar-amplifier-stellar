@@ -365,4 +365,17 @@ pub trait InterchainTokenServiceInterface:
         metadata: Option<Bytes>,
         gas_token: Option<Token>,
     ) -> Result<(), ContractError>;
+
+    /// Transfers the admin role of a registered token to a new address.
+    ///
+    /// This function retrieves the token address and deployed token manager for the given token ID,
+    /// then delegates to the token manager's `transfer_token_admin` method.
+    ///
+    /// # Arguments
+    /// - `token_id`: The unique identifier of the registered token.
+    /// - `new_admin`: The address that will become the new admin of the token.
+    ///
+    /// # Authorization
+    /// - [`OwnableInterface::owner`] (ITS contract owner) must authorize.
+    fn transfer_token_admin(env: &Env, token_id: BytesN<32>, new_admin: Address);
 }
