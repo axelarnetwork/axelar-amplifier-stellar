@@ -3,7 +3,7 @@ use stellar_token_manager::TokenManagerClient;
 
 pub trait TokenManagerClientExt {
     /// Transfer the admin role of a token to a new address.
-    fn transfer_token_admin(&self, env: &Env, token_address: &Address, new_admin: &Address);
+    fn set_admin(&self, env: &Env, token_address: &Address, new_admin: &Address);
 
     /// Transfer `amount` of tokens from the token manager to `recipient`.
     fn transfer(&self, env: &Env, token_address: &Address, recipient: &Address, amount: i128);

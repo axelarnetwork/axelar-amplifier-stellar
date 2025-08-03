@@ -442,15 +442,25 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
     }
 
     #[only_owner]
-    fn transfer_token_admin(env: &Env, token_id: BytesN<32>, new_admin: Address) {
-        let token_address = Self::registered_token_address(env, token_id.clone());
-        let token_manager = Self::deployed_token_manager(env, token_id);
+    fn transfer_token_admin(
+        env: &Env,
+        token_id: BytesN<32>,
+        new_admin: Address,
+    ) -> Result<(), ContractError> {
+        let token_config_value = Self::token_id_config(env, token_id.clone())?;
 
-        TokenManagerClient::new(env, &token_manager).transfer_token_admin(
+        ensure!(
+            token_config_value.token_manager_type == TokenManagerType::MintBurn,
+            ContractError::InvalidTokenManagerType
+        );
+
+        TokenManagerClient::new(env, &token_config_value.token_manager).set_admin(
             env,
-            &token_address,
+            &token_config_value.token_address,
             &new_admin,
         );
+
+        Ok(())
     }
 }
 

@@ -8,7 +8,7 @@ use crate::testutils::setup_its_token;
 use crate::types::TokenManagerType;
 
 #[test]
-fn transfer_token_admin_succeeds() {
+fn transfer_token_admin_succeeds_with_mint_burn_token_manager_type() {
     let (env, client, _gateway, _gas_service, _signers) = setup_env();
     let owner = client.owner();
     let deployer = Address::generate(&env);
@@ -70,6 +70,39 @@ fn transfer_token_admin_fails_with_non_owner() {
         non_owner,
         client.transfer_token_admin(&token_id, &new_admin)
     );
+}
+
+#[test]
+fn transfer_token_admin_fails_with_lock_unlock_token_manager_type() {
+    let (env, client, _gateway, _gas_service, _signers) = setup_env();
+    let owner = client.owner();
+    let new_admin = Address::generate(&env);
+    let deployer = Address::generate(&env);
+    let token_manager_type = TokenManagerType::LockUnlock;
+
+    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
+    let token = env.register_stellar_asset_contract_v2(deployer.clone());
+
+    let token_id = client.mock_all_auths().register_custom_token(
+        &deployer,
+        &salt,
+        &token.address(),
+        &token_manager_type,
+    );
+
+    assert_auth_err!(owner, client.transfer_token_admin(&token_id, &new_admin));
+}
+
+#[test]
+fn transfer_token_admin_fails_with_native_interchain_token_manager_type() {
+    let (env, client, _gateway, _gas_service, _signers) = setup_env();
+    let owner = client.owner();
+    let new_admin = Address::generate(&env);
+    let deployer = Address::generate(&env);
+
+    let (token_id, _) = setup_its_token(&env, &client, &deployer, 1000);
+
+    assert_auth_err!(owner, client.transfer_token_admin(&token_id, &new_admin));
 }
 
 #[test]

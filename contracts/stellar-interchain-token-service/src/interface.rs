@@ -366,7 +366,8 @@ pub trait InterchainTokenServiceInterface:
         gas_token: Option<Token>,
     ) -> Result<(), ContractError>;
 
-    /// Transfers the admin role of a Stellar Classic Asset registered under the `token_id` from the corresponding token manager to the `new_admin`.
+    /// Transfers the admin role of a Stellar Classic Asset registered under the `token_id`
+    /// from the corresponding token manager to the `new_admin`.
     ///
     /// # Arguments
     /// - `token_id`: The unique identifier of the registered token.
@@ -374,5 +375,9 @@ pub trait InterchainTokenServiceInterface:
     ///
     /// # Authorization
     /// - [`OwnableInterface::owner`] must authorize.
-    fn transfer_token_admin(env: &Env, token_id: BytesN<32>, new_admin: Address);
+    fn transfer_token_admin(
+        env: &Env,
+        token_id: BytesN<32>,
+        new_admin: Address,
+    ) -> Result<(), ContractError>;
 }
