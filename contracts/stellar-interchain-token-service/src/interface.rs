@@ -376,6 +376,6 @@ pub trait InterchainTokenServiceInterface:
     /// - `new_admin`: The address that will become the new admin of the token.
     ///
     /// # Authorization
-    /// - [`OwnableInterface::owner`] (ITS contract owner) must authorize.
+    /// - [`OwnableInterface::owner`] must authorize.
     fn transfer_token_admin(env: &Env, token_id: BytesN<32>, new_admin: Address);
 }
