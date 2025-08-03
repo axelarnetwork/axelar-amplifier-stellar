@@ -368,9 +368,6 @@ pub trait InterchainTokenServiceInterface:
 
     /// Transfers the admin role of a Stellar Classic Asset registered under the `token_id` from the corresponding token manager to the `new_admin`.
     ///
-    /// This function retrieves the token address and deployed token manager for the given token ID,
-    /// then delegates to the token manager's `transfer_token_admin` method.
-    ///
     /// # Arguments
     /// - `token_id`: The unique identifier of the registered token.
     /// - `new_admin`: The address that will become the new admin of the token.
