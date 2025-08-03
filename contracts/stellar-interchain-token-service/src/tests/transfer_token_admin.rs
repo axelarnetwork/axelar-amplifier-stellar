@@ -1,9 +1,12 @@
 use stellar_axelar_gas_service::testutils::setup_gas_token;
 use stellar_axelar_std::testutils::Address as _;
 use stellar_axelar_std::token::StellarAssetClient;
-use stellar_axelar_std::{assert_auth, assert_auth_err, Address, Bytes, BytesN, String};
+use stellar_axelar_std::{
+    assert_auth, assert_auth_err, assert_contract_err, Address, Bytes, BytesN, String,
+};
 
 use super::utils::setup_env;
+use crate::error::ContractError;
 use crate::testutils::setup_its_token;
 use crate::types::TokenManagerType;
 
@@ -60,7 +63,6 @@ fn transfer_token_admin_succeeds_with_mint_burn_token_manager_type() {
 #[test]
 fn transfer_token_admin_fails_with_lock_unlock_token_manager_type() {
     let (env, client, _gateway, _gas_service, _signers) = setup_env();
-    let owner = client.owner();
     let new_admin = Address::generate(&env);
     let deployer = Address::generate(&env);
     let token_manager_type = TokenManagerType::LockUnlock;
@@ -75,19 +77,43 @@ fn transfer_token_admin_fails_with_lock_unlock_token_manager_type() {
         &token_manager_type,
     );
 
-    assert_auth_err!(owner, client.transfer_token_admin(&token_id, &new_admin));
+    assert_contract_err!(
+        client
+            .mock_all_auths()
+            .try_transfer_token_admin(&token_id, &new_admin),
+        ContractError::InvalidTokenManagerType
+    );
 }
 
 #[test]
 fn transfer_token_admin_fails_with_native_interchain_token_manager_type() {
     let (env, client, _gateway, _gas_service, _signers) = setup_env();
-    let owner = client.owner();
     let new_admin = Address::generate(&env);
     let deployer = Address::generate(&env);
 
     let (token_id, _) = setup_its_token(&env, &client, &deployer, 1000);
 
-    assert_auth_err!(owner, client.transfer_token_admin(&token_id, &new_admin));
+    assert_contract_err!(
+        client
+            .mock_all_auths()
+            .try_transfer_token_admin(&token_id, &new_admin),
+        ContractError::InvalidTokenManagerType
+    );
+}
+
+#[test]
+fn transfer_token_admin_fails_with_invalid_token_id() {
+    let (env, client, _gateway, _gas_service, _signers) = setup_env();
+    let new_admin = Address::generate(&env);
+
+    let invalid_token_id = BytesN::<32>::from_array(&env, &[0u8; 32]);
+
+    assert_contract_err!(
+        client
+            .mock_all_auths()
+            .try_transfer_token_admin(&invalid_token_id, &new_admin),
+        ContractError::InvalidTokenId
+    );
 }
 
 #[test]
@@ -102,19 +128,5 @@ fn transfer_token_admin_fails_with_non_owner() {
     assert_auth_err!(
         non_owner,
         client.transfer_token_admin(&token_id, &new_admin)
-    );
-}
-
-#[test]
-fn transfer_token_admin_fails_with_invalid_token_id() {
-    let (env, client, _gateway, _gas_service, _signers) = setup_env();
-    let owner = client.owner();
-    let new_admin = Address::generate(&env);
-
-    let invalid_token_id = BytesN::<32>::from_array(&env, &[0u8; 32]);
-
-    assert_auth_err!(
-        owner,
-        client.transfer_token_admin(&invalid_token_id, &new_admin)
     );
 }
