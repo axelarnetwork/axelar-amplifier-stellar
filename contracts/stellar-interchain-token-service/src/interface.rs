@@ -366,7 +366,7 @@ pub trait InterchainTokenServiceInterface:
         gas_token: Option<Token>,
     ) -> Result<(), ContractError>;
 
-    /// Transfers the admin role of a registered token to a new address.
+    /// Transfers the admin role of a Stellar Classic Asset registered under the `token_id` from the corresponding token manager to the `new_admin`.
     ///
     /// This function retrieves the token address and deployed token manager for the given token ID,
     /// then delegates to the token manager's `transfer_token_admin` method.
