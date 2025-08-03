@@ -444,7 +444,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
     #[only_owner]
     fn transfer_token_admin(env: &Env, token_id: BytesN<32>, new_admin: Address) {
         let token_address = Self::registered_token_address(env, token_id.clone());
-        let token_manager = Self::deployed_token_manager(env, token_id.clone());
+        let token_manager = Self::deployed_token_manager(env, token_id);
 
         TokenManagerClient::new(env, &token_manager).transfer_token_admin(
             env,
