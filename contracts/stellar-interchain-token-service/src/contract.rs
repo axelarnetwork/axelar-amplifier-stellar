@@ -447,7 +447,7 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         token_id: BytesN<32>,
         new_admin: Address,
     ) -> Result<(), ContractError> {
-        let token_config_value = Self::token_id_config(env, token_id.clone())?;
+        let token_config_value = Self::token_id_config(env, token_id)?;
 
         ensure!(
             token_config_value.token_manager_type == TokenManagerType::MintBurn,
