@@ -13,7 +13,7 @@ pub trait TokenManagerClientExt {
 }
 
 impl TokenManagerClientExt for TokenManagerClient<'_> {
-    fn transfer_token_admin(&self, env: &Env, token_address: &Address, new_admin: &Address) {
+    fn set_admin(&self, env: &Env, token_address: &Address, new_admin: &Address) {
         let _: Val = self.execute(
             token_address,
             &Symbol::new(env, "set_admin"),
