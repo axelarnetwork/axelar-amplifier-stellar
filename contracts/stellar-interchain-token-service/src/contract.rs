@@ -447,18 +447,18 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         token_id: BytesN<32>,
         new_admin: Address,
     ) -> Result<(), ContractError> {
-        let token_config_value = Self::token_id_config(env, token_id)?;
+        let TokenIdConfigValue {
+            token_address,
+            token_manager_type,
+            token_manager,
+        } = Self::token_id_config(env, token_id)?;
 
         ensure!(
-            token_config_value.token_manager_type == TokenManagerType::MintBurn,
+            token_manager_type == TokenManagerType::MintBurn,
             ContractError::InvalidTokenManagerType
         );
 
-        TokenManagerClient::new(env, &token_config_value.token_manager).set_admin(
-            env,
-            &token_config_value.token_address,
-            &new_admin,
-        );
+        TokenManagerClient::new(env, &token_manager).set_admin(env, &token_address, &new_admin);
 
         Ok(())
     }
