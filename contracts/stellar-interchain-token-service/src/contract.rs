@@ -8,10 +8,11 @@ use stellar_axelar_std::token::StellarAssetClient;
 use stellar_axelar_std::types::Token;
 use stellar_axelar_std::xdr::ToXdr;
 use stellar_axelar_std::{
-    contract, contractimpl, ensure, interfaces, only_operator, soroban_sdk, vec, when_not_paused,
-    Address, AxelarExecutable, Bytes, BytesN, Env, IntoVal, Operatable, Ownable, Pausable, String,
-    Symbol, Upgradable, Val,
+    contract, contractimpl, ensure, interfaces, only_operator, only_owner, soroban_sdk, vec,
+    when_not_paused, Address, AxelarExecutable, Bytes, BytesN, Env, IntoVal, Operatable, Ownable,
+    Pausable, String, Symbol, Upgradable, Val,
 };
+use stellar_token_manager::TokenManagerClient;
 use token_id::UnregisteredTokenId;
 
 use crate::error::ContractError;
@@ -23,6 +24,7 @@ use crate::event::{
 use crate::flow_limit::FlowDirection;
 use crate::interface::InterchainTokenServiceInterface;
 use crate::storage::{self, TokenIdConfigValue};
+use crate::token_manager::TokenManagerClientExt;
 use crate::token_metadata::TokenMetadataExt;
 use crate::types::{
     DeployInterchainToken, HubMessage, InterchainTransfer, LinkToken, Message,
@@ -435,6 +437,28 @@ impl InterchainTokenServiceInterface for InterchainTokenService {
         });
 
         Self::pay_gas_and_call_contract(env, caller, destination_chain, message, gas_token)?;
+
+        Ok(())
+    }
+
+    #[only_owner]
+    fn transfer_token_admin(
+        env: &Env,
+        token_id: BytesN<32>,
+        new_admin: Address,
+    ) -> Result<(), ContractError> {
+        let TokenIdConfigValue {
+            token_address,
+            token_manager_type,
+            token_manager,
+        } = Self::token_id_config(env, token_id)?;
+
+        ensure!(
+            token_manager_type == TokenManagerType::MintBurn,
+            ContractError::InvalidTokenManagerType
+        );
+
+        TokenManagerClient::new(env, &token_manager).set_admin(env, &token_address, &new_admin);
 
         Ok(())
     }

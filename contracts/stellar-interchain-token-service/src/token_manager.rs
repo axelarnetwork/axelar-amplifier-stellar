@@ -2,6 +2,9 @@ use stellar_axelar_std::{vec, Address, Env, IntoVal, Symbol, Val};
 use stellar_token_manager::TokenManagerClient;
 
 pub trait TokenManagerClientExt {
+    /// Transfer the admin role of a token to a new address.
+    fn set_admin(&self, env: &Env, token_address: &Address, new_admin: &Address);
+
     /// Transfer `amount` of tokens from the token manager to `recipient`.
     fn transfer(&self, env: &Env, token_address: &Address, recipient: &Address, amount: i128);
 
@@ -13,6 +16,14 @@ pub trait TokenManagerClientExt {
 }
 
 impl TokenManagerClientExt for TokenManagerClient<'_> {
+    fn set_admin(&self, env: &Env, token_address: &Address, new_admin: &Address) {
+        let _: Val = self.execute(
+            token_address,
+            &Symbol::new(env, "set_admin"),
+            &vec![env, new_admin.to_val()],
+        );
+    }
+
     fn transfer(&self, env: &Env, token_address: &Address, recipient: &Address, amount: i128) {
         let _: Val = self.execute(
             token_address,
