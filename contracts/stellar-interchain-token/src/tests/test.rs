@@ -720,7 +720,7 @@ fn set_token_manager_succeeds() {
 
     assert_auth!(token.owner(), token.set_token_manager(&new_token_manager));
 
-    assert_eq!(token.token_manager(), new_token_manager.clone());
+    assert_eq!(token.token_manager(), new_token_manager);
 }
 
 #[test]
@@ -744,6 +744,7 @@ fn mint_succeeds_with_new_token_manager() {
     assert_auth!(token.owner(), token.set_token_manager(&new_token_manager));
 
     assert_auth!(new_token_manager, token.mint(&user, &amount));
+
     assert_eq!(token.balance(&user), amount);
 }
 
