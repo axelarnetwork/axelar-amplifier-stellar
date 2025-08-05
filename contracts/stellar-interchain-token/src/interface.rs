@@ -51,4 +51,19 @@ pub trait InterchainTokenInterface:
     /// # Authorization
     /// - [`OwnableInterface::owner`] must authorize.
     fn remove_minter(env: &Env, minter: Address);
+
+    /// Sets the token manager as a minter for this interchain token.
+    ///
+    /// # Arguments
+    /// * `token_manager` - The address of the token manager to be set as a minter.
+    ///
+    /// # Authorization
+    /// - [`OwnableInterface::owner`] must authorize.
+    fn set_token_manager(env: &Env, token_manager: Address);
+
+    /// Returns the address of the token manager for this interchain token.
+    ///
+    /// # Returns
+    /// - `Address` - The address of the token manager.
+    fn token_manager(env: &Env) -> Address;
 }

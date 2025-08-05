@@ -31,4 +31,8 @@ enum DataKey {
     #[instance]
     #[value(BytesN<32>)]
     TokenId,
+
+    #[instance]
+    #[value(Address)]
+    TokenManager,
 }

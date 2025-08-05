@@ -29,6 +29,8 @@ impl InterchainToken {
     ) {
         interfaces::set_owner(&env, &owner);
 
+        storage::set_token_manager(&env, &owner);
+
         Self::write_metadata(&env, token_metadata);
 
         storage::set_token_id(&env, &token_id);
@@ -77,14 +79,16 @@ impl StellarAssetInterface for InterchainToken {
     }
 
     fn mint(env: Env, to: Address, amount: i128) {
-        let owner = Self::owner(&env);
-        owner.require_auth();
+        let token_manager = Self::token_manager(&env);
+        token_manager.require_auth();
 
         Self::validate_amount(&env, amount);
 
         Self::receive_balance(&env, to.clone(), amount);
 
-        TokenUtils::new(&env).events().mint(owner, to, amount);
+        TokenUtils::new(&env)
+            .events()
+            .mint(token_manager, to, amount);
     }
 
     fn clawback(_env: Env, _from: Address, _amount: i128) {
@@ -148,6 +152,23 @@ impl InterchainTokenInterface for InterchainToken {
         storage::remove_minter_status(env, minter.clone());
 
         MinterRemovedEvent { minter }.emit(env);
+    }
+
+    #[only_owner]
+    fn set_token_manager(env: &Env, token_manager: Address) {
+        storage::set_token_manager(env, &token_manager);
+
+        if !Self::is_minter(env, token_manager.clone()) {
+            storage::set_minter_status(env, token_manager.clone());
+            MinterAddedEvent {
+                minter: token_manager,
+            }
+            .emit(env);
+        }
+    }
+
+    fn token_manager(env: &Env) -> Address {
+        storage::token_manager(env)
     }
 }
 

@@ -336,18 +336,18 @@ fn mint_succeeds() {
 
     let (token, _) = setup_token(&env);
 
-    assert_auth!(token.owner(), token.mint(&user, &amount));
+    // Token manager (which is the owner initially) can mint
+    let token_manager = token.token_manager();
+    assert_eq!(token_manager, token.owner());
+
+    assert_auth!(token_manager, token.mint(&user, &amount));
 
     goldie::assert!(fmt_last_emitted_event::<MintEvent>(&env));
 
     assert_eq!(token.balance(&user), amount);
 
-    if token.is_minter(&token.owner()) {
-        token.mock_all_auths().remove_minter(&token.owner());
-    }
-
-    // Owner can mint without being a minter
-    assert_auth!(token.owner(), token.mint(&user, &amount));
+    // Token manager can always mint (since it's the designated minter for the mint function)
+    assert_auth!(token_manager, token.mint(&user, &amount));
     assert_eq!(token.balance(&user), amount * 2);
 }
 
@@ -709,4 +709,43 @@ fn allowance_preserves_expiration_when_expired() {
     token
         .mock_all_auths()
         .approve(&user1, &user2, &amount, &expiration_ledger);
+}
+
+#[test]
+fn set_token_manager_succeeds() {
+    let env = Env::default();
+    let amount = 1000;
+    let user = Address::generate(&env);
+    let new_token_manager = Address::generate(&env);
+    let (token, _) = setup_token(&env);
+    assert_eq!(token.token_manager(), token.owner());
+
+    assert_auth!(token.owner(), token.set_token_manager(&new_token_manager));
+
+    assert_eq!(token.token_manager(), new_token_manager.clone());
+    assert!(token.is_minter(&new_token_manager));
+
+    assert_auth!(new_token_manager, token.mint(&user, &amount));
+    assert_eq!(token.balance(&user), amount);
+}
+
+#[test]
+fn set_token_manager_fails_without_owner_auth() {
+    let env = Env::default();
+    let new_token_manager = Address::generate(&env);
+    let user = Address::generate(&env);
+    let (token, _) = setup_token(&env);
+
+    assert_auth_err!(user, token.set_token_manager(&new_token_manager));
+}
+
+#[test]
+fn mint_fails_with_non_token_manager() {
+    let env = Env::default();
+    let amount = 1000;
+    let user = Address::generate(&env);
+    let non_token_manager = Address::generate(&env);
+    let (token, _) = setup_token(&env);
+
+    assert_auth_err!(non_token_manager, token.mint(&user, &amount));
 }
