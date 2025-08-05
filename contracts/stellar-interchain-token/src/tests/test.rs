@@ -721,7 +721,6 @@ fn set_token_manager_succeeds() {
     assert_auth!(token.owner(), token.set_token_manager(&new_token_manager));
 
     assert_eq!(token.token_manager(), new_token_manager.clone());
-    assert!(token.is_minter(&new_token_manager));
 }
 
 #[test]

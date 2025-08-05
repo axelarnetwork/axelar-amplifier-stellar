@@ -157,14 +157,6 @@ impl InterchainTokenInterface for InterchainToken {
     #[only_owner]
     fn set_token_manager(env: &Env, token_manager: Address) {
         storage::set_token_manager(env, &token_manager);
-
-        if !Self::is_minter(env, token_manager.clone()) {
-            storage::set_minter_status(env, token_manager.clone());
-            MinterAddedEvent {
-                minter: token_manager,
-            }
-            .emit(env);
-        }
     }
 
     fn token_manager(env: &Env) -> Address {
