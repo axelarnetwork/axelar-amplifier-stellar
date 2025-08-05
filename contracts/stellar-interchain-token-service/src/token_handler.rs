@@ -80,9 +80,9 @@ pub fn post_token_manager_deploy(
         // account abstraction, which eliminates the need for ERC20-like approvals used on EVM chains.
         // The token manager can directly transfer tokens as needed.
         TokenManagerType::LockUnlock => {}
-        // For mint/burn token managers, the user needs to grant mint permission to the token manager
-        // Stellar Classic Assets require setting the token manager as the admin to allow minting the token,
-        // whereas Stellar Custom Assets could add the token manager as an additional minter
+
+        // For mint/burn token managers, the token manager must be set as the admin to enable minting.
+        // Note: For Stellar custom tokens, it's recommended to assign an additional minter before transferring admin rights to the token manager.
         TokenManagerType::MintBurn => {}
     }
 }
