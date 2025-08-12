@@ -23,7 +23,12 @@ pub fn take_token(
     match token_manager_type {
         TokenManagerType::NativeInterchainToken => token.burn(sender, &amount),
         // The token manager can burn the tokens from the sender, only if the sender has allowance for `amount` on token_manager.
-        TokenManagerType::MintBurnFrom => token.burn_from(&token_manager, sender, &amount),
+        TokenManagerType::MintBurnFrom => TokenManagerClient::new(env, &token_manager).burn_from(
+            env,
+            &token_address,
+            sender,
+            amount,
+        ),
         TokenManagerType::LockUnlock => token.transfer(sender, &token_manager, &amount),
         TokenManagerType::MintBurn => token.burn(sender, &amount),
     }

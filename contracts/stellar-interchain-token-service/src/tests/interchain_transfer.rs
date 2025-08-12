@@ -188,7 +188,7 @@ fn interchain_transfer_mint_burn_from_token_send_succeeds() {
         .approve(&sender, &token_manager, &amount, &200u32);
 
     client
-        .mock_all_auths_allowing_non_root_auth()
+        .mock_all_auths()
         .interchain_transfer(
             &sender,
             &token_id,
