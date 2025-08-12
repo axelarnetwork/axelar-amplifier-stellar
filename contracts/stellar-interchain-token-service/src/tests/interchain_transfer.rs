@@ -1,7 +1,6 @@
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_gas_service::testutils::setup_gas_token;
-use stellar_axelar_std::testutils::Address as _;
-use stellar_axelar_std::testutils::Ledger;
+use stellar_axelar_std::testutils::{Address as _, Ledger};
 use stellar_axelar_std::token::{StellarAssetClient, TokenClient};
 use stellar_axelar_std::traits::BytesExt;
 use stellar_axelar_std::types::Token;
