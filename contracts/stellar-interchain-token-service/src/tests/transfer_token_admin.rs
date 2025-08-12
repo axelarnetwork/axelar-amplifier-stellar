@@ -61,6 +61,31 @@ fn transfer_token_admin_succeeds_with_mint_burn_token_manager_type() {
 }
 
 #[test]
+fn transfer_token_admin_fails_with_mint_burn_from_token_manager_type() {
+    let (env, client, _gateway, _gas_service, _signers) = setup_env();
+    let new_admin = Address::generate(&env);
+    let deployer = Address::generate(&env);
+    let token_manager_type = TokenManagerType::MintBurnFrom;
+
+    let salt = BytesN::<32>::from_array(&env, &[4; 32]);
+    let token = env.register_stellar_asset_contract_v2(deployer.clone());
+
+    let token_id = client.mock_all_auths().register_custom_token(
+        &deployer,
+        &salt,
+        &token.address(),
+        &token_manager_type,
+    );
+
+    assert_contract_err!(
+        client
+            .mock_all_auths()
+            .try_transfer_token_admin(&token_id, &new_admin),
+        ContractError::InvalidTokenManagerType
+    );
+}
+
+#[test]
 fn transfer_token_admin_fails_with_lock_unlock_token_manager_type() {
     let (env, client, _gateway, _gas_service, _signers) = setup_env();
     let new_admin = Address::generate(&env);

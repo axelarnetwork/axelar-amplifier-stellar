@@ -1,11 +1,10 @@
 use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_gas_service::testutils::setup_gas_token;
-use stellar_axelar_std::testutils::{Address as _, Ledger};
+use stellar_axelar_std::testutils::Address as _;
 use stellar_axelar_std::token::{StellarAssetClient, TokenClient};
 use stellar_axelar_std::traits::BytesExt;
 use stellar_axelar_std::types::Token;
 use stellar_axelar_std::{assert_contract_err, events, Address, Bytes, BytesN, Env, String};
-use stellar_interchain_token::InterchainTokenClient;
 
 use super::utils::setup_env;
 use crate::error::ContractError;
@@ -173,19 +172,12 @@ fn interchain_transfer_mint_burn_from_token_send_succeeds() {
         &interchain_token_address,
         &token_manager_type,
     );
-    let token_manager = client.deployed_token_manager(&token_id);
 
     client
         .mock_all_auths()
         .set_trusted_chain(&destination_chain);
 
-    let interchain_token_client = InterchainTokenClient::new(&env, &interchain_token_address);
     let initial_sender_balance = TokenClient::new(&env, &interchain_token_address).balance(&sender);
-
-    env.ledger().set_sequence_number(10);
-    interchain_token_client
-        .mock_all_auths()
-        .approve(&sender, &token_manager, &amount, &200u32);
 
     client.mock_all_auths().interchain_transfer(
         &sender,

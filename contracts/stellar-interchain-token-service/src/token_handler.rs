@@ -21,16 +21,10 @@ pub fn take_token(
     let token = TokenClient::new(env, &token_address);
 
     match token_manager_type {
-        TokenManagerType::NativeInterchainToken => token.burn(sender, &amount),
-        // The token manager can burn the tokens from the sender, only if the sender has allowance for `amount` on token_manager.
-        TokenManagerType::MintBurnFrom => TokenManagerClient::new(env, &token_manager).burn_from(
-            env,
-            &token_address,
-            sender,
-            amount,
-        ),
+        TokenManagerType::NativeInterchainToken
+        | TokenManagerType::MintBurnFrom
+        | TokenManagerType::MintBurn => token.burn(sender, &amount),
         TokenManagerType::LockUnlock => token.transfer(sender, &token_manager, &amount),
-        TokenManagerType::MintBurn => token.burn(sender, &amount),
     }
 
     Ok(())
@@ -92,7 +86,7 @@ pub fn post_token_manager_deploy(
         TokenManagerType::LockUnlock => {}
         // For MintBurn token managers, the user needs to grant mint permission to the token manager
         // Stellar Classic Assets require setting the token manager as the admin to allow minting the token,
-// whereas Stellar Custom Tokens could optionally add the token manager as a minter.
+        // whereas Stellar Custom Tokens could optionally add the token manager as a minter.
         TokenManagerType::MintBurn => {}
     }
 }
