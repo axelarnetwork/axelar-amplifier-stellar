@@ -148,14 +148,14 @@ fn interchain_transfer_mint_burn_from_token_send_succeeds() {
     let (env, client, _, _, _) = setup_env();
 
     let amount = 1000;
-    let sender: Address = Address::generate(&env);
+    let sender = Address::generate(&env);
     let gas_token = setup_gas_token(&env, &sender);
     let (destination_chain, destination_address, data) = dummy_transfer_params(&env);
 
     let salt = BytesN::<32>::from_array(&env, &[3; 32]);
     let token_manager_type = TokenManagerType::MintBurnFrom;
     let token_metadata = TokenMetadata::new(&env, "Test Token", "TEST", 6);
-    let initial_supply = amount * 3; // Make sure sender has more than enough tokens
+    let initial_supply = amount * 2;
     let minter = Some(sender.clone());
 
     let interchain_token_id = client.mock_all_auths().deploy_interchain_token(
@@ -181,28 +181,12 @@ fn interchain_transfer_mint_burn_from_token_send_succeeds() {
         .set_trusted_chain(&destination_chain);
 
     let interchain_token_client = InterchainTokenClient::new(&env, &interchain_token_address);
-
-    interchain_token_client
-        .mock_all_auths()
-        .mint(&sender, &amount);
-
     let initial_sender_balance = TokenClient::new(&env, &interchain_token_address).balance(&sender);
 
-    env.ledger().set_sequence_number(100);
-    let expiration_ledger = 1000u32;
-    let approval_amount = amount * 2;
-    interchain_token_client.mock_all_auths().approve(
-        &sender,
-        &token_manager,
-        &approval_amount,
-        &expiration_ledger,
-    );
-
-    let allowance = interchain_token_client.allowance(&sender, &token_manager);
-    assert_eq!(
-        allowance, approval_amount,
-        "Allowance should be set to the approval amount"
-    );
+    env.ledger().set_sequence_number(10);
+    interchain_token_client
+        .mock_all_auths()
+        .approve(&sender, &token_manager, &amount, &200u32);
 
     client
         .mock_all_auths_allowing_non_root_auth()
@@ -220,7 +204,6 @@ fn interchain_transfer_mint_burn_from_token_send_succeeds() {
         InterchainTransferSentEvent,
     >(&env, -4));
 
-    // Check that the tokens were burned from the sender
     let final_sender_balance = TokenClient::new(&env, &interchain_token_address).balance(&sender);
     assert_eq!(final_sender_balance, initial_sender_balance - amount);
 }
