@@ -333,7 +333,7 @@ fn link_token_succeeds_with_token_manager_type_mint_burn() {
 fn link_token_succeeds_with_token_manager_type_mint_burn_from() {
     let (env, client, _, gas_service, _) = setup_env();
     let deployer = Address::generate(&env);
-    let salt = BytesN::<32>::from_array(&env, &[4; 32]); // Different salt to avoid conflicts
+    let salt = BytesN::<32>::from_array(&env, &[4; 32]);
     let destination_chain = String::from_str(&env, "ethereum");
     let destination_token_address = Bytes::from_array(&env, &[5; 32]);
     let token_manager_type = TokenManagerType::MintBurnFrom;
@@ -444,8 +444,8 @@ fn link_token_succeeds_with_token_manager_type_mint_burn_from() {
     let final_deployer_balance = token_client.balance(&deployer);
     let final_token_manager_balance = token_client.balance(&token_manager_address);
 
-    assert_eq!(final_deployer_balance, initial_supply); // deployer has initial supply
-    assert_eq!(final_token_manager_balance, 0); // token manager doesn't hold tokens
+    assert_eq!(final_deployer_balance, initial_supply);
+    assert_eq!(final_token_manager_balance, 0);
 }
 
 #[test]
