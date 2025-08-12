@@ -187,17 +187,15 @@ fn interchain_transfer_mint_burn_from_token_send_succeeds() {
         .mock_all_auths()
         .approve(&sender, &token_manager, &amount, &200u32);
 
-    client
-        .mock_all_auths()
-        .interchain_transfer(
-            &sender,
-            &token_id,
-            &destination_chain,
-            &destination_address,
-            &amount,
-            &data,
-            &Some(gas_token),
-        );
+    client.mock_all_auths().interchain_transfer(
+        &sender,
+        &token_id,
+        &destination_chain,
+        &destination_address,
+        &amount,
+        &data,
+        &Some(gas_token),
+    );
 
     goldie::assert!(events::fmt_emitted_event_at_idx::<
         InterchainTransferSentEvent,
