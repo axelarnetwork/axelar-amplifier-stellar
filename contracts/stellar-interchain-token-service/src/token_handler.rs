@@ -22,6 +22,8 @@ pub fn take_token(
 
     match token_manager_type {
         TokenManagerType::NativeInterchainToken => token.burn(sender, &amount),
+        // The token manager can burn the tokens from the sender, only if the sender has allowance for `amount` on `from`.
+        TokenManagerType::MintBurnFrom => token.burn_from(&token_manager, sender, &amount),
         TokenManagerType::LockUnlock => token.transfer(sender, &token_manager, &amount),
         TokenManagerType::MintBurn => token.burn(sender, &amount),
     }
@@ -43,6 +45,9 @@ pub fn give_token(
 
     match token_manager_type {
         TokenManagerType::NativeInterchainToken => {
+            token_manager.mint_from(env, &token_address, recipient, amount)
+        }
+        TokenManagerType::MintBurnFrom => {
             token_manager.mint_from(env, &token_address, recipient, amount)
         }
         TokenManagerType::LockUnlock => {
@@ -76,13 +81,16 @@ pub fn post_token_manager_deploy(
                 interchain_token_client.add_minter(&token_manager);
             }
         }
-        // For lock/unlock token managers, no additional setup is required due to Stellar's
+        // For MintBurnFrom token managers, the user needs to add the token manager as a minter.
+        // Stellar Custom Tokens could add the token manager as an additional minter.
+        TokenManagerType::MintBurnFrom => {}
+        // For LockUnlock token managers, no additional setup is required due to Stellar's
         // account abstraction, which eliminates the need for ERC20-like approvals used on EVM chains.
         // The token manager can directly transfer tokens as needed.
         TokenManagerType::LockUnlock => {}
-        // For mint/burn token managers, the user needs to grant mint permission to the token manager
+        // For MintBurn token managers, the user needs to grant mint permission to the token manager
         // Stellar Classic Assets require setting the token manager as the admin to allow minting the token,
-        // whereas Stellar Custom Assets could add the token manager as an additional minter
+        // whereas Stellar Custom Tokens could add the token manager as a minter.
         TokenManagerType::MintBurn => {}
     }
 }

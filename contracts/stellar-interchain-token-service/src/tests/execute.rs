@@ -906,6 +906,91 @@ fn interchain_transfer_execute_succeeds_with_token_manager_type_mint_burn() {
 }
 
 #[test]
+fn interchain_transfer_execute_succeeds_with_token_manager_type_mint_burn_from() {
+    let (env, client, gateway_client, _, signers) = setup_env();
+
+    let deployer = Address::generate(&env);
+    let salt = BytesN::<32>::from_array(&env, &[2; 32]);
+    let token_manager_type = TokenManagerType::MintBurnFrom;
+    let token_metadata = TokenMetadata::new(&env, "Test Token", "TEST", 6);
+    let initial_supply = 1000;
+    let minter = Some(deployer.clone());
+
+    let interchain_token_id = client.mock_all_auths().deploy_interchain_token(
+        &deployer,
+        &salt,
+        &token_metadata,
+        &initial_supply,
+        &minter,
+    );
+
+    let interchain_token_address = client.registered_token_address(&interchain_token_id);
+
+    let token_id = client.mock_all_auths().register_custom_token(
+        &deployer,
+        &salt,
+        &interchain_token_address,
+        &token_manager_type,
+    );
+
+    let token_manager_address = client.deployed_token_manager(&token_id);
+    let interchain_token_client = InterchainTokenClient::new(&env, &interchain_token_address);
+    interchain_token_client
+        .mock_all_auths()
+        .add_minter(&token_manager_address);
+
+    let recipient = Address::generate(&env);
+    let transfer_amount = 500;
+    let sender_address = Address::generate(&env).to_string_bytes();
+    let source_chain = client.its_hub_chain_name();
+    let source_address = client.its_hub_address();
+    let original_source_chain = String::from_str(&env, "ethereum");
+
+    client
+        .mock_all_auths()
+        .set_trusted_chain(&original_source_chain);
+
+    let transfer_msg = HubMessage::ReceiveFromHub {
+        source_chain: original_source_chain.clone(),
+        message: Message::InterchainTransfer(InterchainTransfer {
+            token_id: token_id.clone(),
+            source_address: sender_address,
+            destination_address: recipient.to_string_bytes(),
+            amount: transfer_amount,
+            data: None,
+        }),
+    };
+
+    let message_id = String::from_str(&env, "transfer_test_mint_burn_from");
+    let payload = transfer_msg.abi_encode(&env).unwrap();
+    let payload_hash: BytesN<32> = env.crypto().keccak256(&payload).into();
+
+    let messages = vec![
+        &env,
+        GatewayMessage {
+            source_chain: source_chain.clone(),
+            message_id: message_id.clone(),
+            source_address: source_address.clone(),
+            contract_address: client.address.clone(),
+            payload_hash,
+        },
+    ];
+
+    approve_gateway_messages(&env, &gateway_client, signers, messages);
+
+    let token_client = TokenClient::new(&env, &interchain_token_address);
+    let initial_recipient_balance = token_client.balance(&recipient);
+
+    client.execute(&source_chain, &message_id, &source_address, &payload);
+
+    let final_recipient_balance = token_client.balance(&recipient);
+    assert_eq!(
+        final_recipient_balance,
+        initial_recipient_balance + transfer_amount
+    );
+}
+
+#[test]
 fn link_token_message_execute_fails_with_native_interchain_token_type() {
     let (env, client, _gateway_client, _, _signers) = setup_env();
     let test_data = link_token_test_data(&env, &client, TokenManagerType::NativeInterchainToken);

@@ -62,7 +62,7 @@ pub enum HubMessage {
 #[repr(u32)]
 pub enum TokenManagerType {
     NativeInterchainToken = 0,
-    // MintBurnFrom = 1,
+    MintBurnFrom = 1,
     LockUnlock = 2,
     // LockUnlockFee = 3,
     MintBurn = 4,
