@@ -49,10 +49,7 @@ pub fn give_token(
     let token_manager = TokenManagerClient::new(env, &token_manager);
 
     match token_manager_type {
-        TokenManagerType::NativeInterchainToken => {
-            token_manager.mint_from(env, &token_address, recipient, amount)
-        }
-        TokenManagerType::MintBurnFrom => {
+        TokenManagerType::NativeInterchainToken | TokenManagerType::MintBurnFrom => {
             token_manager.mint_from(env, &token_address, recipient, amount)
         }
         TokenManagerType::LockUnlock => {
