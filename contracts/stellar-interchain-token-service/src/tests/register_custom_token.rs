@@ -1,9 +1,11 @@
+use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_std::testutils::Address as _;
 use stellar_axelar_std::{assert_auth, assert_contract_err, events, Address, BytesN};
 
 use super::utils::setup_env;
 use crate::error::ContractError;
 use crate::event::TokenManagerDeployedEvent;
+use crate::tests::utils::TokenMetadataExt;
 use crate::types::TokenManagerType;
 
 const TEST_SALT: [u8; 32] = [1; 32];
@@ -85,6 +87,52 @@ fn register_custom_token_succeeds_with_token_manager_type_mint_burn() {
     assert_eq!(
         client.registered_token_address(&expected_id),
         token.address()
+    );
+    assert_eq!(client.token_manager_type(&expected_id), token_manager_type);
+
+    goldie::assert!(token_manager_deployed_event);
+}
+
+#[test]
+fn register_custom_token_succeeds_with_token_manager_type_mint_burn_from() {
+    let (env, client, _, _, _) = setup_env();
+    let deployer = Address::generate(&env);
+    let salt = BytesN::<32>::from_array(&env, &[2; 32]);
+    let token_manager_type = TokenManagerType::MintBurnFrom;
+
+    let token_metadata = TokenMetadata::new(&env, "Test Token", "TEST", 6);
+    let initial_supply = 1000;
+    let minter = Some(deployer.clone());
+
+    let interchain_token_id = client.mock_all_auths().deploy_interchain_token(
+        &deployer,
+        &salt,
+        &token_metadata,
+        &initial_supply,
+        &minter,
+    );
+
+    let interchain_token_address = client.registered_token_address(&interchain_token_id);
+    let expected_id = client.linked_token_id(&deployer, &salt);
+
+    let token_id = assert_auth!(
+        &deployer,
+        client.register_custom_token(
+            &deployer,
+            &salt,
+            &interchain_token_address,
+            &token_manager_type
+        )
+    );
+
+    let token_manager_deployed_event =
+        events::fmt_last_emitted_event::<TokenManagerDeployedEvent>(&env);
+
+    assert_eq!(token_id, expected_id);
+
+    assert_eq!(
+        client.registered_token_address(&expected_id),
+        interchain_token_address
     );
     assert_eq!(client.token_manager_type(&expected_id), token_manager_type);
 

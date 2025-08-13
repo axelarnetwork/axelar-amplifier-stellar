@@ -1,3 +1,4 @@
+use soroban_token_sdk::metadata::TokenMetadata;
 use stellar_axelar_gas_service::testutils::setup_gas_token;
 use stellar_axelar_std::testutils::Address as _;
 use stellar_axelar_std::token::{StellarAssetClient, TokenClient};
@@ -8,7 +9,9 @@ use stellar_axelar_std::{assert_contract_err, events, Address, Bytes, BytesN, En
 use super::utils::setup_env;
 use crate::error::ContractError;
 use crate::event::InterchainTransferSentEvent;
+use crate::tests::utils::TokenMetadataExt;
 use crate::testutils::setup_its_token;
+use crate::types::TokenManagerType;
 use crate::InterchainTokenServiceClient;
 
 fn dummy_transfer_params(env: &Env) -> (String, Bytes, Option<Bytes>) {
@@ -136,6 +139,62 @@ fn interchain_transfer_canonical_token_send_succeeds() {
         TokenClient::new(&env, &token_address).balance(&token_manager),
         amount
     );
+}
+
+#[test]
+fn interchain_transfer_mint_burn_from_token_send_succeeds() {
+    let (env, client, _, _, _) = setup_env();
+
+    let amount = 1000;
+    let sender = Address::generate(&env);
+    let gas_token = setup_gas_token(&env, &sender);
+    let (destination_chain, destination_address, data) = dummy_transfer_params(&env);
+
+    let salt = BytesN::<32>::from_array(&env, &[3; 32]);
+    let token_manager_type = TokenManagerType::MintBurnFrom;
+    let token_metadata = TokenMetadata::new(&env, "Test Token", "TEST", 6);
+    let initial_supply = amount * 2;
+    let minter = Some(sender.clone());
+
+    let interchain_token_id = client.mock_all_auths().deploy_interchain_token(
+        &sender,
+        &salt,
+        &token_metadata,
+        &initial_supply,
+        &minter,
+    );
+
+    let interchain_token_address = client.registered_token_address(&interchain_token_id);
+
+    let token_id = client.mock_all_auths().register_custom_token(
+        &sender,
+        &salt,
+        &interchain_token_address,
+        &token_manager_type,
+    );
+
+    client
+        .mock_all_auths()
+        .set_trusted_chain(&destination_chain);
+
+    let initial_sender_balance = TokenClient::new(&env, &interchain_token_address).balance(&sender);
+
+    client.mock_all_auths().interchain_transfer(
+        &sender,
+        &token_id,
+        &destination_chain,
+        &destination_address,
+        &amount,
+        &data,
+        &Some(gas_token),
+    );
+
+    goldie::assert!(events::fmt_emitted_event_at_idx::<
+        InterchainTransferSentEvent,
+    >(&env, -4));
+
+    let final_sender_balance = TokenClient::new(&env, &interchain_token_address).balance(&sender);
+    assert_eq!(final_sender_balance, initial_sender_balance - amount);
 }
 
 #[test]

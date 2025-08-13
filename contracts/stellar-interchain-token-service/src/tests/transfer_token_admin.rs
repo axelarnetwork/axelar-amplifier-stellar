@@ -61,44 +61,38 @@ fn transfer_token_admin_succeeds_with_mint_burn_token_manager_type() {
 }
 
 #[test]
-fn transfer_token_admin_fails_with_lock_unlock_token_manager_type() {
-    let (env, client, _gateway, _gas_service, _signers) = setup_env();
-    let new_admin = Address::generate(&env);
-    let deployer = Address::generate(&env);
-    let token_manager_type = TokenManagerType::LockUnlock;
-
-    let salt = BytesN::<32>::from_array(&env, &[1; 32]);
-    let token = env.register_stellar_asset_contract_v2(deployer.clone());
-
-    let token_id = client.mock_all_auths().register_custom_token(
-        &deployer,
-        &salt,
-        &token.address(),
-        &token_manager_type,
-    );
-
-    assert_contract_err!(
-        client
-            .mock_all_auths()
-            .try_transfer_token_admin(&token_id, &new_admin),
-        ContractError::InvalidTokenManagerType
-    );
-}
-
-#[test]
-fn transfer_token_admin_fails_with_native_interchain_token_manager_type() {
+fn transfer_token_admin_fails_with_invalid_token_manager_types() {
     let (env, client, _gateway, _gas_service, _signers) = setup_env();
     let new_admin = Address::generate(&env);
     let deployer = Address::generate(&env);
 
-    let (token_id, _) = setup_its_token(&env, &client, &deployer, 1000);
+    for token_manager_type in [
+        TokenManagerType::MintBurnFrom,
+        TokenManagerType::LockUnlock,
+        TokenManagerType::NativeInterchainToken,
+    ]
+    .into_iter()
+    {
+        let token_id = if token_manager_type == TokenManagerType::NativeInterchainToken {
+            setup_its_token(&env, &client, &deployer, 1000).0
+        } else {
+            let salt = BytesN::<32>::from_array(&env, &[token_manager_type as u8; 32]);
+            client.mock_all_auths().register_custom_token(
+                &deployer,
+                &salt,
+                &env.register_stellar_asset_contract_v2(deployer.clone())
+                    .address(),
+                &token_manager_type,
+            )
+        };
 
-    assert_contract_err!(
-        client
-            .mock_all_auths()
-            .try_transfer_token_admin(&token_id, &new_admin),
-        ContractError::InvalidTokenManagerType
-    );
+        assert_contract_err!(
+            client
+                .mock_all_auths()
+                .try_transfer_token_admin(&token_id, &new_admin),
+            ContractError::InvalidTokenManagerType
+        );
+    }
 }
 
 #[test]

@@ -21,9 +21,20 @@ pub fn take_token(
     let token = TokenClient::new(env, &token_address);
 
     match token_manager_type {
-        TokenManagerType::NativeInterchainToken => token.burn(sender, &amount),
+        // Burn tokens directly from the sender
+        TokenManagerType::NativeInterchainToken | TokenManagerType::MintBurn => {
+            token.burn(sender, &amount)
+        }
+
+        // In EVM, `MintBurnFrom` would require explicit approval (allowance) before burning.
+        // However, in Stellar's account abstraction model, when a user signs a transaction,
+        // they can authorize all sub-invocations within that transaction by default.
+        // Therefore, we can directly burn from the sender without requiring a separate approval,
+        // as the user has already authorized this action by signing the transaction.
+        TokenManagerType::MintBurnFrom => token.burn(sender, &amount),
+
+        // Transfer tokens from the sender to the token manager to lock them
         TokenManagerType::LockUnlock => token.transfer(sender, &token_manager, &amount),
-        TokenManagerType::MintBurn => token.burn(sender, &amount),
     }
 
     Ok(())
@@ -42,12 +53,19 @@ pub fn give_token(
     let token_manager = TokenManagerClient::new(env, &token_manager);
 
     match token_manager_type {
-        TokenManagerType::NativeInterchainToken => {
+        // For NativeInterchainToken and MintBurnFrom,
+        // `mint_from` interface allows the token to potentially have multiple minters, one of them being the token manager to mint tokens for ITS
+        TokenManagerType::NativeInterchainToken | TokenManagerType::MintBurnFrom => {
             token_manager.mint_from(env, &token_address, recipient, amount)
         }
+
+        // Transfer previously locked tokens from the token manager to the recipient
         TokenManagerType::LockUnlock => {
             token_manager.transfer(env, &token_address, recipient, amount)
         }
+
+        // For MintBurn, use direct mint where the token manager mints new tokens
+        // This assumes the token manager has minting or admin privileges on the token contract, since `mint` interface doesn't indicate who the caller is
         TokenManagerType::MintBurn => token_manager.mint(env, &token_address, recipient, amount),
     }
 
@@ -76,13 +94,16 @@ pub fn post_token_manager_deploy(
                 interchain_token_client.add_minter(&token_manager);
             }
         }
-        // For lock/unlock token managers, no additional setup is required due to Stellar's
+        // For MintBurnFrom token managers, the user needs to add the token manager as a minter.
+        // Stellar Custom Tokens could add the token manager as an additional minter.
+        TokenManagerType::MintBurnFrom => {}
+        // For LockUnlock token managers, no additional setup is required due to Stellar's
         // account abstraction, which eliminates the need for ERC20-like approvals used on EVM chains.
         // The token manager can directly transfer tokens as needed.
         TokenManagerType::LockUnlock => {}
-        // For mint/burn token managers, the user needs to grant mint permission to the token manager
+        // For MintBurn token managers, the user needs to grant mint permission to the token manager
         // Stellar Classic Assets require setting the token manager as the admin to allow minting the token,
-        // whereas Stellar Custom Assets could add the token manager as an additional minter
+        // whereas Stellar Custom Tokens need to add the token manager as a minter.
         TokenManagerType::MintBurn => {}
     }
 }
