@@ -66,12 +66,11 @@ fn transfer_token_admin_fails_with_invalid_token_manager_types() {
     let new_admin = Address::generate(&env);
     let deployer = Address::generate(&env);
 
-    for &token_manager_type in [
-        TokenManagerType::MintBurnFrom,
-        TokenManagerType::LockUnlock,
-        TokenManagerType::NativeInterchainToken,
-    ]
-    .iter()
+for token_manager_type in [
+    TokenManagerType::MintBurnFrom,
+    TokenManagerType::LockUnlock,
+    TokenManagerType::NativeInterchainToken,
+].into_iter() {
     {
         let token_id = if token_manager_type == TokenManagerType::NativeInterchainToken {
             setup_its_token(&env, &client, &deployer, 1000).0
