@@ -54,7 +54,7 @@ pub fn give_token(
 
     match token_manager_type {
         // For NativeInterchainToken and MintBurnFrom,
-        // use mint_from which allows the token manager to mint tokens on behalf of the token contract
+        // `mint_from` interface allows the token to potentially have multiple minters, one of them being the token manager to mint tokens for ITS
         TokenManagerType::NativeInterchainToken | TokenManagerType::MintBurnFrom => {
             token_manager.mint_from(env, &token_address, recipient, amount)
         }
