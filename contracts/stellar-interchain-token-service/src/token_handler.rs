@@ -33,7 +33,7 @@ pub fn take_token(
         // as the user has already authorized this action by signing the transaction.
         TokenManagerType::MintBurnFrom => token.burn(sender, &amount),
 
-        // For LockUnlock, transfer tokens from the sender to the token manager
+        // Transfer tokens from the sender to the token manager to lock them
         TokenManagerType::LockUnlock => token.transfer(sender, &token_manager, &amount),
     }
 
