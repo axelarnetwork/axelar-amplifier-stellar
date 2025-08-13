@@ -26,7 +26,7 @@ pub fn take_token(
             token.burn(sender, &amount)
         }
 
-        // MintBurnFrom: In EVM, this would require explicit approval (allowance) before burning.
+        // In EVM, `MintBurnFrom` would require explicit approval (allowance) before burning.
         // However, in Stellar's account abstraction model, when a user signs a transaction,
         // they can authorize all sub-invocations within that transaction by default.
         // Therefore, we can directly burn from the sender without requiring a separate approval,
