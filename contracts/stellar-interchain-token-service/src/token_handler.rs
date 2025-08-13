@@ -59,7 +59,7 @@ pub fn give_token(
             token_manager.mint_from(env, &token_address, recipient, amount)
         }
 
-        // For LockUnlock, transfer previously locked tokens from the token manager to the recipient
+        // Transfer previously locked tokens from the token manager to the recipient
         TokenManagerType::LockUnlock => {
             token_manager.transfer(env, &token_address, recipient, amount)
         }
