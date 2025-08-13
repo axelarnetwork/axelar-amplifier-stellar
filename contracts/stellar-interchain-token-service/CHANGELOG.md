@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-interchain-token-service-v1.3.0...stellar-interchain-token-service-v1.4.0)
+
+### ⛰️ Features
+
+- *(interchain-token-service)* Add mint burn from token manager type ([#364](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/364)) - ([a874ba8](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/a874ba85057edd6f859085b3ba6d5e4e7c11b633))
+- *(interchain-token-service)* Add transfer token admin function ([#361](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/361)) - ([feddf68](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/feddf68048113a6f25e9acad67e5af3c465687a5))
+- *(interchain-token-service)* Use mint for mint burn token manager type ([#360](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/360)) - ([7ad2342](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/7ad2342b7722aecc4f8aaf1a57127604865e8ae6))
+- *(interchain-token-service)* Add execute link token message ([#356](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/356)) - ([04d5629](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/04d5629c951a998737da621e9458213962fa042e))
+- *(interchain-token-service)* Add link token ([#355](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/355)) - ([c2c0ede](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/c2c0ede0325e9f58d0d17626012f055ac542d913))
+- *(interchain-token-service)* Add mint burn token manager type ([#353](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/353)) - ([d2edc10](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/d2edc10d08a17e1e53159538dc8f3c15cdb883dd))
+- *(interchain-token-service)* Add register custom token ([#352](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/352)) - ([1005d67](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/1005d67b7e5a43c7f472af5022fd53c0512d6d10))
+- *(interchain-token-service)* Add register_token_metadata hub message type ([#351](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/351)) - ([e3b3394](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/e3b3394c3f0eea41154d1115c16ed8a71a129ab5))
+
+### 🚜 Refactor
+
+- *(interchain-token-service)* Encapsulate token manager post deployment setup ([#357](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/357)) - ([0c17a03](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/0c17a03b058ebb47e10bd0403e3de53016c47dd2))
+
+### Contributors
+
+* @ahramy
+
 ## [1.3.0](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-interchain-token-service-v1.2.0...stellar-interchain-token-service-v1.3.0)
 
 ### ⛰️ Features
