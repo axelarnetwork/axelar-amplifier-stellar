@@ -21,7 +21,7 @@ pub fn take_token(
     let token = TokenClient::new(env, &token_address);
 
     match token_manager_type {
-        // For NativeInterchainToken and MintBurn, burn tokens directly from the sender
+        // Burn tokens directly from the sender
         TokenManagerType::NativeInterchainToken | TokenManagerType::MintBurn => {
             token.burn(sender, &amount)
         }
