@@ -103,7 +103,7 @@ pub fn post_token_manager_deploy(
         TokenManagerType::LockUnlock => {}
         // For MintBurn token managers, the user needs to grant mint permission to the token manager
         // Stellar Classic Assets require setting the token manager as the admin to allow minting the token,
-        // whereas Stellar Custom Tokens could optionally add the token manager as a minter.
+        // whereas Stellar Custom Tokens need to add the token manager as a minter.
         TokenManagerType::MintBurn => {}
     }
 }
