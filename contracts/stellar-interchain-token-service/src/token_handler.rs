@@ -65,7 +65,7 @@ pub fn give_token(
         }
 
         // For MintBurn, use direct mint where the token manager mints new tokens
-        // This assumes the token manager has minting privileges on the token contract
+        // This assumes the token manager has minting or admin privileges on the token contract, since `mint` interface doesn't indicate who the caller is
         TokenManagerType::MintBurn => token_manager.mint(env, &token_address, recipient, amount),
     }
 
