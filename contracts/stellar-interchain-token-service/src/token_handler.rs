@@ -21,7 +21,7 @@ pub fn take_token(
     let token = TokenClient::new(env, &token_address);
 
     match token_manager_type {
-        // For burn-based token managers, we burn tokens directly from the sender
+        // For NativeInterchainToken and MintBurn, burn tokens directly from the sender
         TokenManagerType::NativeInterchainToken | TokenManagerType::MintBurn => {
             token.burn(sender, &amount)
         }
@@ -33,7 +33,7 @@ pub fn take_token(
         // as the user has already authorized this action by signing the transaction.
         TokenManagerType::MintBurnFrom => token.burn(sender, &amount),
 
-        // For lock/unlock, we transfer tokens to the token manager
+        // For LockUnlock, transfer tokens from the sender to the token manager
         TokenManagerType::LockUnlock => token.transfer(sender, &token_manager, &amount),
     }
 
@@ -54,7 +54,7 @@ pub fn give_token(
 
     match token_manager_type {
         // For NativeInterchainToken and MintBurnFrom,
-        // use mint_from which allows the token manager to mint tokens on behalf of the contract
+        // use mint_from which allows the token manager to mint tokens on behalf of the token contract
         TokenManagerType::NativeInterchainToken | TokenManagerType::MintBurnFrom => {
             token_manager.mint_from(env, &token_address, recipient, amount)
         }
