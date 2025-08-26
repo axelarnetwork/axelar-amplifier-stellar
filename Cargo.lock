@@ -2130,6 +2130,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "stellar-custom-token-example"
+version = "1.0.0"
+dependencies = [
+ "cfg-if",
+ "goldie",
+ "paste",
+ "soroban-token-sdk",
+ "stellar-axelar-std",
+]
+
+[[package]]
 name = "stellar-interchain-token"
 version = "1.1.2"
 dependencies = [
