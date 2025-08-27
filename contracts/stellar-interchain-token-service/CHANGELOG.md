@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.1](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-interchain-token-service-v1.4.0...stellar-interchain-token-service-v1.4.1)
+
+### 🐛 Bug Fixes
+
+- *(interchain-token-service)* Add mint burn from when receiving msg from the hub ([#367](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/367)) - ([f64fd11](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/f64fd11495148122b4336bd70f3b877c2d165fd3))
+
+### Contributors
+
+* @ahramy
+
 ## [1.4.0](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-interchain-token-service-v1.3.0...stellar-interchain-token-service-v1.4.0)
 
 ### ⛰️ Features
