@@ -299,7 +299,7 @@ fn to_i128(value: Uint<256, 4>) -> Result<i128, ContractError> {
 
 /// Converts a U256 value to a TokenManagerType for LinkToken messages.
 ///
-/// Only accepts LockUnlock (2) and MintBurn (4) types. Rejects NativeInterchainToken (0)
+/// Only accepts MintBurnFrom (1), LockUnlock (2) and MintBurn (4) types. Rejects NativeInterchainToken (0)
 /// as it's reserved for interchain tokens, not for linking existing tokens.
 fn to_token_manager_type(value: Uint<256, 4>) -> Result<types::TokenManagerType, ContractError> {
     // Safe conversion: check if the value fits in a u32 before converting
@@ -311,6 +311,7 @@ fn to_token_manager_type(value: Uint<256, 4>) -> Result<types::TokenManagerType,
 
     match u32_value {
         0 => Err(ContractError::InvalidTokenManagerType),
+        1 => Ok(types::TokenManagerType::MintBurnFrom),
         2 => Ok(types::TokenManagerType::LockUnlock),
         4 => Ok(types::TokenManagerType::MintBurn),
         _ => Err(ContractError::InvalidTokenManagerType),
@@ -642,6 +643,16 @@ mod tests {
                     params: Some(Bytes::from_hex(&env, "1234567890abcdef")),
                 }),
             },
+            types::HubMessage::SendToHub {
+                destination_chain: remote_chain.clone(),
+                message: types::Message::LinkToken(types::LinkToken {
+                    token_id: BytesN::from_array(&env, &[123u8; 32]),
+                    token_manager_type: types::TokenManagerType::MintBurnFrom,
+                    source_token_address: Bytes::from_hex(&env, "abcdef12"),
+                    destination_token_address: Bytes::from_hex(&env, "fedcba98"),
+                    params: Some(Bytes::from_hex(&env, "fedcba0987654321")),
+                }),
+            },
             types::HubMessage::ReceiveFromHub {
                 source_chain: remote_chain.clone(),
                 message: types::Message::LinkToken(types::LinkToken {
@@ -659,13 +670,23 @@ mod tests {
                 }),
             },
             types::HubMessage::ReceiveFromHub {
-                source_chain: remote_chain,
+                source_chain: remote_chain.clone(),
                 message: types::Message::LinkToken(types::LinkToken {
                     token_id: BytesN::from_array(&env, &[42u8; 32]),
                     token_manager_type: types::TokenManagerType::MintBurn,
                     source_token_address: Bytes::from_hex(&env, "deadbeef"),
                     destination_token_address: Bytes::from_hex(&env, "cafebabe"),
                     params: Some(Bytes::from_hex(&env, "1234567890abcdef")),
+                }),
+            },
+            types::HubMessage::ReceiveFromHub {
+                source_chain: remote_chain,
+                message: types::Message::LinkToken(types::LinkToken {
+                    token_id: BytesN::from_array(&env, &[123u8; 32]),
+                    token_manager_type: types::TokenManagerType::MintBurnFrom,
+                    source_token_address: Bytes::from_hex(&env, "abcdef12"),
+                    destination_token_address: Bytes::from_hex(&env, "fedcba98"),
+                    params: Some(Bytes::from_hex(&env, "fedcba0987654321")),
                 }),
             },
         ];
@@ -731,6 +752,21 @@ mod tests {
             let decoded = assert_ok!(HubMessage::abi_decode(&env, &encoded));
             assert_eq!(original, decoded);
         }
+    }
+
+    #[test]
+    fn to_token_manager_type_succeeds_valid_types() {
+        let mint_burn_from_type: Uint<256, 4> = Uint::from(1u32);
+        let result = to_token_manager_type(mint_burn_from_type);
+        assert_eq!(result.unwrap(), TokenManagerType::MintBurnFrom);
+
+        let lock_unlock_type: Uint<256, 4> = Uint::from(2u32);
+        let result = to_token_manager_type(lock_unlock_type);
+        assert_eq!(result.unwrap(), TokenManagerType::LockUnlock);
+
+        let mint_burn_type: Uint<256, 4> = Uint::from(4u32);
+        let result = to_token_manager_type(mint_burn_type);
+        assert_eq!(result.unwrap(), TokenManagerType::MintBurn);
     }
 
     #[test]
