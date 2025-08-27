@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.7](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-axelar-example-v1.0.6...stellar-axelar-example-v1.0.7)
+
+### ⚙️ Miscellaneous Tasks
+
+- Updated the following local packages: stellar-interchain-token-service, stellar-interchain-token-service - ([0000000](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/0000000))
+
 ## [1.0.6](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-axelar-example-v1.0.5...stellar-axelar-example-v1.0.6)
 
 ### ⚙️ Miscellaneous Tasks
