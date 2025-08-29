@@ -1,6 +1,7 @@
-use crate::CustomToken;
 use stellar_axelar_std::soroban_sdk::testutils::Address as _;
 use stellar_axelar_std::soroban_sdk::{Address, Env, String};
+
+use crate::CustomToken;
 
 fn setup_token(env: &Env, decimals: u32, name: &str, symbol: &str) -> (Address, Address) {
     let admin = Address::generate(env);
