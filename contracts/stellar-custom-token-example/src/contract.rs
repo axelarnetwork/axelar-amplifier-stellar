@@ -58,7 +58,7 @@ impl CustomToken {
         Self::add_minter_internal(&env, minter);
     }
 
-        pub fn decimals(env: Env) -> u32 {
+    pub fn decimals(env: Env) -> u32 {
         TokenUtils::new(&env).metadata().get_metadata().decimal
     }
 
