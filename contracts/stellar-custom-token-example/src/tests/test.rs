@@ -36,7 +36,19 @@ fn test_constructor() {
 }
 
 #[test]
-fn test_mint_and_balance() {
+fn test_mint() {
+    let (env, contract_id, _admin) = setup_token(6u32, "Test Token", "TEST");
+    let user = Address::generate(&env);
+
+    env.mock_all_auths();
+    env.as_contract(&contract_id, || {
+        CustomToken::mint(env.clone(), user.clone(), 1000i128);
+        assert_eq!(CustomToken::balance(env.clone(), user.clone()), 1000i128);
+    });
+}
+
+#[test]
+fn test_burn() {
     let (env, contract_id, _admin) = setup_token(6u32, "Test Token", "TEST");
     let user = Address::generate(&env);
 
