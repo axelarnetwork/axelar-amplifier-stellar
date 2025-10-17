@@ -26,3 +26,5 @@ lcov.info
 /.idea/
 
 /.stellar/
+
+.DS_Store
