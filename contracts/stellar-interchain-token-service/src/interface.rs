@@ -43,12 +43,12 @@ pub trait InterchainTokenServiceInterface:
 
     /// Sets the specified chain as trusted for cross-chain messaging.
     /// # Authorization
-    /// - [`OwnableInterface::owner`] must authorize.
+    /// - [`OwnableInterface::operator`] must authorize.
     fn set_trusted_chain(env: &Env, chain: String) -> Result<(), ContractError>;
 
     /// Removes the specified chain from trusted chains.
     /// # Authorization
-    /// - [`OwnableInterface::owner`] must authorize.
+    /// - [`OwnableInterface::operator`] must authorize.
     fn remove_trusted_chain(env: &Env, chain: String) -> Result<(), ContractError>;
 
     /// Computes the unique identifier for an interchain token.
