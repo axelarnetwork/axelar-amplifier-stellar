@@ -3,10 +3,10 @@ use soroban_token_sdk::metadata::TokenMetadata;
 use soroban_token_sdk::TokenUtils;
 use stellar_axelar_std::events::Event;
 use stellar_axelar_std::interfaces::OwnableInterface;
-use stellar_axelar_std::token::{StellarAssetInterface, TokenInterface};
+use stellar_axelar_std::token::StellarAssetInterface;
 use stellar_axelar_std::{
-    assert_with_error, contract, contractimpl, ensure, interfaces, only_owner, soroban_sdk, token,
-    Address, BytesN, Env, String, Upgradable,
+    assert_with_error, contract, contractimpl, ensure, interfaces, only_owner, soroban_sdk,
+    Address, BytesN, Env, MuxedAddress, String, Upgradable,
 };
 
 use crate::error::ContractError;
@@ -60,6 +60,85 @@ impl OwnableInterface for InterchainToken {
 // Note: Some methods below are intentionally unimplemented as they are not supported by this token
 #[contractimpl]
 impl StellarAssetInterface for InterchainToken {
+    fn allowance(env: Env, from: Address, spender: Address) -> i128 {
+        Self::read_allowance(&env, from, spender).amount
+    }
+
+    fn approve(env: Env, from: Address, spender: Address, amount: i128, expiration_ledger: u32) {
+        from.require_auth();
+
+        Self::validate_amount(&env, amount);
+
+        Self::write_allowance(
+            &env,
+            from.clone(),
+            spender.clone(),
+            amount,
+            expiration_ledger,
+        );
+
+        TokenUtils::new(&env)
+            .events()
+            .approve(from, spender, amount, expiration_ledger);
+    }
+
+    fn balance(env: Env, id: Address) -> i128 {
+        storage::try_balance(&env, id).unwrap_or_default()
+    }
+
+    fn transfer(env: Env, from: Address, to: MuxedAddress, amount: i128) {
+        from.require_auth();
+
+        Self::validate_amount(&env, amount);
+        Self::spend_balance(&env, from.clone(), amount);
+        let to_address = to.address();
+        Self::receive_balance(&env, to_address.clone(), amount);
+
+        TokenUtils::new(&env).events().transfer(from, to_address, amount);
+    }
+
+    fn transfer_from(env: Env, spender: Address, from: Address, to: Address, amount: i128) {
+        spender.require_auth();
+
+        Self::validate_amount(&env, amount);
+        Self::spend_allowance(&env, from.clone(), spender, amount);
+        Self::spend_balance(&env, from.clone(), amount);
+        Self::receive_balance(&env, to.clone(), amount);
+
+        TokenUtils::new(&env).events().transfer(from, to, amount);
+    }
+
+    fn burn(env: Env, from: Address, amount: i128) {
+        from.require_auth();
+
+        Self::validate_amount(&env, amount);
+        Self::spend_balance(&env, from.clone(), amount);
+
+        TokenUtils::new(&env).events().burn(from, amount);
+    }
+
+    fn burn_from(env: Env, spender: Address, from: Address, amount: i128) {
+        spender.require_auth();
+
+        Self::validate_amount(&env, amount);
+        Self::spend_allowance(&env, from.clone(), spender, amount);
+        Self::spend_balance(&env, from.clone(), amount);
+
+        TokenUtils::new(&env).events().burn(from, amount);
+    }
+
+    fn decimals(env: Env) -> u32 {
+        TokenUtils::new(&env).metadata().get_metadata().decimal
+    }
+
+    fn name(env: Env) -> String {
+        TokenUtils::new(&env).metadata().get_metadata().name
+    }
+
+    fn symbol(env: Env) -> String {
+        TokenUtils::new(&env).metadata().get_metadata().symbol
+    }
+
     fn set_admin(env: Env, admin: Address) {
         Self::transfer_ownership(&env, admin);
     }
@@ -148,87 +227,6 @@ impl InterchainTokenInterface for InterchainToken {
         storage::remove_minter_status(env, minter.clone());
 
         MinterRemovedEvent { minter }.emit(env);
-    }
-}
-
-#[contractimpl]
-impl token::Interface for InterchainToken {
-    fn allowance(env: Env, from: Address, spender: Address) -> i128 {
-        Self::read_allowance(&env, from, spender).amount
-    }
-
-    fn approve(env: Env, from: Address, spender: Address, amount: i128, expiration_ledger: u32) {
-        from.require_auth();
-
-        Self::validate_amount(&env, amount);
-
-        Self::write_allowance(
-            &env,
-            from.clone(),
-            spender.clone(),
-            amount,
-            expiration_ledger,
-        );
-
-        TokenUtils::new(&env)
-            .events()
-            .approve(from, spender, amount, expiration_ledger);
-    }
-
-    fn balance(env: Env, id: Address) -> i128 {
-        storage::try_balance(&env, id).unwrap_or_default()
-    }
-
-    fn transfer(env: Env, from: Address, to: Address, amount: i128) {
-        from.require_auth();
-
-        Self::validate_amount(&env, amount);
-        Self::spend_balance(&env, from.clone(), amount);
-        Self::receive_balance(&env, to.clone(), amount);
-
-        TokenUtils::new(&env).events().transfer(from, to, amount);
-    }
-
-    fn transfer_from(env: Env, spender: Address, from: Address, to: Address, amount: i128) {
-        spender.require_auth();
-
-        Self::validate_amount(&env, amount);
-        Self::spend_allowance(&env, from.clone(), spender, amount);
-        Self::spend_balance(&env, from.clone(), amount);
-        Self::receive_balance(&env, to.clone(), amount);
-
-        TokenUtils::new(&env).events().transfer(from, to, amount);
-    }
-
-    fn burn(env: Env, from: Address, amount: i128) {
-        from.require_auth();
-
-        Self::validate_amount(&env, amount);
-        Self::spend_balance(&env, from.clone(), amount);
-
-        TokenUtils::new(&env).events().burn(from, amount);
-    }
-
-    fn burn_from(env: Env, spender: Address, from: Address, amount: i128) {
-        spender.require_auth();
-
-        Self::validate_amount(&env, amount);
-        Self::spend_allowance(&env, from.clone(), spender, amount);
-        Self::spend_balance(&env, from.clone(), amount);
-
-        TokenUtils::new(&env).events().burn(from, amount);
-    }
-
-    fn decimals(env: Env) -> u32 {
-        TokenUtils::new(&env).metadata().get_metadata().decimal
-    }
-
-    fn name(env: Env) -> String {
-        TokenUtils::new(&env).metadata().get_metadata().name
-    }
-
-    fn symbol(env: Env) -> String {
-        TokenUtils::new(&env).metadata().get_metadata().symbol
     }
 }
 

@@ -65,7 +65,7 @@ fn validate_message() {
         )
     );
     assert!(!approved);
-    assert_eq!(env.events().all().len(), 0);
+    assert_eq!(env.events().all().events().len(), 0);
 }
 
 #[test]
@@ -223,7 +223,7 @@ fn approve_messages_skip_duplicate_message() {
     client.approve_messages(&messages, &proof);
 
     client.approve_messages(&messages, &proof);
-    assert_eq!(env.events().all().len(), 0);
+    assert_eq!(env.events().all().events().len(), 0);
 }
 
 #[test]
