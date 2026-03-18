@@ -1,4 +1,4 @@
-use soroban_token_sdk::events::{Approve, Burn, TransferWithAmountOnly};
+use soroban_token_sdk::events::{Approve, Burn, MintWithAmountOnly, TransferWithAmountOnly};
 use soroban_token_sdk::metadata::TokenMetadata;
 use soroban_token_sdk::TokenUtils;
 use stellar_axelar_std::events::Event;
@@ -176,10 +176,7 @@ impl StellarAssetInterface for InterchainToken {
 
         Self::receive_balance(&env, to.clone(), amount);
 
-        // TODO: migrate to soroban_token_sdk::events::Mint::publish
-        // (note: removes admin from topics)
-        #[allow(deprecated)]
-        TokenUtils::new(&env).events().mint(owner, to, amount);
+        MintWithAmountOnly { to, amount }.publish(&env);
     }
 
     fn clawback(_env: Env, _from: Address, _amount: i128) {
@@ -214,10 +211,7 @@ impl InterchainTokenInterface for InterchainToken {
 
         Self::receive_balance(env, to.clone(), amount);
 
-        // TODO: migrate to soroban_token_sdk::events::Mint::publish
-        // (note: removes admin from topics)
-        #[allow(deprecated)]
-        TokenUtils::new(env).events().mint(minter, to, amount);
+        MintWithAmountOnly { to, amount }.publish(env);
 
         Ok(())
     }
