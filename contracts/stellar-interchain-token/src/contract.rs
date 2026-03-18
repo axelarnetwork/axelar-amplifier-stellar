@@ -1,4 +1,4 @@
-use soroban_token_sdk::event::Events as TokenEvents;
+use soroban_token_sdk::events::{Approve, Burn, TransferWithAmountOnly};
 use soroban_token_sdk::metadata::TokenMetadata;
 use soroban_token_sdk::TokenUtils;
 use stellar_axelar_std::events::Event;
@@ -10,7 +10,7 @@ use stellar_axelar_std::{
 };
 
 use crate::error::ContractError;
-use crate::event::{MinterAddedEvent, MinterRemovedEvent};
+use crate::event::{MinterAddedEvent, MinterRemovedEvent, SetAdminEvent};
 use crate::interface::InterchainTokenInterface;
 use crate::storage::{self, AllowanceDataKey, AllowanceValue};
 
@@ -53,7 +53,11 @@ impl OwnableInterface for InterchainToken {
 
         interfaces::transfer_ownership::<Self>(env, new_owner.clone());
 
-        TokenEvents::new(env).set_admin(old_owner, new_owner);
+        SetAdminEvent {
+            admin: old_owner,
+            new_admin: new_owner,
+        }
+        .emit(env);
     }
 }
 
@@ -77,9 +81,13 @@ impl StellarAssetInterface for InterchainToken {
             expiration_ledger,
         );
 
-        TokenUtils::new(&env)
-            .events()
-            .approve(from, spender, amount, expiration_ledger);
+        Approve {
+            from,
+            spender,
+            amount,
+            expiration_ledger,
+        }
+        .publish(&env);
     }
 
     fn balance(env: Env, id: Address) -> i128 {
@@ -94,7 +102,12 @@ impl StellarAssetInterface for InterchainToken {
         let to_address = to.address();
         Self::receive_balance(&env, to_address.clone(), amount);
 
-        TokenUtils::new(&env).events().transfer(from, to_address, amount);
+        TransferWithAmountOnly {
+            from,
+            to: to_address,
+            amount,
+        }
+        .publish(&env);
     }
 
     fn transfer_from(env: Env, spender: Address, from: Address, to: Address, amount: i128) {
@@ -105,7 +118,7 @@ impl StellarAssetInterface for InterchainToken {
         Self::spend_balance(&env, from.clone(), amount);
         Self::receive_balance(&env, to.clone(), amount);
 
-        TokenUtils::new(&env).events().transfer(from, to, amount);
+        TransferWithAmountOnly { from, to, amount }.publish(&env);
     }
 
     fn burn(env: Env, from: Address, amount: i128) {
@@ -114,7 +127,7 @@ impl StellarAssetInterface for InterchainToken {
         Self::validate_amount(&env, amount);
         Self::spend_balance(&env, from.clone(), amount);
 
-        TokenUtils::new(&env).events().burn(from, amount);
+        Burn { from, amount }.publish(&env);
     }
 
     fn burn_from(env: Env, spender: Address, from: Address, amount: i128) {
@@ -124,7 +137,7 @@ impl StellarAssetInterface for InterchainToken {
         Self::spend_allowance(&env, from.clone(), spender, amount);
         Self::spend_balance(&env, from.clone(), amount);
 
-        TokenUtils::new(&env).events().burn(from, amount);
+        Burn { from, amount }.publish(&env);
     }
 
     fn decimals(env: Env) -> u32 {
@@ -163,6 +176,9 @@ impl StellarAssetInterface for InterchainToken {
 
         Self::receive_balance(&env, to.clone(), amount);
 
+        // TODO: migrate to soroban_token_sdk::events::Mint::publish
+        // (note: removes admin from topics)
+        #[allow(deprecated)]
         TokenUtils::new(&env).events().mint(owner, to, amount);
     }
 
@@ -198,6 +214,9 @@ impl InterchainTokenInterface for InterchainToken {
 
         Self::receive_balance(env, to.clone(), amount);
 
+        // TODO: migrate to soroban_token_sdk::events::Mint::publish
+        // (note: removes admin from topics)
+        #[allow(deprecated)]
         TokenUtils::new(env).events().mint(minter, to, amount);
 
         Ok(())
