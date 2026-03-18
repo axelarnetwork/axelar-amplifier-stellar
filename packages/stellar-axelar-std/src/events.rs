@@ -14,8 +14,7 @@ pub trait Event: Debug + PartialEq + Sized {
 
 #[cfg(any(test, feature = "testutils"))]
 mod testutils {
-    use soroban_sdk::xdr;
-    use soroban_sdk::{Address, Env, TryFromVal, Val, Vec};
+    use soroban_sdk::{xdr, Address, Env, TryFromVal, Val, Vec};
 
     use crate::events::Event;
     use crate::testutils::Events;
