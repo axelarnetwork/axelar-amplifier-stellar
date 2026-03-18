@@ -27,7 +27,6 @@ pub struct TransferEvent {
 
 #[derive(Debug, PartialEq, Eq, IntoEvent)]
 pub struct MintEvent {
-    pub owner: Address,
     pub to: Address,
     #[datum]
     pub amount: i128,

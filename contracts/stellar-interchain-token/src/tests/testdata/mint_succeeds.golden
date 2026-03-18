@@ -1,5 +1,4 @@
 MintEvent {
-    owner: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4),
     to: Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM),
     amount: 1000,
 }
@@ -7,7 +6,6 @@ MintEvent {
 Contract(CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4)
 
 mint {
-    #[topic] owner: Address,
     #[topic] to: Address,
     #[datum] amount: i128,
 }
