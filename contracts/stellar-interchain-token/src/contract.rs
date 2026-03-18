@@ -203,7 +203,7 @@ impl InterchainTokenInterface for InterchainToken {
         minter.require_auth();
 
         ensure!(
-            Self::is_minter(env, minter.clone()),
+            Self::is_minter(env, minter),
             ContractError::NotMinter
         );
 

@@ -6,7 +6,7 @@ use stellar_axelar_std_derive::{Ownable, Upgradable};
 
 use crate as stellar_axelar_std;
 use crate::interfaces::testdata::contract_trivial_migration::DataKey;
-use crate::interfaces::{operatable, ownable, CustomMigratableInterface, MigratableInterface};
+use crate::interfaces::{operatable, ownable, CustomMigratableInterface};
 
 #[derive(Upgradable, Ownable)]
 #[migratable]

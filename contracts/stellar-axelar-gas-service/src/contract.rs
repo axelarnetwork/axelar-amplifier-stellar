@@ -40,7 +40,7 @@ impl AxelarGasServiceInterface for AxelarGasService {
 
         token::Client::new(&env, &token.address).transfer(
             &spender,
-            &env.current_contract_address(),
+            env.current_contract_address(),
             &token.amount,
         );
 
@@ -71,7 +71,7 @@ impl AxelarGasServiceInterface for AxelarGasService {
 
         token::Client::new(&env, &token.address).transfer(
             &spender,
-            &env.current_contract_address(),
+            env.current_contract_address(),
             &token.amount,
         );
 

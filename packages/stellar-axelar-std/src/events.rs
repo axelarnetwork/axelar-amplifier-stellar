@@ -48,9 +48,7 @@ mod testutils {
             })
             .expect("event has no contract_id");
 
-        let body = match &event.body {
-            xdr::ContractEventBody::V0(v0) => v0,
-        };
+        let xdr::ContractEventBody::V0(body) = &event.body;
 
         let topics: Vec<Val> =
             Vec::try_from_val(env, &xdr::ScVal::Vec(Some(body.topics.clone().into())))

@@ -47,7 +47,7 @@ fn link_token_test_data(
     let params = Some(Bytes::from_array(env, &[3u8; 8]));
 
     let hub_message = HubMessage::ReceiveFromHub {
-        source_chain: original_source_chain.clone(),
+        source_chain: original_source_chain,
         message: Message::LinkToken(LinkToken {
             token_id: token_id.clone(),
             token_manager_type,
@@ -866,9 +866,9 @@ fn interchain_transfer_execute_succeeds_with_token_manager_type_mint_burn() {
         .set_trusted_chain(&original_source_chain);
 
     let transfer_msg = HubMessage::ReceiveFromHub {
-        source_chain: original_source_chain.clone(),
+        source_chain: original_source_chain,
         message: Message::InterchainTransfer(InterchainTransfer {
-            token_id: token_id.clone(),
+            token_id,
             source_address: sender_address,
             destination_address: recipient.to_string_bytes(),
             amount: transfer_amount,
@@ -951,9 +951,9 @@ fn interchain_transfer_execute_succeeds_with_token_manager_type_mint_burn_from()
         .set_trusted_chain(&original_source_chain);
 
     let transfer_msg = HubMessage::ReceiveFromHub {
-        source_chain: original_source_chain.clone(),
+        source_chain: original_source_chain,
         message: Message::InterchainTransfer(InterchainTransfer {
-            token_id: token_id.clone(),
+            token_id,
             source_address: sender_address,
             destination_address: recipient.to_string_bytes(),
             amount: transfer_amount,
