@@ -20,7 +20,7 @@ fn setup_register_custom_token_test_data(
     env: &stellar_axelar_std::Env,
 ) -> RegisterCustomTokenTestData {
     let deployer = Address::generate(env);
-    let owner = Address::generate(&env);
+    let owner = Address::generate(env);
     let token = env.register_stellar_asset_contract_v2(owner);
     let salt = BytesN::<32>::from_array(env, &TEST_SALT);
 

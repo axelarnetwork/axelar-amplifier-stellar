@@ -113,18 +113,18 @@ fn remove_allow_during_migration_attribute(method: &mut ImplItemFn) {
         .retain(|attr| !attr.path().is_ident("allow_during_migration"))
 }
 
-fn any_fn(item: &mut ImplItem) -> Option<&mut ImplItemFn> {
+const fn any_fn(item: &mut ImplItem) -> Option<&mut ImplItemFn> {
     match item {
         ImplItem::Fn(fn_) => Some(fn_),
         _ => None,
     }
 }
 
-fn any<T>(item: &mut T) -> Option<&mut T> {
+const fn any<T>(item: &mut T) -> Option<&mut T> {
     Some(item)
 }
 
-fn any_pub_fn(fn_: &mut ImplItemFn) -> Option<&mut ImplItemFn> {
+const fn any_pub_fn(fn_: &mut ImplItemFn) -> Option<&mut ImplItemFn> {
     match fn_ {
         ImplItemFn {
             vis: Visibility::Public(_),

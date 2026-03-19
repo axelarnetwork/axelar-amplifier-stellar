@@ -14,7 +14,7 @@ pub trait Event: Debug + PartialEq + Sized {
 
 #[cfg(any(test, feature = "testutils"))]
 mod testutils {
-    use soroban_sdk::Env;
+    use soroban_sdk::{xdr, Address, Env, TryFromVal, Val, Vec};
 
     use crate::events::Event;
     use crate::testutils::Events;
@@ -30,18 +30,33 @@ mod testutils {
     where
         E: Event,
     {
+        let events = env.events().all();
+        let event_slice = events.events();
+
         if idx < 0 {
-            idx += env.events().all().len() as i32;
+            idx += event_slice.len() as i32;
         }
 
-        let (contract_id, topics, data) = env
-            .events()
-            .all()
-            .get(idx as u32)
-            .expect("no event found at the given index");
+        let event = &event_slice[idx as usize];
 
-        let event = E::from_event(env, topics, data);
-        std::format!("{:#?}\n\n{:?}\n\n{}", event, contract_id, E::schema(env))
+        let contract_id = event
+            .contract_id
+            .as_ref()
+            .map(|id| {
+                let sc_val = xdr::ScVal::Address(xdr::ScAddress::Contract(id.clone()));
+                Address::try_from_val(env, &sc_val).expect("failed to parse contract_id")
+            })
+            .expect("event has no contract_id");
+
+        let xdr::ContractEventBody::V0(body) = &event.body;
+
+        let topics: Vec<Val> =
+            Vec::try_from_val(env, &xdr::ScVal::Vec(Some(body.topics.clone().into())))
+                .expect("failed to convert topics");
+        let data: Val = Val::try_from_val(env, &body.data).expect("failed to convert data");
+
+        let parsed = E::from_event(env, topics, data);
+        std::format!("{:#?}\n\n{:?}\n\n{}", parsed, contract_id, E::schema(env))
     }
 }
 

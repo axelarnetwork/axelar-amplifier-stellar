@@ -8,7 +8,8 @@ use stellar_axelar_std::testutils::{Address as _, BytesN as _, Ledger};
 use stellar_axelar_std::{assert_auth, assert_auth_err, Address, BytesN, Env, IntoVal as _};
 
 use crate::event::{
-    ApproveEvent, BurnEvent, MintEvent, MinterAddedEvent, MinterRemovedEvent, TransferEvent,
+    ApproveEvent, BurnEvent, MintEvent, MinterAddedEvent, MinterRemovedEvent, SetAdminEvent,
+    TransferEvent,
 };
 use crate::{InterchainToken, InterchainTokenClient};
 
@@ -127,6 +128,17 @@ fn set_admin_succeeds() {
     ));
 
     assert_eq!(token.owner(), new_owner);
+}
+
+#[test]
+fn set_admin_emits_event() {
+    let env = Env::default();
+    let new_admin = Address::generate(&env);
+
+    let (token, _) = setup_token(&env);
+
+    token.mock_all_auths().set_admin(&new_admin);
+    goldie::assert!(fmt_last_emitted_event::<SetAdminEvent>(&env));
 }
 
 #[test]

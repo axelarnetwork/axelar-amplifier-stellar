@@ -11,6 +11,13 @@ pub struct MinterRemovedEvent {
 }
 
 #[derive(Debug, PartialEq, Eq, IntoEvent)]
+pub struct SetAdminEvent {
+    pub admin: Address,
+    #[data]
+    pub new_admin: Address,
+}
+
+#[derive(Debug, PartialEq, Eq, IntoEvent)]
 pub struct TransferEvent {
     pub from: Address,
     pub to: Address,
@@ -20,7 +27,6 @@ pub struct TransferEvent {
 
 #[derive(Debug, PartialEq, Eq, IntoEvent)]
 pub struct MintEvent {
-    pub owner: Address,
     pub to: Address,
     #[datum]
     pub amount: i128,

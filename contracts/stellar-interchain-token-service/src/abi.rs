@@ -799,7 +799,7 @@ mod tests {
         let remote_chain = String::from_str(&env, "chain");
 
         let link_token_with_native = types::HubMessage::SendToHub {
-            destination_chain: remote_chain.clone(),
+            destination_chain: remote_chain,
             message: types::Message::LinkToken(types::LinkToken {
                 token_id: BytesN::from_array(&env, &[0u8; 32]),
                 token_manager_type: types::TokenManagerType::NativeInterchainToken,

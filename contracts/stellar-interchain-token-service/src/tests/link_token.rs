@@ -34,7 +34,7 @@ struct LinkTokenTestData {
 
 fn setup_link_token_test_data(env: &stellar_axelar_std::Env) -> LinkTokenTestData {
     let deployer = Address::generate(env);
-    let owner = Address::generate(&env);
+    let owner = Address::generate(env);
     let token = env.register_stellar_asset_contract_v2(owner);
     let salt = BytesN::<32>::from_array(env, &TEST_SALT);
     let destination_chain = String::from_str(env, TEST_DESTINATION_CHAIN);

@@ -63,6 +63,7 @@ fn register_token_metadata_fails_with_invalid_token() {
 }
 
 #[test]
+#[allow(clippy::redundant_clone)]
 fn register_token_metadata_fails_with_unauthorized() {
     let (env, client, _, _, _) = setup_env();
     let owner = Address::generate(&env);

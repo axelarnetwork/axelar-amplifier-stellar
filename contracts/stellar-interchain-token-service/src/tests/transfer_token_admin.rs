@@ -50,13 +50,10 @@ fn transfer_token_admin_succeeds_with_mint_burn_token_manager_type() {
     assert_eq!(token_client.admin(), token_owner);
 
     let token_manager = client.deployed_token_manager(&token_id);
-    assert_auth!(token_owner.clone(), token_client.set_admin(&token_manager));
+    assert_auth!(token_owner, token_client.set_admin(&token_manager));
     assert_eq!(token_client.admin(), token_manager);
 
-    assert_auth!(
-        owner.clone(),
-        client.transfer_token_admin(&token_id, &new_admin)
-    );
+    assert_auth!(owner, client.transfer_token_admin(&token_id, &new_admin));
     assert_eq!(token_client.admin(), new_admin);
 }
 

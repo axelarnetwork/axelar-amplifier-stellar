@@ -9,6 +9,10 @@ publish = true
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[features]
+library = [] # Exports only the contract interface
+testutils = ["stellar-axelar-std/testutils", "dep:ed25519-dalek", "dep:rand"]
+
 [dependencies]
 cfg-if = { workspace = true }
 ed25519-dalek = { version = "^2.1", default-features = false, optional = true }
@@ -24,10 +28,6 @@ paste = { workspace = true }
 rand = { workspace = true }
 rand_chacha = { version = "0.3" }
 stellar-axelar-std = { workspace = true, features = ["testutils"] }
-
-[features]
-library = [] # Exports only the contract interface
-testutils = ["stellar-axelar-std/testutils", "dep:ed25519-dalek", "dep:rand"]
 
 [lints]
 workspace = true
