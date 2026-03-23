@@ -25,12 +25,20 @@ jobs:
     outputs:
       releases: ${{ steps.prepare-matrix.outputs.releases }}
       commit_hash: ${{ steps.get-commit-hash.outputs.hash }}
+      token: ${{ steps.generate-token.outputs.token }}
 
     steps:
+      - name: Generate GitHub token
+        uses: actions/create-github-app-token@v2
+        id: generate-token
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
 
       - name: Prepare release matrix from input
         id: prepare-matrix
@@ -98,7 +106,7 @@ jobs:
       cf-config-bucket-root-key: ${{ vars.CF_BUCKET_ROOT_KEY }}
       github-release: true
     secrets:
-      github-token: ${{ secrets.PAT_TOKEN }}
+      github-token: ${{ needs.prepare-release.outputs.token }}
       cf-endpoint-url: ${{ secrets.CF_ENDPOINT_URL }}
       cf-bucket-access-key-id: ${{ secrets.CF_BUCKET_ACCESS_KEY_ID }}
       cf-bucket-secret-access-key: ${{ secrets.CF_BUCKET_SECRET_ACCESS_KEY }}

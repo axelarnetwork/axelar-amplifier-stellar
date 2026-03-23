@@ -37,6 +37,19 @@ jobs:
           })')
           echo "releases=$(echo "$RELEASES_JSON" | jq -c)" >> "$GITHUB_OUTPUT"
 
+  generate-token:
+    name: Generate GitHub token
+    runs-on: blacksmith-2vcpu-ubuntu-2204
+    outputs:
+      token: ${{ steps.generate-token.outputs.token }}
+    steps:
+      - name: Generate GitHub token
+        uses: actions/create-github-app-token@v2
+        id: generate-token
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
+
   build:
     needs: stellar-contract-names
     uses: ./.github/workflows/reusable-build.yaml
@@ -44,7 +57,7 @@ jobs:
       commit-hash: ${{ needs.stellar-contract-names.outputs.commit_hash }}
 
   upload:
-    needs: [stellar-contract-names, build]
+    needs: [stellar-contract-names, build, generate-token]
     strategy:
       matrix:
         releases: ${{ fromJson(needs.stellar-contract-names.outputs.releases) }}
@@ -63,7 +76,7 @@ jobs:
       cf-config-bucket-root-key: ${{ vars.CF_BUCKET_ROOT_KEY }}
       github-release: false
     secrets:
-      github-token: ${{ secrets.PAT_TOKEN }}
+      github-token: ${{ needs.generate-token.outputs.token }}
       cf-endpoint-url: ${{ secrets.CF_ENDPOINT_URL }}
       cf-bucket-access-key-id: ${{ secrets.CF_BUCKET_ACCESS_KEY_ID }}
       cf-bucket-secret-access-key: ${{ secrets.CF_BUCKET_SECRET_ACCESS_KEY }}

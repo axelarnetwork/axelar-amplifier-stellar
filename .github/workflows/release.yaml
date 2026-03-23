@@ -16,12 +16,20 @@ jobs:
     outputs:
       releases: ${{ steps.prepare-matrix.outputs.releases }}
       commit_hash: ${{ steps.get-commit-hash.outputs.hash }}
+      token: ${{ steps.generate-token.outputs.token }}
 
     steps:
+      - name: Generate GitHub token
+        uses: actions/create-github-app-token@v2
+        id: generate-token
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -38,7 +46,7 @@ jobs:
           version: "0.3.105"
         env:
           CARGO_NET_GIT_FETCH_WITH_CLI: true
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
       - name: Publish release
@@ -49,7 +57,7 @@ jobs:
           version: "0.3.105"
         env:
           CARGO_NET_GIT_FETCH_WITH_CLI: true
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
       - name: Prepare JSON output to be a matrix GHA format
@@ -88,7 +96,7 @@ jobs:
       cf-config-bucket-root-key: ${{ vars.CF_BUCKET_ROOT_KEY }}
       github-release: true
     secrets:
-      github-token: ${{ secrets.PAT_TOKEN }}
+      github-token: ${{ needs.publish-release.outputs.token }}
       cf-endpoint-url: ${{ secrets.CF_ENDPOINT_URL }}
       cf-bucket-access-key-id: ${{ secrets.CF_BUCKET_ACCESS_KEY_ID }}
       cf-bucket-secret-access-key: ${{ secrets.CF_BUCKET_SECRET_ACCESS_KEY }}
