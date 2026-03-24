@@ -1,6 +1,6 @@
 #!/bin/sh
 
-release_folder="target/wasm32-unknown-unknown/release"
+release_folder="target/wasm32v1-none/release"
 
 if ! command -v stellar >/dev/null 2>&1; then
     echo "Error: 'stellar' command not found" >&2
