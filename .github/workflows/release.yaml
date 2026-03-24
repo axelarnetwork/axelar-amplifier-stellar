@@ -16,7 +16,6 @@ jobs:
     outputs:
       releases: ${{ steps.prepare-matrix.outputs.releases }}
       commit_hash: ${{ steps.get-commit-hash.outputs.hash }}
-      token: ${{ steps.generate-token.outputs.token }}
 
     steps:
       - name: Generate GitHub token
@@ -25,7 +24,6 @@ jobs:
         with:
           app-id: ${{ secrets.BOT_APP_ID }}
           private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
-          skip-token-revoke: true
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -97,7 +95,8 @@ jobs:
       cf-config-bucket-root-key: ${{ vars.CF_BUCKET_ROOT_KEY }}
       github-release: true
     secrets:
-      github-token: ${{ needs.publish-release.outputs.token }}
+      bot-app-id: ${{ secrets.BOT_APP_ID }}
+      bot-app-private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
       cf-endpoint-url: ${{ secrets.CF_ENDPOINT_URL }}
       cf-bucket-access-key-id: ${{ secrets.CF_BUCKET_ACCESS_KEY_ID }}
       cf-bucket-secret-access-key: ${{ secrets.CF_BUCKET_SECRET_ACCESS_KEY }}
