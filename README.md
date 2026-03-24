@@ -16,6 +16,8 @@ Install Soroban CLI
 cargo install --locked stellar-cli --version 25.2.0
 ```
 
+Or download the pre-built binary from [GitHub releases](https://github.com/stellar/stellar-cli/releases/tag/v25.2.0).
+
 ## Build
 
 ```bash

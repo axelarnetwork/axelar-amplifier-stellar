@@ -42,11 +42,11 @@ jobs:
           echo "name=wasm-builds-${{ inputs.commit-hash }}" >> $GITHUB_OUTPUT
           echo "path=target/wasm32v1-none/release" >> $GITHUB_OUTPUT
 
+      - name: Install Stellar CLI
+        uses: stellar/stellar-cli@v25.2.0
+
       - name: Build all contracts
         run: |
-          # Install Stellar CLI compatible with the soroban-sdk version in Cargo.toml
-          cargo install --locked stellar-cli --version 25.2.0
-
           # Build and optimize all contracts
           stellar contract build --optimize
 
