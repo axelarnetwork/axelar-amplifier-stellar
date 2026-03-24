@@ -20,11 +20,12 @@ jobs:
 
     steps:
       - name: Generate GitHub token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         id: generate-token
         with:
           app-id: ${{ secrets.BOT_APP_ID }}
           private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
+          skip-token-revoke: true
 
       - name: Checkout repository
         uses: actions/checkout@v4
