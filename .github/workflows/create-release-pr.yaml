@@ -17,7 +17,7 @@ jobs:
         id: branch-check
         run: |
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-          WHITELISTED_BRANCHES=("main" "releases/*")
+          WHITELISTED_BRANCHES=("main" "releases/*" "release-plz-update")
 
           IS_WHITELISTED=false
           # Check the branch against the whitelist using wildcard matching
