@@ -31,15 +31,12 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: 1.86.0
-          targets: wasm32-unknown-unknown
 
       - name: Set artifact name
         id: set-artifact-name
         run: |
           echo "name=wasm-builds-${{ inputs.commit-hash }}" >> $GITHUB_OUTPUT
-          echo "path=target/wasm32-unknown-unknown/release" >> $GITHUB_OUTPUT
+          echo "path=target/wasm32v1-none/release" >> $GITHUB_OUTPUT
 
       - name: Build all contracts
         run: |
@@ -51,7 +48,7 @@ jobs:
           ./optimize.sh
 
           # Process in the release directory
-          cd target/wasm32-unknown-unknown/release
+          cd target/wasm32v1-none/release
 
           # Remove unoptimized files and rename optimized ones
           # This ensures we only keep the optimized versions
@@ -63,5 +60,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.set-artifact-name.outputs.name }}
-          path: target/wasm32-unknown-unknown/release
+          path: target/wasm32v1-none/release
           retention-days: 1

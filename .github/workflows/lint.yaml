@@ -28,10 +28,7 @@ jobs:
         run: cargo +nightly fmt --all -- --check
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: 1.86.0
-          components: clippy
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Rust Cache
         uses: useblacksmith/rust-cache@v3.0.1

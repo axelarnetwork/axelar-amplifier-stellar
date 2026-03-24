@@ -7,6 +7,7 @@ use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 use syn::{Attribute, Data, DataEnum, DeriveInput, Fields, FieldsNamed, Meta, Type, Variant};
 
+#[allow(clippy::large_enum_variant)]
 enum Value {
     Status,
     Type(Type),
