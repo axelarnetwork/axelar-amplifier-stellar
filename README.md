@@ -13,7 +13,7 @@ Rustdocs for this workspace can be found [here](https://axelarnetwork.github.io/
 Install Soroban CLI
 
 ```bash
-cargo install --locked stellar-cli --features opt
+cargo install --locked stellar-cli --version 25.2.0
 ```
 
 ## Build
@@ -47,10 +47,10 @@ cargo llvm-cov --html # Generate coverage report
 cargo llvm-cov --open # Generate coverage and open report
 ```
 
-## Optimize contracts
+## Build and optimize contracts
 
 ```bash
-./optimize.sh
+stellar contract build --optimize
 ```
 
 ## Deployment

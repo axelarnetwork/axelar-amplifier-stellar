@@ -43,9 +43,8 @@ jobs:
           # Install Stellar CLI compatible with the soroban-sdk version in Cargo.toml
           cargo install --locked stellar-cli --version 25.2.0
 
-          # Build all contracts
-          stellar contract build
-          ./optimize.sh
+          # Build and optimize all contracts
+          stellar contract build --optimize
 
           # Process in the release directory
           cd target/wasm32v1-none/release

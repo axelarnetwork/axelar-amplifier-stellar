@@ -6,7 +6,7 @@ use stellar_axelar_std::{Address, BytesN, Env, String};
 
 use crate::{InterchainTokenService, InterchainTokenServiceClient};
 
-// Note: On changes to `interchain-token` and `token-manager` crates, recompile via `stellar contract build && ./optimize.sh`
+// Note: On changes to `interchain-token` and `token-manager` crates, recompile via `stellar contract build --optimize`
 // and copy the built `target/wasm32v1-none/release/stellar_*.optimized.wasm` to ../testdata.
 pub const INTERCHAIN_TOKEN_WASM: &[u8] =
     include_bytes!("testdata/stellar_interchain_token_v1_0_0.optimized.wasm");
