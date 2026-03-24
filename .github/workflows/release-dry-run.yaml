@@ -31,7 +31,9 @@ jobs:
           token: ${{ steps.generate-token.outputs.token }}
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.89.0
 
       - name: Get commit hash
         id: get-commit-hash

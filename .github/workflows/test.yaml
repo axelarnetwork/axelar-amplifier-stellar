@@ -19,7 +19,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.89.0
 
       - name: Rust Cache
         uses: useblacksmith/rust-cache@v3.0.1
