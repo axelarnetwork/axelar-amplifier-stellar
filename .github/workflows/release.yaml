@@ -39,10 +39,10 @@ jobs:
 
       - name: Dry Run
         id: dry-run
-        uses: MarcoIeni/release-plz-action@fff938ea2923fdfa35797fff63537b00f30fe6f9 # v0.5.82
+        uses: release-plz/action@v0.5
         with:
           command: release --dry-run
-          version: "0.3.105"
+          version: "0.3.157"
         env:
           CARGO_NET_GIT_FETCH_WITH_CLI: true
           GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
@@ -50,10 +50,10 @@ jobs:
 
       - name: Publish release
         id: publish-release
-        uses: MarcoIeni/release-plz-action@fff938ea2923fdfa35797fff63537b00f30fe6f9 # v0.5.82
+        uses: release-plz/action@v0.5
         with:
           command: release
-          version: "0.3.105"
+          version: "0.3.157"
         env:
           CARGO_NET_GIT_FETCH_WITH_CLI: true
           GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
