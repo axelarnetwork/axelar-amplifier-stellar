@@ -40,8 +40,11 @@ on:
         default: true
 
     secrets:
-      github-token:
-        description: "The github token to use to do the tag updates"
+      bot-app-id:
+        description: "The GitHub App ID used to generate a token for tag updates"
+        required: true
+      bot-app-private-key:
+        description: "The GitHub App private key used to generate a token for tag updates"
         required: true
       cf-endpoint-url:
         description: "The endpoint URL of the CF bucket"
@@ -160,6 +163,14 @@ jobs:
 
       # Update the existing release and upload the wasm files, zip and tar archives to the specific tag
       # https://github.com/orgs/community/discussions/26263#discussioncomment-3251069
+      - name: Generate GitHub token
+        uses: actions/create-github-app-token@v3
+        id: generate-token
+        if: inputs.github-release
+        with:
+          app-id: ${{ secrets.bot-app-id }}
+          private-key: ${{ secrets.bot-app-private-key }}
+
       - name: Update the GitHub Release
         uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
         if: inputs.github-release
@@ -173,4 +184,4 @@ jobs:
             ${{ join(fromJson(steps.publish-to-r2.outputs.wasm_files), '
             ') }}
         env:
-          GITHUB_TOKEN: ${{ secrets.github-token }}
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
