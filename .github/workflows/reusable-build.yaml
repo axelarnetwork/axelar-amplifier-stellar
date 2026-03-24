@@ -42,22 +42,19 @@ jobs:
           echo "name=wasm-builds-${{ inputs.commit-hash }}" >> $GITHUB_OUTPUT
           echo "path=target/wasm32v1-none/release" >> $GITHUB_OUTPUT
 
+      - name: Install Stellar CLI
+        uses: stellar/stellar-cli@v25.2.0
+
       - name: Build all contracts
         run: |
-          # Install Stellar CLI compatible with the soroban-sdk version in Cargo.toml
-          cargo install --locked stellar-cli --version 25.2.0
-
           # Build and optimize all contracts
           stellar contract build --optimize
 
           # Process in the release directory
           cd target/wasm32v1-none/release
 
-          # Remove unoptimized files and rename optimized ones
-          # This ensures we only keep the optimized versions
-          find . -type f -name "*.wasm" ! -name "*.optimized.wasm" -maxdepth 1 -delete
-          find . -name "*.optimized.wasm" -maxdepth 1 -exec sh -c 'mv "$0" "${0%.optimized.wasm}.wasm"' {} \;
-          find . -type f ! -name "*.wasm" -delete
+          # Remove non-wasm files
+          find . -maxdepth 1 -type f ! -name "*.wasm" -delete
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
