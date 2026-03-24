@@ -25,8 +25,9 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.86.0
-          targets: wasm32-unknown-unknown
+          toolchain: 1.89.0
+          targets: wasm32v1-none
+          components: rust-src
 
       - name: Rust Cache
         uses: useblacksmith/rust-cache@v3.0.1

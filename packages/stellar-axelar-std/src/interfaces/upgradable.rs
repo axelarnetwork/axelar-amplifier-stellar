@@ -146,7 +146,7 @@ mod test {
     fn prepare_client_and_bytecode(
         env: &Env,
         owner: Option<Address>,
-    ) -> (ContractClient, BytesN<32>) {
+    ) -> (ContractClient<'_>, BytesN<32>) {
         let operator = Address::generate(env);
         let contract_id = env.register(testdata::Contract, (owner, operator));
         let hash = env.deployer().upload_contract_wasm(WASM);

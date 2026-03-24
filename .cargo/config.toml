@@ -1,5 +1,5 @@
 [alias]
-wasm = "build --release --lib --target wasm32-unknown-unknown --locked --workspace"
+wasm = "build --release --lib --target wasm32v1-none --locked --workspace"
 unit-test = "test --lib"
 
 [build]

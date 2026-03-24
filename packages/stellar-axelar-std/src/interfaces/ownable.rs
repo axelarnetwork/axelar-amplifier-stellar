@@ -57,7 +57,7 @@ mod test {
     use crate::interfaces::{OwnableClient, OwnershipTransferredEvent};
     use crate::{assert_auth, assert_auth_err, events};
 
-    fn prepare_client(env: &Env, owner: Option<Address>) -> OwnableClient {
+    fn prepare_client(env: &Env, owner: Option<Address>) -> OwnableClient<'_> {
         let operator = Address::generate(env);
         let contract_id = env.register(Contract, (owner, operator));
         OwnableClient::new(env, &contract_id)

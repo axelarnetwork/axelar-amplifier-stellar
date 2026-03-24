@@ -180,7 +180,7 @@ impl<'a> EventFields<'a> {
     }
 }
 
-fn event_struct_fields(input: &DeriveInput) -> EventFields {
+fn event_struct_fields(input: &DeriveInput) -> EventFields<'_> {
     let syn::Data::Struct(data_struct) = &input.data else {
         panic!("IntoEvent can only be derived for structs");
     };

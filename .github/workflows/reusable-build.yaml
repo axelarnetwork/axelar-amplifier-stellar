@@ -30,28 +30,28 @@ jobs:
         run: git checkout ${{ inputs.commit-hash }}
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.86.0
-          targets: wasm32-unknown-unknown
+          toolchain: 1.89.0
+          targets: wasm32v1-none
+          components: rust-src
 
       - name: Set artifact name
         id: set-artifact-name
         run: |
           echo "name=wasm-builds-${{ inputs.commit-hash }}" >> $GITHUB_OUTPUT
-          echo "path=target/wasm32-unknown-unknown/release" >> $GITHUB_OUTPUT
+          echo "path=target/wasm32v1-none/release" >> $GITHUB_OUTPUT
 
       - name: Build all contracts
         run: |
           # Install Stellar CLI compatible with the soroban-sdk version in Cargo.toml
           cargo install --locked stellar-cli --version 25.2.0
 
-          # Build all contracts
-          stellar contract build
-          ./optimize.sh
+          # Build and optimize all contracts
+          stellar contract build --optimize
 
           # Process in the release directory
-          cd target/wasm32-unknown-unknown/release
+          cd target/wasm32v1-none/release
 
           # Remove unoptimized files and rename optimized ones
           # This ensures we only keep the optimized versions
@@ -63,5 +63,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.set-artifact-name.outputs.name }}
-          path: target/wasm32-unknown-unknown/release
+          path: target/wasm32v1-none/release
           retention-days: 1

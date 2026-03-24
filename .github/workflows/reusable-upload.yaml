@@ -89,7 +89,7 @@ jobs:
           # ex: v0.1.0
           echo "PACKAGE_VERSION=${PACKAGE_VERSION}" >> $GITHUB_ENV
 
-          # ex: ./target/wasm32-unknown-unknown/release
+          # ex: ./target/wasm32v1-none/release
           echo "BASE_ARTIFACTS_DIR=${BASE_ARTIFACTS_DIR}" >> $GITHUB_ENV
 
           # ex: axelar-amplifier-stellar-wasm-stellar-axelar-gas-service-v0.1.0
