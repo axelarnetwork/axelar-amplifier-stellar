@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-interchain-token-service-v1.4.1...stellar-interchain-token-service-v2.0.0)
+
+### ⛰️ Features
+
+- [**breaking**] Upgrade soroban sdk to v25.3.0 ([#371](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/371)) - ([95190d2](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/95190d26120da22f8defdf37566c1cd8fd1f3e77))
+
+### ⚙️ Miscellaneous Tasks
+
+- *(interchain-token-service)* Update comments in the interface ([#370](https://github.com/axelarnetwork/axelar-amplifier-stellar/pull/370)) - ([c3376f3](https://github.com/axelarnetwork/axelar-amplifier-stellar/commit/c3376f3be16f6e4b652302dd32eb8265769021c4))
+
+### Contributors
+
+* @rista404
+* @ahramy
+
 ## [1.4.1](https://github.com/axelarnetwork/axelar-amplifier-stellar/compare/stellar-interchain-token-service-v1.4.0...stellar-interchain-token-service-v1.4.1)
 
 ### 🐛 Bug Fixes
