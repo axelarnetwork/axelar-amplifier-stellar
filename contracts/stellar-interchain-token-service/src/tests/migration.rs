@@ -3,9 +3,8 @@ use stellar_axelar_std::testutils::Address as _;
 use stellar_axelar_std::{Address, BytesN};
 
 use super::utils::setup_env;
-use crate::storage;
 use crate::types::TokenManagerType;
-use crate::InterchainTokenService;
+use crate::{storage, InterchainTokenService};
 
 const XRP_TOKEN_ID: [u8; 32] = [
     0xba, 0x5a, 0x21, 0xca, 0x88, 0xef, 0x6b, 0xba, 0x2b, 0xff, 0xf5, 0x08, 0x89, 0x94, 0xf9, 0x0e,
