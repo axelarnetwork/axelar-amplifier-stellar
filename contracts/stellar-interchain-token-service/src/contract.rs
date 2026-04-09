@@ -4,10 +4,10 @@ use stellar_axelar_gateway::executable::{AxelarExecutableInterface, CustomAxelar
 use stellar_axelar_gateway::AxelarGatewayMessagingClient;
 use stellar_axelar_std::address::AddressExt;
 use stellar_axelar_std::events::Event;
+use stellar_axelar_std::interfaces::CustomMigratableInterface;
 use stellar_axelar_std::token::StellarAssetClient;
 use stellar_axelar_std::types::Token;
 use stellar_axelar_std::xdr::ToXdr;
-use stellar_axelar_std::interfaces::CustomMigratableInterface;
 use stellar_axelar_std::{
     contract, contractimpl, ensure, interfaces, only_operator, only_owner, soroban_sdk, vec,
     when_not_paused, Address, AxelarExecutable, Bytes, BytesN, Env, IntoVal, Operatable, Ownable,
@@ -869,9 +869,9 @@ impl CustomMigratableInterface for InterchainTokenService {
         let token_id = BytesN::from_array(
             env,
             &[
-                0xba, 0x5a, 0x21, 0xca, 0x88, 0xef, 0x6b, 0xba, 0x2b, 0xff, 0xf5, 0x08, 0x89,
-                0x94, 0xf9, 0x0e, 0x10, 0x77, 0xe2, 0xa1, 0xcc, 0x3d, 0xcc, 0x38, 0xbd, 0x26,
-                0x1f, 0x00, 0xfc, 0xe2, 0x82, 0x4f,
+                0xba, 0x5a, 0x21, 0xca, 0x88, 0xef, 0x6b, 0xba, 0x2b, 0xff, 0xf5, 0x08, 0x89, 0x94,
+                0xf9, 0x0e, 0x10, 0x77, 0xe2, 0xa1, 0xcc, 0x3d, 0xcc, 0x38, 0xbd, 0x26, 0x1f, 0x00,
+                0xfc, 0xe2, 0x82, 0x4f,
             ],
         );
 
